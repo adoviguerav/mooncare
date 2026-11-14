@@ -2,4 +2,5 @@
 
 INSERT INTO cfg.source (id, name, url, citation) VALUES
   ('inspiration4_metabolic_panel', 'Inspiration4 metabolic panel (NASA OSDR, OSD-575)', 'https://osdr.nasa.gov/bio/repo/data/studies/OSD-575', 'NASA Open Science Data Repository, "SpaceX Inspiration4 Blood Serum Metabolic Panel and Immune/Cardiac Cytokine Arrays", OSD-575, released 14 May 2024.'),
+  ('inspiration4_blood_count', 'Inspiration4 blood count (NASA OSDR, OSD-569)', 'https://osdr.nasa.gov/bio/repo/data/studies/OSD-569', 'NASA Open Science Data Repository, study OSD-569, SpaceX Inspiration4 complete blood count (file LSDS-7_Complete_Blood_Count_CBC_TRANSFORMED.csv).'),
   ('lifesnaps', 'LifeSnaps', 'https://doi.org/10.5281/zenodo.7229547', 'Yfantidou et al., "LifeSnaps, a 4-month multi-modal dataset capturing unobtrusive snapshots of our lives in the wild", Scientific Data, 2022. https://doi.org/10.1038/s41597-022-01764-x. Licence CC BY 4.0.');

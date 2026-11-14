@@ -14,8 +14,11 @@ from seed import (
     build_mood_day_counts,
     read_crew_readings,
     read_daily_readings,
+    METABOLIC_PANEL_COLUMNS,
+    BLOOD_COUNT_COLUMNS,
+    CARDIOVASCULAR_PANEL_COLUMNS,
+    read_blood_readings,
     read_heart_rate_readings,
-    read_metabolic_panel_readings,
     to_sql_literal,
 )
 from seed_content import INDICATORS, RULES
@@ -77,7 +80,7 @@ def test_an_empty_glucose_cell_produces_no_reading(tmp_path: Path) -> None:
         METABOLIC_PANEL_HEADER + "C003_serum_L-3,,65,99\n" + "C003_serum_R+45,36,65,99\n",
     )
 
-    assert read_metabolic_panel_readings(metabolic_panel, "C003") == [Reading("glucose", "2021-11-02T00:00", 36.0)]
+    assert read_blood_readings(metabolic_panel, METABOLIC_PANEL_COLUMNS, "C003") == [Reading("glucose", "2021-11-02T00:00", 36.0)]
 
 
 def test_stores_every_analyte_of_a_metabolic_panel_draw(tmp_path: Path) -> None:
@@ -97,7 +100,7 @@ def test_stores_every_analyte_of_a_metabolic_panel_draw(tmp_path: Path) -> None:
         "C003_serum_R+1,103,137,3,103,0.89,21,102,88,4.2,9.4\n",
     )
 
-    assert read_metabolic_panel_readings(metabolic_panel, "C003") == [
+    assert read_blood_readings(metabolic_panel, METABOLIC_PANEL_COLUMNS, "C003") == [
         Reading("glucose", "2021-09-19T00:00", 103.0),
         Reading("sodium", "2021-09-19T00:00", 137.0),
         Reading("potassium", "2021-09-19T00:00", 3.0),
@@ -110,11 +113,40 @@ def test_stores_every_analyte_of_a_metabolic_panel_draw(tmp_path: Path) -> None:
     ]
 
 
+def test_reads_a_blood_count_draw_whose_sample_name_has_a_suffix(tmp_path: Path) -> None:
+    blood_count = write_csv(
+        tmp_path / "blood_count.csv",
+        "Sample Name,white_blood_cell_count_value_thousand_per_microliter,"
+        "absolute_lymphocytes_value_cells_per_microliter,hemoglobin_value_percent\n"
+        "C003_whole-blood_R+1_cbc,6.1,2667,14.7\n"
+        "C002_whole-blood_R+1_cbc,5,1800,11.5\n",
+    )
+
+    assert read_blood_readings(blood_count, BLOOD_COUNT_COLUMNS, "C003") == [
+        Reading("white_blood_cells", "2021-09-19T00:00", 6.1),
+        Reading("lymphocytes", "2021-09-19T00:00", 2667.0),
+        Reading("hemoglobin", "2021-09-19T00:00", 14.7),
+    ]
+
+
+def test_stores_crp_in_milligrams_per_litre(tmp_path: Path) -> None:
+    cardiovascular_panel = write_csv(
+        tmp_path / "cardiovascular.csv",
+        "Sample Name,crp_concentration_picogram_per_milliliter,fibrinogen_concentration_nanogram_per_milliliter\n"
+        "C003_serum_R+1,5131700,2780.38\n",
+    )
+
+    assert read_blood_readings(cardiovascular_panel, CARDIOVASCULAR_PANEL_COLUMNS, "C003") == [
+        Reading("crp", "2021-09-19T00:00", 5.1317),
+        Reading("fibrinogen", "2021-09-19T00:00", 2780.38),
+    ]
+
+
 def test_rejects_a_sample_label_it_cannot_date(tmp_path: Path) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER + "C003_serum_FD2,80,65,99\n")
 
     with pytest.raises(ValueError, match="Unknown sample label 'FD2'"):
-        read_metabolic_panel_readings(metabolic_panel, "C003")
+        read_blood_readings(metabolic_panel, METABOLIC_PANEL_COLUMNS, "C003")
 
 
 def test_loads_the_glucose_rule_with_the_limits_of_the_nasa_file(
@@ -164,6 +196,9 @@ def test_loads_the_blood_rules_with_the_ranges_of_the_nasa_file(
         # The file gives these two a different range by astronaut and draw: the rule takes the widest
         (12, "creatinine", 0.5, 1.35),
         (13, "calcium", 8.6, 10.4),
+        (14, "white_blood_cells", 3.8, 10.8),
+        (15, "lymphocytes", 850.0, 3900.0),
+        (16, "hemoglobin", 11.7, 17.1),
     ]
 
 

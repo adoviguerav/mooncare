@@ -17,6 +17,8 @@ const GROUPS = [
     title: 'Blood',
     indicatorIds: ['glucose', 'sodium', 'potassium', 'chloride', 'creatinine', 'urea_nitrogen', 'egfr', 'albumin', 'calcium'],
   },
+  { title: 'Blood cells', indicatorIds: ['white_blood_cells', 'lymphocytes', 'hemoglobin'] },
+  { title: 'Inflammation', indicatorIds: ['il_6', 'tnf_alpha', 'il_1_beta', 'ifn_gamma', 'crp', 'fibrinogen'] },
   { title: 'Heart', indicatorIds: ['heart_rate', 'resting_heart_rate'] },
   { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
   { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency'] },

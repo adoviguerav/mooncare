@@ -48,6 +48,15 @@ SOURCES = [
         ),
     ),
     Source(
+        id="inspiration4_blood_count",
+        name="Inspiration4 blood count (NASA OSDR, OSD-569)",
+        url="https://osdr.nasa.gov/bio/repo/data/studies/OSD-569",
+        citation=(
+            "NASA Open Science Data Repository, study OSD-569, SpaceX Inspiration4 complete blood count "
+            "(file LSDS-7_Complete_Blood_Count_CBC_TRANSFORMED.csv)."
+        ),
+    ),
+    Source(
         id="lifesnaps",
         name="LifeSnaps",
         url="https://doi.org/10.5281/zenodo.7229547",
@@ -71,6 +80,7 @@ MOOD_NAMES = {
 
 # Indicator id, which is also its name, to the normal range of the Inspiration4 metabolic panel file, in mmol/L
 ELECTROLYTE_RANGES = {"sodium": (135.0, 146.0), "potassium": (3.5, 5.3), "chloride": (98.0, 110.0)}
+HAEMATOLOGY_HOW_TO_MEASURE = "With a portable haematology analyser, from a drop of blood from the finger."
 KIDNEY_HOW_TO_MEASURE = "With a portable analyser, from a drop of blood from the finger or a blood sample."
 
 # REVIEW: how_to_measure and why_it_matters are drafts built from docs/parameters_and_datasets.md.
@@ -244,6 +254,77 @@ INDICATORS = [
         why_it_matters="The calcium in your blood. A value outside the normal range is worth a second test.",
         source_id="inspiration4_metabolic_panel",
     ),
+    Indicator(
+        id="white_blood_cells",
+        name="White blood cells",
+        unit="thousand/µL",
+        how_to_measure=HAEMATOLOGY_HOW_TO_MEASURE,
+        why_it_matters=(
+            "White blood cells are the cells of your immune system. A count outside the normal range can be "
+            "a sign of infection or of a weaker immune system."
+        ),
+        source_id="inspiration4_blood_count",
+    ),
+    Indicator(
+        id="lymphocytes",
+        name="Lymphocytes",
+        unit="cells/µL",
+        how_to_measure=HAEMATOLOGY_HOW_TO_MEASURE,
+        why_it_matters=(
+            "Lymphocytes are white blood cells of your immune system. A count well below your own baseline "
+            "can be a sign of immune suppression."
+        ),
+        source_id="inspiration4_blood_count",
+    ),
+    Indicator(
+        id="hemoglobin",
+        name="Haemoglobin",
+        unit="g/dL",
+        how_to_measure=HAEMATOLOGY_HOW_TO_MEASURE,
+        why_it_matters=(
+            "Haemoglobin carries oxygen in your blood. An abnormal value can be a sign of a nutritional "
+            "deficiency."
+        ),
+        source_id="inspiration4_blood_count",
+    ),
+    *[
+        Indicator(
+            id=marker_id,
+            name=marker_name,
+            unit=unit,
+            how_to_measure="With a microfluidic analyser, from a blood sample.",
+            why_it_matters=(
+                "A marker of inflammation. A value above your own baseline is a reason to assess infection, "
+                "inflammation and stress. It has no normal range in the data, so compare it with your own "
+                "earlier values."
+            ),
+            source_id="inspiration4_metabolic_panel",
+        )
+        for marker_id, marker_name, unit in [
+            ("il_6", "Interleukin 6 (IL-6)", "pg/mL"),
+            ("tnf_alpha", "TNF-α", "pg/mL"),
+            # NPQ is the normalised unit of the Alamar panel, not a concentration
+            ("il_1_beta", "Interleukin 1β (IL-1β)", "NPQ"),
+            ("ifn_gamma", "Interferon γ (IFN-γ)", "NPQ"),
+        ]
+    ],
+    *[
+        Indicator(
+            id=marker_id,
+            name=marker_name,
+            unit=unit,
+            how_to_measure="With a blood test.",
+            why_it_matters=(
+                "A blood marker related to inflammation and to the heart and blood vessels. It has no normal "
+                "range in the data, so compare it with your own earlier values."
+            ),
+            source_id="inspiration4_metabolic_panel",
+        )
+        for marker_id, marker_name, unit in [
+            ("crp", "C-reactive protein (CRP)", "mg/L"),
+            ("fibrinogen", "Fibrinogen", "ng/mL"),
+        ]
+    ],
     *[
         Indicator(
             id=mood_id,
@@ -282,6 +363,9 @@ MOOD_RULE_LIMITS = (
 
 def get_metabolic_panel_range_source(analyte_name: str) -> str:
     return f"Normal range given for {analyte_name} in the Inspiration4 metabolic panel file (NASA OSDR, OSD-575)."
+
+
+BLOOD_COUNT_RANGE_SOURCE = "Normal range given in the Inspiration4 blood count file (NASA OSDR, OSD-569)."
 
 
 def get_widest_metabolic_panel_range_source(analyte_name: str) -> str:
@@ -439,5 +523,44 @@ RULES = [
         explanation="Your blood calcium is outside the normal range of 8.6 to 10.4 mg/dL.",
         action="Repeat the test and ask for a clinical review.",
         threshold_source=get_widest_metabolic_panel_range_source("calcium"),
+    ),
+    Rule(
+        indicator_id="white_blood_cells",
+        low=3.8,
+        high=10.8,
+        title="White blood cells out of range",
+        explanation=(
+            "Your white blood cell count is outside the normal range of 3.8 to 10.8 thousand/µL. "
+            "This can be a sign of infection or of a weaker immune system."
+        ),
+        action="Repeat the test and ask for a clinical review.",
+        threshold_source=BLOOD_COUNT_RANGE_SOURCE,
+    ),
+    Rule(
+        indicator_id="lymphocytes",
+        low=850.0,
+        high=3900.0,
+        title="Lymphocytes out of range",
+        explanation=(
+            "Your lymphocyte count is outside the normal range of 850 to 3900 cells/µL. "
+            "A low count can be a sign of immune suppression."
+        ),
+        action="Repeat the test.",
+        threshold_source=BLOOD_COUNT_RANGE_SOURCE,
+    ),
+    Rule(
+        indicator_id="hemoglobin",
+        low=11.7,
+        high=17.1,
+        title="Haemoglobin out of range",
+        explanation=(
+            "Your haemoglobin is outside the normal range of 11.7 to 17.1 g/dL. "
+            "This can be a sign of a nutritional deficiency."
+        ),
+        action="Ask for a targeted nutritional assessment.",
+        threshold_source=(
+            "Widest of the normal ranges given for haemoglobin in the Inspiration4 blood count file "
+            "(NASA OSDR, OSD-569). The file gives a different range by astronaut and draw."
+        ),
     ),
 ]

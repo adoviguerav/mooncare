@@ -70,7 +70,7 @@ Data and backend:
     - Done when: the tests pass on `main` and the Vercel link still shows the panel of Crew 1.
 - [x] **N2. Blood analytes of the Inspiration4 metabolic panel** (data document, Table 2): sodium, potassium, chloride, creatinine, urea, eGFR, albumin and calcium. Each one gets a rule with the normal range the NASA file gives for it, like glucose. For creatinine and calcium the file gives a different range by astronaut and draw, so the rule takes the widest: 0.5 to 1.35 mg/dL and 8.6 to 10.4 mg/dL. The file gives eGFR twice, by race; we load the lower one.
     - Done when: the panel of Crew 1 on 2021-09-19 shows the potassium alert (3.0 mmol/L, range 3.5 to 5.3).
-- [ ] **N3. The other Inspiration4 blood files** (Table 2): white cells, lymphocytes and haemoglobin; IL-6, TNF-α, IL-1β and IFN-γ; CRP and fibrinogen. These files give no normal range, so they are shown with no rule.
+- [x] **N3. The other Inspiration4 blood files** (Table 2): white cells, lymphocytes and haemoglobin; IL-6, TNF-α, IL-1β and IFN-γ; CRP and fibrinogen. The blood count file does give normal ranges, so its three get a rule (haemoglobin takes the widest of its two ranges, 11.7 to 17.1 g/dL). The other six have no range and no rule. CRP is stored in mg/L.
     - Done when: each one has its card and its history for the four crew members.
 - [ ] **N4. The other LifeSnaps indicators** (Table 2): SpO2, breathing rate, heart rate variability, stress score, fatigue, sleep stages and awakenings, VO2 max and the anxiety and affect questionnaires. Shown with no rule, except VO2 max.
     - Done when: each one has its card and its history for the four crew members.

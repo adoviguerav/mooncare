@@ -97,6 +97,8 @@ How each dataset becomes readings:
 | LifeSnaps daily, computed | `mood_sad_days_14`, `mood_tense_days_14` | For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen (section 5) |
 | LifeSnaps hourly | `heart_rate` | One reading per person and hour |
 | Inspiration4 metabolic panel | `glucose`, `sodium`, `potassium`, `chloride`, `creatinine`, `urea_nitrogen`, `egfr`, `albumin`, `calcium` | 7 readings of each per crew member |
+| Inspiration4 blood count | `white_blood_cells`, `lymphocytes`, `hemoglobin` | 7 readings of each per crew member |
+| Inspiration4 cardiovascular and immune panels | `crp`, `fibrinogen`, `il_6`, `tnf_alpha`, `il_1_beta`, `ifn_gamma` | 7 readings of each per crew member (one draw is missing in the Alamar file) |
 
 An empty cell produces no reading.
 
@@ -246,11 +248,13 @@ Three ways to decide an alert. We build them in this order.
 | `urea_nitrogen`, `egfr` | Renal deterioration | 7 to 25 mg/dL, and eGFR below 60 mL/min/1.73 m² | The range columns in the Inspiration4 file. It gives eGFR no upper limit |
 | `albumin` | Nutritional deficiency risk. Abnormal values | 3.6 to 5.1 g/dL | The range columns in the Inspiration4 file |
 | `creatinine`, `calcium` | Renal deterioration. Calcium has no alert in ASTRA-HEALTH | 0.5 to 1.35 mg/dL and 8.6 to 10.4 mg/dL | The range columns in the Inspiration4 file. They differ by astronaut and draw, so the rule takes the widest: the lowest minimum and the highest maximum |
+| `white_blood_cells`, `lymphocytes`, `hemoglobin` | Lymphocyte reduction. Nutritional deficiency risk | 3.8 to 10.8 thousand/µL, 850 to 3900 cells/µL and 11.7 to 17.1 g/dL | The range columns in the Inspiration4 blood count file. Haemoglobin has two ranges, so the rule takes the widest |
+| Inflammation markers, CRP, fibrinogen | Increased inflammation, above baseline | No rule | The files give no range |
 | `skin_temperature` | Possible infection. Raised temperature plus symptoms | No rule yet | Needs a source |
 | Exercise | Insufficient exercise | No rule yet | Needs a source |
 | `mood_sad_days_14`, `mood_tense_days_14` | Behavioural changes. Deviations in self-report | Above 7 of the last 14 days, for Sad and for Tense or anxious | PHQ-2 and GAD-2: "more than half the days" over the last 2 weeks. An adaptation, to confirm with Àngels ([plan](plan.md), Mood rule) |
 
-There are thirteen rules: glucose, resting heart rate, sleep, the two mood ones and eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
+There are sixteen rules: glucose, resting heart rate, sleep, the two mood ones, eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium) and three from the blood count (white cells, lymphocytes and haemoglobin). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
 
 The mood rule needs no change to the data model. Each of the two `_days_14` indicators holds on how many of the 14 days ending on that day the mood was chosen. A day with no check-in counts as not chosen. The seed script computes them for every day with a mood entry, and the check-in recomputes the two of its own day. They are in the panel like any other indicator, and the frontend shows them with the mood card.
 

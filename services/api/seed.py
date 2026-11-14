@@ -12,7 +12,16 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SEEDS_DIR
+from app.config import (
+    BLOOD_COUNT_CSV,
+    CARDIOVASCULAR_PANEL_CSV,
+    IMMUNE_PANEL_ALAMAR_CSV,
+    IMMUNE_PANEL_EVE_CSV,
+    LIFESNAPS_DAILY_CSV,
+    LIFESNAPS_HOURLY_CSV,
+    METABOLIC_PANEL_CSV,
+    SEEDS_DIR,
+)
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import CrewRole
 from seed_content import INDICATORS, RULES, SOURCES
@@ -22,7 +31,7 @@ LAUNCH_DATE = date(2021, 9, 16)
 LANDING_DATE = date(2021, 9, 18)
 SAMPLE_LABEL_PATTERN = re.compile(r"([LR])[+-](\d+)")
 
-# Inspiration4 metabolic panel: indicator id to the column it comes from (docs/parameters_and_datasets.md).
+# Inspiration4 blood files: indicator id to the column it comes from (docs/parameters_and_datasets.md).
 # One reading per astronaut, draw and indicator. An empty cell produces no reading.
 METABOLIC_PANEL_COLUMNS = {
     "glucose": "glucose_value_milligram_per_deciliter",
@@ -36,6 +45,27 @@ METABOLIC_PANEL_COLUMNS = {
     "albumin": "albumin_value_gram_per_deciliter",
     "calcium": "calcium_value_milligram_per_deciliter",
 }
+BLOOD_COUNT_COLUMNS = {
+    "white_blood_cells": "white_blood_cell_count_value_thousand_per_microliter",
+    "lymphocytes": "absolute_lymphocytes_value_cells_per_microliter",
+    # The column says percent, but the values and their range (13.2 to 17.1) are grams per decilitre
+    "hemoglobin": "hemoglobin_value_percent",
+}
+CARDIOVASCULAR_PANEL_COLUMNS = {
+    "crp": "crp_concentration_picogram_per_milliliter",
+    "fibrinogen": "fibrinogen_concentration_nanogram_per_milliliter",
+}
+IMMUNE_PANEL_EVE_COLUMNS = {
+    "il_6": "il_6_concentration_picogram_per_milliliter",
+    "tnf_alpha": "tnfα_concentration_picogram_per_milliliter",
+}
+IMMUNE_PANEL_ALAMAR_COLUMNS = {
+    "il_1_beta": "il1b_concentration_npq",
+    "ifn_gamma": "ifng_concentration_npq",
+}
+# The file gives CRP in pg/mL, with values in the millions. It is stored in mg/L, the unit it is reported in.
+PICOGRAMS_PER_ML_IN_ONE_MG_PER_L = 1_000_000
+UNIT_DIVISORS = {"crp": PICOGRAMS_PER_ML_IN_ONE_MG_PER_L}
 
 # LifeSnaps daily file: indicator id to the column it comes from (docs/parameters_and_datasets.md, table 1).
 # One reading per person, day and indicator, at T00:00. An empty cell produces no reading.
@@ -85,9 +115,22 @@ class DatasetFiles:
     metabolic_panel: Path
     lifesnaps_hourly: Path
     lifesnaps_daily: Path
+    # The other Inspiration4 blood files. Without one, its indicators get no readings.
+    blood_count: Path | None = None
+    cardiovascular_panel: Path | None = None
+    immune_panel_eve: Path | None = None
+    immune_panel_alamar: Path | None = None
 
 
-DATASET_FILES = DatasetFiles(METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV)
+DATASET_FILES = DatasetFiles(
+    METABOLIC_PANEL_CSV,
+    LIFESNAPS_HOURLY_CSV,
+    LIFESNAPS_DAILY_CSV,
+    BLOOD_COUNT_CSV,
+    CARDIOVASCULAR_PANEL_CSV,
+    IMMUNE_PANEL_EVE_CSV,
+    IMMUNE_PANEL_ALAMAR_CSV,
+)
 
 
 CREW = [
@@ -129,18 +172,23 @@ def get_draw_date(sample_label: str) -> date:
     return LAUNCH_DATE - days if reference == "L" else LANDING_DATE + days
 
 
-def read_metabolic_panel_readings(metabolic_panel_csv: Path, inspiration4_code: str) -> list[Reading]:
+def read_blood_readings(blood_csv: Path, columns: dict[str, str], inspiration4_code: str) -> list[Reading]:
+    """The readings of one astronaut in one Inspiration4 blood file, for the indicators in `columns`."""
     readings = []
-    with metabolic_panel_csv.open(newline="", encoding="utf-8-sig") as csv_file:
-        for row in csv.DictReader(csv_file):
-            crew_code, _, sample_label = row["Sample Name"].split("_")
+    with blood_csv.open(newline="", encoding="utf-8-sig") as csv_file:
+        reader = csv.DictReader(csv_file)
+        sample_column = (reader.fieldnames or [""])[0]  # "Sample Name" or "Sample ID"
+        for row in reader:
+            # C003_serum_R+1, or C003_whole-blood_R+1_cbc in the blood count
+            crew_code, _, sample_label = row[sample_column].split("_")[:3]
             if crew_code != inspiration4_code:
                 continue
             taken_at = f"{get_draw_date(sample_label).isoformat()}T00:00"
-            for indicator_id, column in METABOLIC_PANEL_COLUMNS.items():
+            for indicator_id, column in columns.items():
                 # A file without the column gives no reading either: the real-datasets test catches a renamed column
                 if row.get(column):
-                    readings.append(Reading(indicator_id, taken_at, float(row[column])))
+                    value = float(row[column]) / UNIT_DIVISORS.get(indicator_id, 1)
+                    readings.append(Reading(indicator_id, taken_at, value))
     return readings
 
 
@@ -195,8 +243,21 @@ def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> lis
     daily_readings = read_daily_readings(
         dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days
     )
+    blood_files = [
+        (dataset_files.metabolic_panel, METABOLIC_PANEL_COLUMNS),
+        (dataset_files.blood_count, BLOOD_COUNT_COLUMNS),
+        (dataset_files.cardiovascular_panel, CARDIOVASCULAR_PANEL_COLUMNS),
+        (dataset_files.immune_panel_eve, IMMUNE_PANEL_EVE_COLUMNS),
+        (dataset_files.immune_panel_alamar, IMMUNE_PANEL_ALAMAR_COLUMNS),
+    ]
+    blood_readings = [
+        reading
+        for blood_csv, columns in blood_files
+        if blood_csv is not None
+        for reading in read_blood_readings(blood_csv, columns, pairing.inspiration4_code)
+    ]
     return (
-        read_metabolic_panel_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
+        blood_readings
         + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
         + daily_readings
         + build_mood_day_counts(daily_readings)
