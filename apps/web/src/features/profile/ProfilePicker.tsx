@@ -1,9 +1,16 @@
 import { Logo } from '../../components/Logo.tsx'
 import { fetchCrew } from '../../lib/api.ts'
 import type { CrewMember, CrewRole } from '../../lib/api.ts'
+import { endEmergency, startEmergency, useEmergency } from '../../lib/emergency.ts'
 import { useApi } from '../../hooks/useApi.ts'
 
-const ROLE_NAMES: Record<CrewRole, string> = { commander: 'Commander', crew_member: 'Crew member' }
+const ROLE_NAMES: Record<CrewRole, string> = {
+  commander: 'Commander',
+  medical_officer: 'Medical officer',
+  crew_member: 'Crew member',
+}
+// Who has the simulated cardiac event of the demo
+const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
 
 type Props = { onPick: (crewMember: CrewMember) => void }
@@ -11,6 +18,8 @@ type Props = { onPick: (crewMember: CrewMember) => void }
 export function ProfilePicker({ onPick }: Props) {
   const { data: crew, error } = useApi(fetchCrew)
   const loading = crew === null && error === null
+  const emergency = useEmergency()
+  const patient = crew?.find((crewMember) => crewMember.name === SIMULATED_PATIENT_NAME)
 
   return (
     <main className="screen picker">
@@ -39,6 +48,18 @@ export function ProfilePicker({ onPick }: Props) {
         </div>
         {loading && <p className="muted">Loading the crew. The first visit can take up to a minute.</p>}
       </section>
+      {emergency !== null ? (
+        <div className="simulation-banner" role="status">
+          <span>Simulation running: cardiac alert for {emergency.patientName}. Open a profile to see it.</span>
+          <button onClick={endEmergency}>End simulation</button>
+        </div>
+      ) : (
+        patient !== undefined && (
+          <button className="simulate" onClick={() => startEmergency(patient.id, patient.name)}>
+            Simulate a cardiac event
+          </button>
+        )
+      )}
     </main>
   )
 }

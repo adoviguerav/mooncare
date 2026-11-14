@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.baseline import BaselineDirection
 
 
-CrewRole = Literal["commander", "crew_member"]
+CrewRole = Literal["commander", "medical_officer", "crew_member"]
 
 
 class CrewMember(BaseModel):

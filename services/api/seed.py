@@ -184,6 +184,8 @@ CREW = [
         inspiration4_code="C002",
         lifesnaps_id="621e366567b776a24076a727",
         lifesnaps_offset_days=-75,
+        # The doctor on board: the one the emergency guide is for
+        role="medical_officer",
     ),
     CrewPairing(
         "Liam Novak",

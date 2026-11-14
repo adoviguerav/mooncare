@@ -124,9 +124,12 @@ Decided on 14 Nov: chest pain, then collapse, then CPR. Why: it is the emergency
 
 Tasks:
 
-- [ ] **E1. Guided steps screen**: fixed steps, one per screen, with timers where the procedure has them. It works with the network off.
-    - Done when: one tap from the panel opens it and it can be followed to the last step with the network off.
-- [ ] **E2. The steps of the two procedures**, copied from the checklist, each with its page. Nobody invents or rewrites a medical step. Àngels reads them before the demo.
+- [x] **E1. Guided emergency, as a state machine with voice.** Built on 14 Nov, after a mentor's advice: on a deep space mission there is a doctor on board, and the link is what sets us apart. The scene is the transit to Mars. A "Simulate a cardiac event" button starts it for Liam Novak. The commander (Eva Lindqvist) and the medical officer (Amara Okafor, a new role) get a red alert on the whole screen. The medical officer is guided block by block through the procedure: the voice reads each step, a timer runs where the manual gives a time, and a tap or a spoken answer picks the next block. The commander sees which block the medical officer is on, and the task the manual gives the second rescuer. The patient sees that help is coming.
+    - What is simulated, and the screen says so: the event and its detection. A model that detects it from in-flight heart data is not built, because there is no open dataset to train it.
+    - The emergency lives in the browser, so the profiles must be opened on the same device.
+    - The voice: one audio file per step, written once with ElevenLabs by `apps/web/scripts/generate-emergency-audio.mjs` and kept in the repo, so the app needs no key and no network. Without the files, the browser's own voice reads the same text.
+    - Done when: starting the simulation and opening the medical officer's profile leads from the alert to the last block.
+- [x] **E2. The steps**, copied word for word from NASA's Emergency Medical Procedures Manual for the ISS, procedure 1.102 AED ASSISTED CPR (09 APR 15, released under FOIA 16-JSC-F-00174), with its Figure 1. They are in `apps/web/src/lib/procedures.ts`. The manual Adolfo has is partial and has no chest pain procedure: the guide starts when the patient is unresponsive. Procedure 1.103 (ALS algorithm), where 1.102 hands over, is not loaded.
 - [ ] **E3. Update the documents**: R9 in the System_design and the demo script (P8).
 
 Looked at and left for the landing and the pitch, as next steps:

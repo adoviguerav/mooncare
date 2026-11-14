@@ -3,6 +3,6 @@
 INSERT INTO dat.crew_member (id, name, role) VALUES
   (1, 'Eva Lindqvist', 'commander'),
   (2, 'Mateo Vargas', 'crew_member'),
-  (3, 'Amara Okafor', 'crew_member'),
+  (3, 'Amara Okafor', 'medical_officer'),
   (4, 'Liam Novak', 'crew_member');
 SELECT setval(pg_get_serial_sequence('dat.crew_member', 'id'), (SELECT max(id) FROM dat.crew_member));

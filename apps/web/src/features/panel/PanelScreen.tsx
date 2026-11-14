@@ -39,17 +39,22 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
 
 type Props = {
   crewMember: CrewMember
+  emergencyRunning: boolean
+  onOpenEmergency: () => void
   onOpenIndicator: (indicatorId: string) => void
   onSwitchProfile: () => void
 }
 
-export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Props) {
+export function PanelScreen(props: Props) {
+  const { crewMember, onOpenIndicator, onSwitchProfile } = props
   const [savedCheckins, setSavedCheckins] = useState(0)
 
   return (
     <PanelContent
       key={savedCheckins}
       crewMember={crewMember}
+      emergencyRunning={props.emergencyRunning}
+      onOpenEmergency={props.onOpenEmergency}
       onOpenIndicator={onOpenIndicator}
       onSwitchProfile={onSwitchProfile}
       onCheckinSaved={() => setSavedCheckins(savedCheckins + 1)}
@@ -60,7 +65,14 @@ export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Pr
 type PanelContentProps = Props & { onCheckinSaved: () => void }
 
 // Remounted with a new key after each saved check-in, so the panel is fetched again
-function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinSaved }: PanelContentProps) {
+function PanelContent({
+  crewMember,
+  emergencyRunning,
+  onOpenEmergency,
+  onOpenIndicator,
+  onSwitchProfile,
+  onCheckinSaved,
+}: PanelContentProps) {
   const { data: panel, error } = useApi(() => fetchPanel(crewMember.id, TODAY))
   const [tab, setTab] = useState<Tab>(getInitialTab)
 
@@ -99,6 +111,16 @@ function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinS
           </button>
         </header>
 
+        {emergencyRunning && (
+          <button className="card status emergency-return" onClick={onOpenEmergency}>
+            <Icon name="alert" size={28} />
+            <span>
+              <strong>Cardiac alert in progress</strong>
+              <span className="muted">Simulation</span>
+            </span>
+            <span className="status-link">Open</span>
+          </button>
+        )}
         {error !== null && <p role="alert">Could not load the panel. {error}</p>}
         {panel === null && error === null && <PanelSkeleton />}
         {panel !== null && tab === 'today' && (

@@ -250,7 +250,7 @@ def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date(
     assert [(pairing.name, pairing.role) for pairing in CREW] == [
         ("Eva Lindqvist", "commander"),
         ("Mateo Vargas", "crew_member"),
-        ("Amara Okafor", "crew_member"),
+        ("Amara Okafor", "medical_officer"),
         ("Liam Novak", "crew_member"),
     ]
     for panel in panels:

@@ -1,6 +1,6 @@
 // The contracts of docs/mvp_architecture.md, section 3.
 
-export type CrewRole = 'commander' | 'crew_member'
+export type CrewRole = 'commander' | 'medical_officer' | 'crew_member'
 
 export type CrewMember = { id: number; name: string; role: CrewRole }
 
