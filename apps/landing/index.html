@@ -92,12 +92,30 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;opacity:.8;background-
 .stars{position:absolute;inset:0;z-index:0;opacity:.75;background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#cfe9ff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),radial-gradient(1px 1px at 60px 180px,#fff,transparent),radial-gradient(1px 1px at 140px 150px,#cfe9ff,transparent);background-size:200px 200px}
 .horizon{position:fixed;left:0;right:0;bottom:0;height:24vh;overflow:hidden;z-index:1;pointer-events:none}
 .earth{position:absolute;left:50%;top:5vh;transform:translateX(-50%);width:min(150vw,1300px);aspect-ratio:1;border-radius:50%;background:radial-gradient(ellipse at 28% 6%,#3f9d5e 0 9%,transparent 20%),radial-gradient(ellipse at 60% 8%,#3f9d5e 0 7%,transparent 17%),radial-gradient(circle at 50% 0%,#58b7f2,#1f66b8 28%,#0a2a5e 60%,#050d1a 100%);box-shadow:0 -12px 50px 4px rgba(47,216,255,.5),inset 0 16px 50px rgba(160,220,255,.4)}
-.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(560px,100%);margin-top:6px}
-@media(max-width:520px){.roles{grid-template-columns:1fr}}
-.role{display:flex;flex-direction:column;gap:4px;text-align:left;min-height:92px;padding:18px 22px;border-radius:16px;border:1px solid rgba(230,241,251,.24);background:rgba(11,26,46,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--ink);font:inherit;cursor:pointer;width:100%}
-.role b{font-size:22px}.role span{font-size:14px;color:var(--mute)}
-.role:hover{border-color:var(--cy)}.role.crew{border-color:var(--cy);box-shadow:0 0 24px rgba(47,216,255,.25)}
-.role:focus-visible{outline:2px solid var(--cy);outline-offset:3px}
+.pick{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;width:min(980px,100%);text-align:left;margin-top:4px}
+@media(max-width:860px){.pick{grid-template-columns:1fr}}
+.panel{border:1px solid rgba(230,241,251,.2);border-radius:20px;background:rgba(11,26,46,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:18px 18px 20px;animation:rise .6s both}
+.panel h2{margin:0 0 4px;font-size:19px}.panel .sub{margin:0 0 14px;color:var(--mute);font-size:14px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.cm{display:flex;gap:12px;align-items:center;min-height:64px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:rgba(5,13,26,.5);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;animation:rise .6s both}
+.cm:hover:not(:disabled){transform:translateY(-2px);border-color:var(--cy);box-shadow:0 0 22px rgba(47,216,255,.25)}
+.cm:disabled{opacity:.5;cursor:not-allowed}
+.cm.me{border-color:var(--cy);box-shadow:0 0 24px rgba(47,216,255,.3)}
+.cm:focus-visible,.gobtn:focus-visible{outline:2px solid var(--cy);outline-offset:3px}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;flex:none;border:2px solid var(--cy);background:radial-gradient(circle at 30% 25%,#14395e,#0b1a2e)}
+.cm:disabled .av{border-color:var(--line)}
+.cm b{display:block;font-size:15px}.cm small{color:var(--mute);font-size:12px}
+.live{color:#3ddc97;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.admp{display:flex;flex-direction:column;gap:12px;animation-delay:.15s}
+.admp ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--mute)}
+.admp li{display:flex;gap:8px;align-items:flex-start}.admp li:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cy);margin-top:7px;flex:none}
+.gobtn{margin-top:auto;min-height:48px;border-radius:12px;border:1px solid var(--cy);background:rgba(47,216,255,.12);color:var(--cy);font:inherit;font-weight:600;cursor:pointer;transition:background .2s,box-shadow .2s}
+.gobtn:hover{background:rgba(47,216,255,.22);box-shadow:0 0 22px rgba(47,216,255,.3)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;width:min(980px,100%);text-align:left;margin-top:6px}
+.feat div{padding:12px 14px;border-left:2px solid var(--cy);color:var(--mute);font-size:13px;animation:rise .6s .3s both}.feat b{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.panel,.cm,.feat div{animation:none}}
+#landing .logo{width:min(400px,80vw)}
 /* admin */
 .adm{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
 .adm header{margin-bottom:8px}
@@ -178,10 +196,19 @@ button:active{transform:scale(.97)}
       <path d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535" fill="none" stroke="#2fd8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <p class="tag2">A daily health panel for life beyond Earth</p>
-    <div class="roles">
-      <button class="role crew" id="goCrew" type="button"><b>Crew</b><span>Your daily check-in, vitals and checklist</span></button>
-      <button class="role" id="goAdmin" type="button"><b>Admin</b><span>Mission control: every crew member’s data</span></button>
+    <div class="pick">
+      <div class="panel">
+        <h2>Who’s checking in?</h2>
+        <p class="sub">Choose your profile to open your own health panel.</p>
+        <div class="cgrid" id="cgrid"></div>
+      </div>
+      <aside class="panel admp" aria-label="Admin access">
+        <div><h2>Mission control</h2><p class="sub" style="margin:0">For the onboard medical lead, not a crew profile.</p></div>
+        <ul><li>A short list of who needs attention</li><li>Crew-wide patterns, such as shared symptoms</li><li>A summary ready for the ground team</li></ul>
+        <button class="gobtn" id="goAdmin" type="button">Open admin panel</button>
+      </aside>
     </div>
+    <div class="feat"><div><b>Daily check-in</b>How you feel, in one tap</div><div><b>Live vitals</b>Heart, sleep, oxygen and more, against your own baseline</div><div><b>Alert action plan</b>What to do and how long you have</div><div><b>Private by design</b>Mood stays with you</div></div>
   </div>
 </section>
 
@@ -615,7 +642,6 @@ function fx(i){if(RM)return;const L=document.querySelectorAll("#quests .q")[i];i
 function party(){if(RM)return;const host=$("quests").closest(".card");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
 setInterval(()=>{const e=document.getElementById("liveHR");if(e&&!RM&&!$("crewApp").hidden)e.textContent=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2)},3000);
 // landing and role switching
-$("goCrew").onclick=()=>{location.hash="crew"};
 $("goAdmin").onclick=()=>{location.hash="admin"};
 $("homeBtn").onclick=()=>{location.hash="landing"};
 $("admHome").onclick=()=>{location.hash="landing"};
@@ -631,6 +657,8 @@ const CREW=[
 ];
 const rvw={},seen={},LOG=[];let cf="All",cdi=-1;
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+$("cgrid").innerHTML=CREW.map((c,i)=>{const ini=c.n.replace(/^(Cmdr\.|Dr\.)\s*/,"").split(" ").map(w=>w[0]).join("").slice(0,2);return`<button class="cm${c.live?" me":""}" type="button" data-i="${i}" style="animation-delay:${.1+i*.06}s" ${c.live?"":"disabled"}><span class="av" aria-hidden="true">${ini}</span><span><b>${esc(c.n)}</b><small>${esc(c.r)}</small>${c.live?'<br><span class="live">Live demo</span>':'<br><small>Opens with real data</small>'}</span></button>`}).join("");
+$("cgrid").onclick=e=>{const b=e.target.closest(".cm");if(b&&!b.disabled)location.hash="crew"};
 const nowT=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 function age(m){if(m<1)return"just now";if(m<60)return m+" min ago";const h=Math.floor(m/60),r=m%60;return h+" h"+(r?" "+r+" min":"")+" ago"}
 function crow(c){return c.live?Object.assign({},c,{hr:M[0].val,sleep:M[1].val,temp:M[3].val,act:M[4].val,glu:M[5].val,chk:Q.filter(q=>q[3]).length,seal:inc.ack}):c}
