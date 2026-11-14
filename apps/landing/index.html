@@ -465,7 +465,7 @@ $("grid").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.datas
 $("etaBar").onclick=()=>{location.hash="alerts"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.dataset.t;if(k==="alerts"){location.hash="alerts";return}if(k==="data"){location.hash="parameters";return}if(location.hash==="#parameters"){location.hash="dashboard";setTimeout(()=>b.click(),60);return}({today:$("home"),vitals:$("chips"),sleep:$("donut").closest(".card"),list:$("quests").closest(".card")})[k].scrollIntoView({behavior:"smooth",block:"start"})});
 // landing and role switching
-$("goCrew").onclick=()=>{location.hash=inc.ack?"crew":"alerts"};
+$("goCrew").onclick=()=>{location.hash="crew"};
 $("goAdmin").onclick=()=>{location.hash="admin"};
 $("homeBtn").onclick=()=>{location.hash="landing"};
 $("admHome").onclick=()=>{location.hash="landing"};
