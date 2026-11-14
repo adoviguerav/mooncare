@@ -51,11 +51,14 @@ CREATE TABLE cfg.rule (
   indicator_id     TEXT NOT NULL REFERENCES cfg.indicator (id),
   low              DOUBLE PRECISION,
   high             DOUBLE PRECISION,
+  baseline_direction  TEXT CHECK (baseline_direction IN ('above', 'below')),   -- personal baseline rule
+  baseline_deviations DOUBLE PRECISION CHECK (baseline_deviations > 0),
   title            TEXT NOT NULL,
   explanation      TEXT NOT NULL,
   action           TEXT NOT NULL,
   threshold_source TEXT NOT NULL,
-  CHECK (low IS NOT NULL OR high IS NOT NULL),
+  CHECK ((low IS NOT NULL OR high IS NOT NULL) <> (baseline_direction IS NOT NULL)),   -- fixed or baseline, never both
+  CHECK ((baseline_direction IS NULL) = (baseline_deviations IS NULL)),
   CHECK (low IS NULL OR high IS NULL OR low <= high)
 );
 
@@ -80,7 +83,7 @@ Choices and why:
 
 - One narrow `reading` table, not one column per indicator. A new indicator is new rows in `indicator`, `reading` and, if it has a limit, `rule`. No schema change (R8).
 - One numeric value per reading. Mood is seven yes or no indicators, stored as 1 or 0, because a LifeSnaps day can hold several moods. In the daily file 981 days have one mood, 973 have two, 335 have three and 1 has four.
-- No `alert` table. A reading is an alert when `value < rule.low OR value > rule.high` for a rule of its indicator. Storing that again would duplicate what `reading` and `rule` already say.
+- No `alert` table. A reading is an alert when `value < rule.low OR value > rule.high` for a rule of its indicator, or when it is beyond the personal limit of a baseline rule (section 5). Storing that again would duplicate what `reading` and `rule` already say.
 - A rule may set only one side. Use two rules when the low side and the high side need different text.
 - Limits live only in `rule`. The frontend never hardcodes one.
 - Dataset subject ids (the LifeSnaps id, the Inspiration4 crew code) stay in the seed script. The app does not need them.
@@ -196,7 +199,7 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
     "source": { "id": "...", "name": "...", "url": "...", "citation": "..." }
   },
   "rules": [
-    { "id": 1, "low": 65.0, "high": 99.0, "title": "...", "explanation": "...", "action": "...", "threshold_source": "..." }
+    { "id": 1, "low": 65.0, "high": 99.0, "baseline_direction": null, "baseline_deviations": null, "title": "...", "explanation": "...", "action": "...", "threshold_source": "..." }
   ],
   "readings": [
     { "taken_at": "2021-09-13T00:00", "value": 90.0, "broken_rule_id": null },
@@ -244,7 +247,7 @@ sequenceDiagram
 Three ways to decide an alert. We build them in this order.
 
 1. Fixed range. The reading is outside a fixed low and high limit. It is in the base.
-2. Personal baseline. The reading is compared with that person's own usual values. It comes after the base and adds columns to the rule table.
+2. Personal baseline. The reading is compared with that person's own usual values. Built for five indicators (below). It adds two columns to the rule table.
 3. Anomaly models. A model learns each indicator and flags what is unusual. It is the stretch goal Indicator models in the System_design, built only if step 2 is not enough.
 
 | Indicator | Alert in the data document | Limits | Where they come from |
@@ -259,11 +262,22 @@ Three ways to decide an alert. We build them in this order.
 | `white_blood_cells`, `lymphocytes`, `hemoglobin` | Lymphocyte reduction. Nutritional deficiency risk | 3.8 to 10.8 thousand/µL, 850 to 3900 cells/µL and 11.7 to 17.1 g/dL | The range columns in the Inspiration4 blood count file. Haemoglobin has two ranges, so the rule takes the widest |
 | Inflammation markers, CRP, fibrinogen | Increased inflammation, above baseline | No rule | The files give no range |
 | `vo2_max` | Reduced cardiovascular fitness | Below 32.9 mL/kg/min | NASA-STD-3001, Volume 1, V1 4001. The value is the watch's estimate |
-| `skin_temperature` | Possible infection. Raised temperature plus symptoms | No rule yet | Needs a source |
+| `skin_temperature` | Possible infection. Raised temperature plus symptoms | Personal baseline, above | See below. No fixed limit, because no dataset has symptoms |
+| `resting_heart_rate` (second rule), `heart_rate_variability`, `spo2`, `stress_score` | Tachycardia above the personal baseline. Altered HRV. SpO2 falling from baseline. Stress rising from baseline | Personal baseline: above for heart rate, below for the other three | See below. On the watch's stress score a lower number means more stress |
 | Exercise | Insufficient exercise | No rule yet | Needs a source |
 | `mood_sad_days_14`, `mood_tense_days_14` | Behavioural changes. Deviations in self-report | Above 7 of the last 14 days, for Sad and for Tense or anxious | PHQ-2 and GAD-2: "more than half the days" over the last 2 weeks. An adaptation, to confirm with Àngels ([plan](plan.md), Mood rule) |
 
-There are seventeen rules, one of them with a NASA limit (VO2 max): glucose, resting heart rate, sleep, the two mood ones, eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium) and three from the blood count (white cells, lymphocytes and haemoglobin). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
+There are seventeen fixed-range rules, one of them with a NASA limit (VO2 max): glucose, resting heart rate, sleep, the two mood ones, eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium) and three from the blood count (white cells, lymphocytes and haemoglobin). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Exercise is shown with no rule until someone brings a limit and a source.
+
+Personal baseline rules. Five more rules, with no fixed limit: `baseline_direction` and `baseline_deviations` are set and `low` and `high` are null.
+
+- The usual value is the median of that person's readings of the 28 days before the reading. A deviation is the median distance of those readings to their median, times 1.4826. Median, not mean, so one extreme day does not move the limit.
+- The alert comes when the reading is more than `baseline_deviations` deviations above, or below, the usual value. It needs at least 14 readings in the window, and readings that vary.
+- The 3 deviations are our choice, not a medical limit. On the LifeSnaps data of the four crew members the five rules give 19 alerts in all, about one every two weeks per person. At 2.5 it is twice as many. Asking for two days in a row leaves 4, nearly all of them resting heart rate.
+- Resting heart rate keeps its fixed rule (above 100 bpm) and gets this one too. The fixed one is checked first.
+- Only indicators with a reading every day. The blood tests have 7 draws per person, too few for this method: their alerts against the pre-flight baseline are not built.
+- The limit is computed when read, in `app/baseline.py`. The history chart draws no limit line for these rules, because the limit moves with the readings.
+- To see three fire on the same day: Liam Novak on 2021-10-03 (resting heart rate and skin temperature up, heart rate variability down).
 
 The mood rule needs no change to the data model. Each of the two `_days_14` indicators holds on how many of the 14 days ending on that day the mood was chosen. A day with no check-in counts as not chosen. The seed script computes them for every day with a mood entry, and the check-in recomputes the two of its own day. They are in the panel like any other indicator, and the frontend shows them with the mood card.
 
@@ -281,9 +295,9 @@ Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an
 
 ## Starting decisions
 
-- Rules. Seventeen fixed-range rules (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
+- Rules. Seventeen fixed-range rules and five personal baseline rules (section 5). To change one, edit its entry in `seed_content.py`.
 - Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add an entry to the rules in `seed_content.py`.
-- Temperature. No rule for now, because no dataset has symptoms. The panel shows `skin_temperature`.
+- Temperature. No fixed limit, because no dataset has symptoms. `skin_temperature` has a personal baseline rule.
 - Dates. The Inspiration4 readings keep their real dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 is shifted by -77 days, so the last day with a mood entry (2022-01-17) falls on 2021-11-01, the day before the demo date. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. The other three are paired the same way:
 
     | Crew | Inspiration4 | LifeSnaps volunteer | Shift in days | On the demo date |
