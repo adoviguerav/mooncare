@@ -105,7 +105,7 @@ Pain points are numbered as in section 1. Why: it shows what each requirement is
 | # | Pain point | Covered by | Gap |
 | :-- | :-- | :-- | :-- |
 | 1 | Crew solves problems alone | R4, R10, R11 | None in the MVP |
-| 2 | Medical care without Earth (EIMO) | R7, R9, R10. Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The link to the ground is decided (section 6) and not built yet |
+| 2 | Medical care without Earth (EIMO) | R7, R9, R10. The moon server works on its own and syncs with the earth server when it chooses (section 5). Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The earth view of the dashboard is not built yet |
 | 3 | Mental health and team | R2, R3, and sleep in R1 | Mood has no rule, so it never warns (MVP architecture, section 5). Nothing covers the team risk (Not decided yet, below) |
 | 4 | Nutrition | Glucose in R1 | Diet, hydration and body mass have no data (data document, Table 3) |
 | 5 | Long-term physical damage | Exercise and heart rate in R1, R7 | Eyes, bone and ECG have no data (data document, Table 3) |
@@ -191,38 +191,46 @@ In this order:
 
 ### Target architecture
 
-The ship works on its own and the ground follows behind. Why: it is pain point 2 (EIMO) as a diagram. Solid lines are built. Dashed lines are planned.
+The moon works on its own and the ground follows behind. Why: it is pain point 2 (EIMO) as a diagram. Solid lines are built. Dashed lines are planned.
+
+One backend, deployed twice: as the **MOON** server on board and as the **EARTH** server on the ground (`NODE_ROLE` in its configuration). Each has its own PostgreSQL database with the same structure. The moon chooses when to connect: it sends its readings and check-ins to earth, and downloads the configuration and the crew from earth. The dashboard shows either one: the moon view for the crew, the earth view for the ground.
 
 ```mermaid
 flowchart TD
-    dashboard["Web dashboard (tablet)"]
+    dashboard["Web dashboard (tablet), moon view"]
     apps["Mobile apps"]
     sensors["Sensors and devices"]
-    ship["SHIP backend · PostgreSQL · rules and alerts"]
+    moon["MOON backend · PostgreSQL · rules and alerts"]
     ai["Onboard AI (only advises)"]
-    ground["GROUND backend"]
-    surgeon["Flight surgeon"]
-    dashboard <-->|Local network| ship
-    apps <-.->|Local network| ship
-    sensors -.-> ship
-    ship <-.-> ai
-    ship <-.->|"Asynchronous sync, queued when the link is down"| ground
-    ground <-.-> surgeon
+    earth["EARTH backend · PostgreSQL"]
+    ground_view["Web dashboard, earth view"]
+    surgeon["Flight surgeon and mission control"]
+    dashboard <-->|Local network| moon
+    apps <-.->|Local network| moon
+    sensors -.-> moon
+    moon <-.-> ai
+    moon -->|"Push when the moon chooses: readings and check-ins"| earth
+    earth -->|"Pull when the moon chooses: configuration and crew"| moon
+    earth <-.-> ground_view
+    ground_view <-.-> surgeon
 ```
 
 | Part | What it does | Status |
 | :-- | :-- | :-- |
-| Web dashboard | The tablet app each astronaut uses | Built (MVP) |
-| SHIP backend | Stores the readings in a PostgreSQL database, applies the rules and returns the alerts. Everything the crew needs runs here | Built (MVP) |
+| Web dashboard, moon view | The tablet app each astronaut uses | Built (MVP) |
+| MOON backend | Stores the readings in its own PostgreSQL database, applies the rules and returns the alerts. Everything the crew needs runs here, with or without a link. Syncs with earth when asked, and records every sync | Built |
+| EARTH backend | The same code with `NODE_ROLE=earth` and its own database. Holds what the moon has sent, and the configuration and crew the moon downloads. Records every sync | Built |
+| Sync between moon and earth | Push and pull, started by the moon. Each table is written on one side only, so nothing has to be merged. Without a link the moon keeps everything and sends it next time ([moon_earth_sync.md](moon_earth_sync.md)) | Built |
+| Web dashboard, earth view | The same dashboard pointed at the earth server: each crew member's panel as of the last sync, and the sync history | Planned |
+| Accounts and sign-in | Each backend signs its own users in. Users are managed on earth and downloaded by the moon, so the crew can sign in without a link (section 6) | Planned |
 | Mobile apps | The same panel on a phone | Planned |
 | Sensors and devices | Send readings on their own (Bio-Monitor shirt, wrist tracker, glucose monitor). Today the readings come from the datasets and the check-in | Planned |
 | Onboard AI | Guides emergencies by voice and explains alerts. It only advises (E1 to E6) | Planned (stretch) |
-| GROUND backend | Receives a copy of what the ship sends when the link is up. The ship never waits for it | Planned |
-| Flight surgeon | Sees on the ground the full panel of each crew member (section 6) | Planned |
+| Flight surgeon and mission control | See on the ground the full panel of each crew member, through the earth view (section 6) | Planned |
 
-One database is enough for now. A second one on the ground comes with the GROUND backend.
+Where it runs: for development, both servers and both databases on one laptop. After the hackathon, two services on Render and two Supabase projects, one of each for the moon and for earth.
 
-How the built part works is in the [MVP architecture](mvp_architecture.md).
+How the panel, the history and the alerts work is in the [MVP architecture](mvp_architecture.md). How the two servers synchronise is in [moon_earth_sync.md](moon_earth_sync.md).
 
 ---
 
@@ -234,7 +242,15 @@ How the built part works is in the [MVP architecture](mvp_architecture.md).
 
 - Health data is private day to day. In an emergency, crewmates are alerted and see only the data needed to act, while it lasts.
 - The flight surgeon on the ground sees the full panel of each crew member: indicators, history and alerts. Why: they are the crew's doctor, as on the ISS today. Privacy between crewmates on board does not change.
-- Data goes one way, from the ship to the ground. The ground looks and does not answer. With the link down, the ship keeps working and what is new waits in a queue until the link is back.
+- Crew data goes from the moon to earth: readings and check-ins, sent when the moon chooses to sync. Configuration and crew go the other way: they are managed on earth and the moon downloads them. Each kind of data is written on one side only, so earth can never overwrite what the crew recorded, and the moon can never change a rule.
+- With the link down, the moon keeps working and keeps everything. The next sync sends what earth does not have yet. Every sync, successful or not, is recorded on both servers.
+- The two servers trust each other through a shared secret, which never goes into the repository.
+
+### Accounts (decided, to build)
+
+- Each backend has its own sign-in and checks every request. The frontend never decides who sees what.
+- The users and their roles are stored in both databases. They are managed on earth and the moon downloads them, so the crew can sign in with no link.
+- There are public endpoints only for what is needed before signing in.
 
 ### Not decided yet
 
@@ -243,7 +259,8 @@ How the built part works is in the [MVP architecture](mvp_architecture.md).
 | Sharing is up to each astronaut; data is shared only with their health professional, or with a formal agreement | Proposed |  |
 | Only a doctor on board can see everyone's data | Proposed |  |
 | The commander can see everyone's data | Proposed |  |
-| Individual accounts with a password, like Netflix profiles | Proposed |  |
+| The roles and what each one may see: astronaut, commander, crew medical officer, flight surgeon, mission control, administrator | Open |  |
+| Whether an astronaut can change their password on the moon, when users are managed on earth | Open |  |
 
 ---
 

@@ -66,7 +66,7 @@ Everything the data document has data for is loaded and shown, in an app that lo
 
 Data and backend:
 
-- [ ] **N1. Merge the link to the ground of Ivan** (G1, G2). Review it, pass the tests, merge it into `main` and build the Render database again, because it changes the data model.
+- [x] **N1. Merge the link to the ground of Ivan** (G1, G2). Merged on 14 Nov. The same backend runs as the moon server or the earth server (`NODE_ROLE`), each with its own database, and the moon sends its readings to earth when asked (`POST /api/sync`). With no earth server set, the app works as before. How it works: [moon_earth_sync.md](moon_earth_sync.md).
     - Done when: the tests pass on `main` and the Vercel link still shows the panel of Crew 1.
 - [ ] **N2. Blood analytes of the Inspiration4 metabolic panel** (data document, Table 2): sodium, potassium, chloride, creatinine, urea, eGFR, albumin and calcium. Each one gets a rule with the normal range the NASA file gives for it, like glucose.
     - Done when: the panel of Crew 1 on 2021-09-19 shows the potassium alert (3.0 mmol/L, range 3.5 to 5.3).

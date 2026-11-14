@@ -6,7 +6,7 @@ in the same commit. Nothing here creates or alters a table.
 
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import BigInteger, DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -70,3 +70,25 @@ class Reading(Base):
     indicator_id: Mapped[str] = mapped_column(ForeignKey("cfg.indicator.id"), primary_key=True)
     taken_at: Mapped[datetime] = mapped_column(primary_key=True)
     value: Mapped[float]
+
+
+# The sync_seq column of the synchronised tables (database/postgresql/schema/03_sync.sql) is left out of the
+# classes above on purpose: the database fills it in, and only app/sync.py reads it.
+
+
+class SyncOperation(Base):
+    """One synchronisation between the moon and earth, successful or not. Append only."""
+
+    __tablename__ = "sync_operation"
+    __table_args__ = {"schema": "his"}
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    direction: Mapped[str]
+    peer: Mapped[str]
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str]
+    row_count: Mapped[int]
+    from_seq: Mapped[int | None] = mapped_column(BigInteger)
+    to_seq: Mapped[int | None] = mapped_column(BigInteger)
+    error: Mapped[str | None]
