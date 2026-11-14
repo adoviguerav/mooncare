@@ -14,6 +14,7 @@ from pathlib import Path
 
 from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SEEDS_DIR
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
+from app.schemas import CrewRole
 from seed_content import INDICATORS, RULES, SOURCES
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
@@ -54,6 +55,7 @@ class CrewPairing:
     inspiration4_code: str
     lifesnaps_id: str
     lifesnaps_offset_days: int = 0
+    role: CrewRole = "crew_member"
 
 
 @dataclass(frozen=True)
@@ -82,6 +84,7 @@ CREW = [
         inspiration4_code="C003",
         lifesnaps_id="621e2f9167b776a240011ccb",
         lifesnaps_offset_days=-77,
+        role="commander",
     ),
     # +132 days puts the last day of this volunteer's tense fortnight (2021-06-23) on the demo date.
     CrewPairing(
@@ -254,8 +257,8 @@ def build_rules_sql() -> str:
 
 
 def build_crew_sql(crew: list[CrewPairing]) -> str:
-    rows = [(position, pairing.name) for position, pairing in enumerate(crew, start=1)]
-    return with_header(build_inserts("dat.crew_member", ("id", "name"), rows) + reset_identity("dat.crew_member"))
+    rows = [(position, pairing.name, pairing.role) for position, pairing in enumerate(crew, start=1)]
+    return with_header(build_inserts("dat.crew_member", ("id", "name", "role"), rows) + reset_identity("dat.crew_member"))
 
 
 def build_readings_sql(crew: list[CrewPairing], dataset_files: DatasetFiles) -> str:

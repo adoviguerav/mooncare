@@ -61,7 +61,7 @@ def build_client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Itera
         hourly.write_text(HOURLY, encoding="utf-8")
         daily = tmp_path / "daily.csv"
         daily.write_text(DAILY, encoding="utf-8")
-        load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, daily)
+        load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER, role="commander")], metabolic_panel, hourly, daily)
         return TestClient(app)
 
     app.dependency_overrides[get_session] = get_test_session
@@ -78,7 +78,7 @@ def test_lists_the_crew(client: TestClient) -> None:
     response = client.get("/api/crew")
 
     assert response.status_code == 200
-    assert response.json() == {"crew": [{"id": 1, "name": "Crew 1"}]}
+    assert response.json() == {"crew": [{"id": 1, "name": "Crew 1", "role": "commander"}]}
 
 
 def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_breaks(

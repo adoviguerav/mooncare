@@ -1,6 +1,8 @@
 import { fetchCrew } from '../../lib/api.ts'
-import type { CrewMember } from '../../lib/api.ts'
+import type { CrewMember, CrewRole } from '../../lib/api.ts'
 import { useApi } from '../../hooks/useApi.ts'
+
+const ROLE_NAMES: Record<CrewRole, string> = { commander: 'Commander', crew_member: 'Crew member' }
 
 type Props = { onPick: (crewMember: CrewMember) => void }
 
@@ -16,6 +18,7 @@ export function ProfilePicker({ onPick }: Props) {
         {crew?.map((crewMember) => (
           <button key={crewMember.id} className="profile" onClick={() => onPick(crewMember)}>
             {crewMember.name}
+            <span className="muted">{ROLE_NAMES[crewMember.role]}</span>
           </button>
         ))}
       </div>

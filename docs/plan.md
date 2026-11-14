@@ -150,8 +150,17 @@ From here on nobody adds features. We only fix what is broken. Both teams, in th
 These wait until every task above is ticked. They are the planned parts of the target architecture (System_design, section 5).
 
 - [ ] **Onboard AI.** The emergency assistant, E1 to E6.
-- [ ] **Link to the ground.** The queue of messages to Earth and what the flight surgeon sees.
-- [ ] **Two profile types: commander and crew member.** It adds a `role` to `crew_member` and to `GET /api/crew`, and a commander screen. Decide first what the commander sees (System_design, section 2, Not decided yet).
+- [ ] **Link to the ground.** The first thing after the MVP. With a link the app works as medical care does today on the ISS: the flight surgeon on the ground follows the crew. Without a link the ship keeps working on its own and the ground catches up later (System_design, section 5). If there is no time to build it, it goes on the architecture slide (P10) and in the next steps of the pitch (P9). Decided on 14 Nov:
+    - The flight surgeon sees the full panel of each crew member: indicators, history and alerts. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
+    - One way only, ship to ground. The ground looks and does not answer.
+    - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
+    - [ ] **G1. Link switch and queue** (backend). With the link off, new readings are saved on board and wait in a queue. With the link on, the queue empties. Each sync is recorded in the `his` schema. It adds to the data model, so agree it first.
+        - Done when: with the link off, a check-in shows on the crew panel and not on the ground. After turning the link on, the ground shows it.
+    - [ ] **G2. Ground panel** (backend). The same panel and history, built only from what has reached the ground, plus when the last data arrived.
+        - Done when: the ground panel of Crew 1 shows the glucose alert and the time of the last data received.
+    - [ ] **G3. Flight surgeon screen** (frontend). The four crew members, who has an alert and when their last data arrived. A tap opens that crew member's full panel. The link switch is on this screen.
+        - Done when: with the link off, the screen says since when it has no data, and the crew app works as before.
+- [ ] **Two profile types: commander and crew member.** Done: `crew_member` has a `role`, `GET /api/crew` returns it and the profile picker shows it. Crew 1 is the commander. Left: a commander screen. Decide first what the commander sees (System_design, section 2, Not decided yet).
 - [ ] **Mobile app** (`apps/mobile`).
 - [ ] The other stretch goals, in the order of the System_design, section 2.
 

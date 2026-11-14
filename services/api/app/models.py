@@ -59,6 +59,7 @@ class CrewMember(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
+    role: Mapped[str]
 
 
 class Reading(Base):

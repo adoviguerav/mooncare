@@ -2,6 +2,7 @@ from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
+import psycopg
 import pytest
 
 from seed import (
@@ -115,6 +116,35 @@ def test_loads_the_resting_heart_rate_sleep_and_mood_rules_with_their_sourced_li
     ]
 
 
+def test_stores_the_role_of_each_crew_member_and_crew_member_is_the_default(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+    crew = [
+        CrewPairing("Crew 1", "C003", VOLUNTEER, role="commander"),
+        CrewPairing("Crew 2", "C001", OTHER_VOLUNTEER),
+    ]
+
+    load_seeds(crew, metabolic_panel, hourly)
+
+    assert fetch_all("SELECT name, role FROM dat.crew_member ORDER BY id") == [
+        ("Crew 1", "commander"),
+        ("Crew 2", "crew_member"),
+    ]
+
+
+def test_the_database_rejects_a_role_that_is_not_commander_or_crew_member(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    with pytest.raises(psycopg.errors.CheckViolation):
+        fetch_all("INSERT INTO dat.crew_member (name, role) VALUES ('Crew 9', 'pilot') RETURNING id")
+
+
 def get_latest_values(readings: list[Reading], up_to_day: str) -> dict[str, float]:
     """The latest value of each indicator up to the end of a day, as the panel shows it."""
     in_time = sorted((r for r in readings if r.taken_at[:10] <= up_to_day), key=lambda r: r.taken_at)
@@ -124,7 +154,12 @@ def get_latest_values(readings: list[Reading], up_to_day: str) -> dict[str, floa
 def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date() -> None:
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
-    assert [pairing.name for pairing in CREW] == ["Crew 1", "Crew 2", "Crew 3", "Crew 4"]
+    assert [(pairing.name, pairing.role) for pairing in CREW] == [
+        ("Crew 1", "commander"),
+        ("Crew 2", "crew_member"),
+        ("Crew 3", "crew_member"),
+        ("Crew 4", "crew_member"),
+    ]
     for panel in panels:
         assert set(panel) == {indicator.id for indicator in INDICATORS}
     assert [panel["glucose"] for panel in panels] == [36.0, 84.0, 44.0, 43.0]

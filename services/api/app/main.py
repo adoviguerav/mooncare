@@ -88,7 +88,7 @@ app = FastAPI(title="Real Telemetry API")
 @app.get("/api/crew")
 def get_crew(session: DbSession) -> CrewResponse:
     crew = session.scalars(select(models.CrewMember).order_by(models.CrewMember.id))
-    return CrewResponse(crew=[CrewMember(id=member.id, name=member.name) for member in crew])
+    return CrewResponse(crew=[CrewMember.model_validate(member, from_attributes=True) for member in crew])
 
 
 @app.get("/api/crew/{crew_member_id}/panel")

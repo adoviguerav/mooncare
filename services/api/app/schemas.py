@@ -4,9 +4,13 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+CrewRole = Literal["commander", "crew_member"]
+
+
 class CrewMember(BaseModel):
     id: int
     name: str
+    role: CrewRole
 
 
 class CrewResponse(BaseModel):
