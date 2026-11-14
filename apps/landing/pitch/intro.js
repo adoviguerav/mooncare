@@ -1,0 +1,470 @@
+// Moon Care intro animation, by Alex (apps/landing/moon-care-landing.html).
+// Adapted for the pitch page: draws inside the hero section instead of the whole window,
+// pauses when the hero is off screen, and takes its tagline from the page language.
+(function () {
+// =====================================================================
+//  Settings
+// =====================================================================
+let TAGLINE         = ['A DAILY HEALTH PANEL', 'FOR LIFE BEYOND EARTH'];   // set per language by setIntroTagline()
+const MOON_LOOP_S    = 8;       // seconds for one full phase cycle and one full turn of the logo moon
+const EARTH_FINAL_D  = 0.15;    // final Earth diameter as a fraction of the screen width
+const EARTH_START_S  = 0.5;     // when the camera starts to drift away from the Earth
+const EARTH_END_S    = 12;      // when the Earth reaches its corner
+const LOGO_FADE_IN_S = [2.5, 5.5];
+const STAR_SPIN      = 0.012;   // radians per second (very slow)
+
+// =====================================================================
+//  Setup
+// =====================================================================
+const params = new URLSearchParams(location.search);
+const canvas = document.getElementById('intro');
+const host = canvas.parentElement;
+const ctx = canvas.getContext('2d');
+let isDark = true;
+const fixedAt = params.has('at') ? parseFloat(params.get('at')) : null;   // freeze the scene at a time (for screenshots)
+
+let W, H, dpr;
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2) * (params.has('scale') ? +params.get('scale') : 1);
+  const r = host.getBoundingClientRect(); W = Math.round(r.width); H = Math.round(r.height);
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  if (!running()) renderStatic();
+}
+
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// =====================================================================
+//  Logo: MOON over CARE, the second O is a moon that goes through its phases
+// =====================================================================
+const D2R = Math.PI / 180;
+const marks = [
+  { lon: -25, lat: 30, r: 22, k: 'm' }, { lon: 12, lat: 24, r: 17, k: 'm' }, { lon: 40, lat: 8, r: 15, k: 'm' },
+  { lon: -52, lat: -4, r: 19, k: 'm' }, { lon: -12, lat: -18, r: 14, k: 'm' }, { lon: 22, lat: -30, r: 10, k: 'm' },
+  { lon: 75, lat: -12, r: 9, k: 'm' }, { lon: 105, lat: 30, r: 12, k: 'm' }, { lon: 140, lat: -8, r: 15, k: 'm' },
+  { lon: 170, lat: 28, r: 11, k: 'm' }, { lon: 205, lat: -26, r: 17, k: 'm' }, { lon: 235, lat: 14, r: 13, k: 'm' },
+  { lon: 270, lat: -6, r: 10, k: 'm' }, { lon: 300, lat: 34, r: 12, k: 'm' },
+  { lon: -12, lat: -52, r: 8, k: 'c' }, { lon: 30, lat: -50, r: 6, k: 'c' }, { lon: 60, lat: 38, r: 5, k: 'c' },
+  { lon: -70, lat: 34, r: 5, k: 'c' }, { lon: 3, lat: -4, r: 6, k: 'c' }, { lon: -38, lat: -34, r: 5, k: 'c' },
+  { lon: 55, lat: -20, r: 4, k: 'c' }, { lon: -30, lat: 60, r: 5, k: 'c' }, { lon: 88, lat: 10, r: 5, k: 'c' },
+  { lon: 120, lat: -40, r: 7, k: 'c' }, { lon: 150, lat: 50, r: 5, k: 'c' }, { lon: 185, lat: 5, r: 6, k: 'c' },
+  { lon: 222, lat: 48, r: 5, k: 'c' }, { lon: 255, lat: -40, r: 7, k: 'c' }, { lon: 285, lat: 20, r: 4, k: 'c' },
+  { lon: 320, lat: -15, r: 6, k: 'c' }, { lon: 340, lat: 45, r: 5, k: 'c' },
+].map(m => ({ lon: m.lon * D2R, lat: m.lat * D2R, r: m.r * D2R, k: m.k }));
+
+function litPath(c, R, phase) {                       // origin at the moon centre
+  const k = Math.cos(phase * Math.PI * 2);            // 1 new ... -1 full
+  c.save();
+  if (phase >= 0.5) c.scale(-1, 1);                   // waning: light on the left
+  c.beginPath();
+  c.arc(0, 0, R, -Math.PI / 2, Math.PI / 2, false);
+  for (let i = 0; i <= 48; i++) {
+    const t = Math.PI / 2 - (i / 48) * Math.PI;
+    c.lineTo(R * k * Math.cos(t), R * Math.sin(t));
+  }
+  c.closePath();
+  c.restore();
+}
+
+const moonCanvas = document.createElement('canvas');
+function drawMoon(c, mx, my, R, progress, ink, scalePx, ring) {
+  // The moon is drawn on its own canvas so the craters are real holes (transparent), not a flat colour.
+  const dims = 2 * R + 12;
+  const px = Math.ceil(dims * scalePx);
+  if (moonCanvas.width !== px) { moonCanvas.width = px; moonCanvas.height = px; }
+  const m = moonCanvas.getContext('2d');
+  m.setTransform(1, 0, 0, 1, 0, 0);
+  m.clearRect(0, 0, px, px);
+  m.setTransform(px / dims, 0, 0, px / dims, px / 2, px / 2);
+
+  m.strokeStyle = ring || ink; m.globalAlpha = ring ? 0.95 : 0.55; m.lineWidth = ring ? 2.4 : 1.6;           // dark side outline
+  m.beginPath(); m.arc(0, 0, R, 0, Math.PI * 2); m.stroke();
+  m.globalAlpha = 1;
+
+  m.save();
+  litPath(m, R, progress); m.clip();
+  m.fillStyle = ink; m.fillRect(-R - 2, -R - 2, 2 * R + 4, 2 * R + 4);
+  m.globalCompositeOperation = 'destination-out';
+  m.strokeStyle = '#000'; m.fillStyle = '#000';
+  const spin = progress * Math.PI * 2;
+  for (const k of marks) {
+    const lon = k.lon + spin, cl = Math.cos(lon);
+    if (cl <= 0.04) continue;
+    const x = R * Math.cos(k.lat) * Math.sin(lon), y = -R * Math.sin(k.lat);
+    m.beginPath();
+    m.ellipse(x, y, Math.max(R * Math.sin(k.r) * cl, 0.5), R * Math.sin(k.r), 0, 0, Math.PI * 2);
+    if (k.k === 'm') m.fill(); else { m.lineWidth = 1.4; m.stroke(); }
+  }
+  m.restore();
+
+  m.strokeStyle = ink; m.lineWidth = 1.6;                                  // terminator stroke
+  litPath(m, R, progress); m.stroke();
+
+  c.drawImage(moonCanvas, mx - dims / 2, my - dims / 2, dims, dims);
+}
+
+function drawTracked(c, text, cx, y, spacing) {
+  let w = -spacing;
+  for (const ch of text) w += c.measureText(ch).width + spacing;
+  let x = cx - w / 2;
+  for (const ch of text) { c.fillText(ch, x, y); x += c.measureText(ch).width + spacing; }
+}
+
+// Logo block in local units: centred on (0,0), about 700 x 372.
+function drawLogo(c, cx, cy, k, pxRatio, progress, ink, alpha) {
+  if (alpha <= 0) return;
+  c.save();
+  c.globalAlpha = alpha;
+  c.translate(cx, cy);
+  c.scale(k, k);
+  c.fillStyle = ink; c.strokeStyle = ink;
+  c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+
+  const FONT = '"Space Grotesk", "Segoe UI Light", "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  const fontPx = 112, P = 176;                                  // letter size and column pitch
+  c.font = `300 ${fontPx}px ${FONT}`;
+  const capH = c.measureText('M').actualBoundingBoxAscent;
+  const base1 = -106, base2 = base1 + 150;
+  const colX = i => (i - 1.5) * P;
+  const R = capH / 2 + 1;
+
+  const row1 = ['M', 'O', null, 'N'], row2 = ['C', 'A', 'R', 'E'];
+  c.textAlign = 'center';
+  // Pitch page: the app's logo colours, white at the top fading to cyan (#2fd8ff) at the bottom.
+  const rowGrad = base => { const g = c.createLinearGradient(0, base - capH, 0, base); g.addColorStop(0, '#e6f1fb'); g.addColorStop(1, '#2fd8ff'); return g; };
+  c.fillStyle = rowGrad(base1);
+  row1.forEach((ch, i) => { if (ch) c.fillText(ch, colX(i), base1); });
+  c.fillStyle = rowGrad(base2);
+  row2.forEach((ch, i) => c.fillText(ch, colX(i), base2));
+  c.textAlign = 'left';
+  const mx = colX(2), my = base1 - capH / 2;
+  const glow = c.createRadialGradient(mx, my, 0, mx, my, R * 2.6);
+  glow.addColorStop(0, 'rgba(47,216,255,0.45)'); glow.addColorStop(1, 'rgba(47,216,255,0)');
+  c.fillStyle = glow; c.beginPath(); c.arc(mx, my, R * 2.6, 0, Math.PI * 2); c.fill();
+  drawMoon(c, mx, my, R, progress, '#d8f6ff', k * pxRatio, '#2fd8ff');
+  c.fillStyle = ink; c.strokeStyle = '#2fd8ff';
+
+  c.globalAlpha = alpha * 0.35; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(-60, base2 + 48); c.lineTo(60, base2 + 48); c.stroke();
+  c.globalAlpha = alpha;
+  c.font = `400 26px ${FONT}`;
+  TAGLINE.forEach((line, i) => drawTracked(c, line, 0, base2 + 104 + i * 38, 10));
+  c.restore();
+}
+
+const logoScale = () => Math.min(W * (W < 700 ? 0.80 : 0.56) / 700, H * 0.40 / 372, 1.6);
+const logoCenter = () => [W / 2, H * (W < 700 ? 0.33 : 0.37)];
+
+// =====================================================================
+//  Stars: very slow rotation, twinkle, a few sparkle
+// =====================================================================
+const stars = (() => {
+  const rnd = mulberry32(7), list = [];
+  for (let i = 0; i < 1800; i++) {
+    const big = rnd() < 0.06;
+    list.push({
+      a: rnd() * Math.PI * 2, r: Math.sqrt(rnd()),
+      s: big ? 1.3 + rnd() * 0.9 : 0.4 + rnd() * 0.8,
+      b: big ? 0.8 + rnd() * 0.2 : 0.25 + rnd() * 0.6,
+      tw: 0.6 + rnd() * 2.2, ph: rnd() * 6.28,
+      col: rnd() < 0.7 ? 0 : (rnd() < 0.5 ? 1 : 2),
+      spark: rnd() < 0.07, per: 5 + rnd() * 9, sph: rnd(),
+    });
+  }
+  return list;
+})();
+const STAR_COL = ['#ffffff', '#bcd4ff', '#ffe6bf'];
+
+function drawStars(t, e) {
+  const cx = W / 2, cy = H / 2, maxR = Math.hypot(W, H) / 2 * 1.03;
+  const n = Math.min(stars.length, Math.floor(W * H / 2600));
+  const px = (1 - e) * W * 0.045, py = -(1 - e) * H * 0.03;     // small parallax during the camera shift
+  const fadeIn = smooth(0, 1.2, t);
+  for (let i = 0; i < n; i++) {
+    const s = stars[i];
+    const ang = s.a + t * STAR_SPIN;
+    const x = cx + Math.cos(ang) * s.r * maxR + px, y = cy + Math.sin(ang) * s.r * maxR + py;
+    if (x < -4 || y < -4 || x > W + 4 || y > H + 4) continue;
+    const tw = 0.72 + 0.28 * Math.sin(t * s.tw + s.ph);
+    ctx.globalAlpha = s.b * tw * fadeIn;
+    ctx.fillStyle = STAR_COL[s.col];
+    if (s.s < 1.2) ctx.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s);
+    else { ctx.beginPath(); ctx.arc(x, y, s.s / 2 + 0.2, 0, 6.2832); ctx.fill(); }
+    if (s.spark) {
+      const f = ((t / s.per) + s.sph) % 1;
+      if (f < 0.14) {
+        const k = Math.sin(f / 0.14 * Math.PI), L = (7 + s.s * 5) * k;
+        ctx.globalAlpha = 0.85 * k * fadeIn; ctx.strokeStyle = STAR_COL[s.col]; ctx.lineWidth = 0.9;
+        ctx.beginPath(); ctx.moveTo(x - L, y); ctx.lineTo(x + L, y); ctx.moveTo(x, y - L); ctx.lineTo(x, y + L); ctx.stroke();
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// =====================================================================
+//  Meteors: showers every ~20 s and a lone one now and then. Pre-computed from a seed, so they are repeatable.
+// =====================================================================
+const meteors = (() => {
+  const list = [], rnd = mulberry32(2026);
+  const add = (t0, big) => list.push({
+    t0, dur: 0.55 + rnd() * 0.6, x0: 0.25 + rnd() * 0.95, y0: -0.12 + rnd() * 0.55,
+    ang: Math.PI - 0.45 + (big ? (rnd() - 0.5) * 0.12 : (rnd() - 0.5) * 0.5),
+    speed: 1000 + rnd() * 700, len: 130 + rnd() * 160, w: 1 + rnd() * 1.1,
+  });
+  let t = 7;                                              // showers
+  while (t < 3600) {
+    const n = 5 + Math.floor(rnd() * 6);
+    for (let i = 0; i < n; i++) add(t + rnd() * 3.5, true);
+    t += 15 + rnd() * 14;
+  }
+  t = 4;                                                  // lone meteors
+  while (t < 3600) { add(t, false); t += 6 + rnd() * 9; }
+  return list;
+})();
+
+function drawMeteors(t) {
+  const sc = W / 1280;
+  ctx.lineCap = 'round';
+  for (const m of meteors) {
+    const age = t - m.t0;
+    if (age < 0 || age > m.dur) continue;
+    const p = age / m.dur, env = Math.sin(p * Math.PI);
+    const dx = Math.cos(m.ang), dy = Math.sin(m.ang), d = m.speed * sc * age;
+    const hx = m.x0 * W + dx * d, hy = m.y0 * H + dy * d, L = m.len * sc * (0.4 + 0.6 * env);
+    const tx = hx - dx * L, ty = hy - dy * L;
+    const g = ctx.createLinearGradient(hx, hy, tx, ty);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.95 * env) + ')');
+    g.addColorStop(0.25, 'rgba(190,215,255,' + (0.45 * env) + ')');
+    g.addColorStop(1, 'rgba(150,190,255,0)');
+    ctx.strokeStyle = g; ctx.lineWidth = m.w * Math.max(0.8, sc);
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.globalAlpha = 0.8 * env; ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(hx, hy, 1.1 * Math.max(0.8, sc), 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1;
+  }
+}
+
+// =====================================================================
+//  Earth: procedural, semi-realistic (continents, ocean depth, ice caps, clouds, night lights, atmosphere)
+// =====================================================================
+const TW = 768, TH = 384, CW = 512, CH = 256, S = 720;
+let earthReady = false;
+let texRGB, texOcean, texLights, texCloud, eDiff, eSpec, eRim, eDay, eLon, eLonC, eRow, eRowC, eAlpha;
+const earthCanvas = document.createElement('canvas'); earthCanvas.width = earthCanvas.height = S;
+const earthCtx = earthCanvas.getContext('2d');
+const earthImg = earthCtx.createImageData(S, S);
+
+function buildEarth() {
+  // --- 3D value noise ---
+  const rnd = mulberry32(1969), PERM = new Uint8Array(512), LAT = new Float32Array(256);
+  const base = Array.from({ length: 256 }, (_, i) => i);
+  for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [base[i], base[j]] = [base[j], base[i]]; }
+  for (let i = 0; i < 512; i++) PERM[i] = base[i & 255];
+  for (let i = 0; i < 256; i++) LAT[i] = rnd();
+  const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+  const hv = (a, b, c) => LAT[PERM[PERM[PERM[a] + b] + c]];
+  function vn(x, y, z) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const xf = x - xi, yf = y - yi, zf = z - zi, X = xi & 255, Y = yi & 255, Z = zi & 255;
+    const u = fade(xf), v = fade(yf), w = fade(zf);
+    const x00 = lerp(hv(X, Y, Z), hv(X + 1, Y, Z), u), x10 = lerp(hv(X, Y + 1, Z), hv(X + 1, Y + 1, Z), u);
+    const x01 = lerp(hv(X, Y, Z + 1), hv(X + 1, Y, Z + 1), u), x11 = lerp(hv(X, Y + 1, Z + 1), hv(X + 1, Y + 1, Z + 1), u);
+    return lerp(lerp(x00, x10, v), lerp(x01, x11, v), w);
+  }
+  function fbm(x, y, z, oct) {
+    let a = 0.5, s = 0, f = 1, n = 0;
+    for (let i = 0; i < oct; i++) { s += a * vn(x * f, y * f, z * f); n += a; f *= 2.03; a *= 0.5; }
+    return s / n;
+  }
+
+  // --- terrain texture (equirectangular) ---
+  texRGB = new Uint8Array(TW * TH * 3); texOcean = new Uint8Array(TW * TH); texLights = new Uint8Array(TW * TH);
+  const THR = 0.535;
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  for (let v = 0; v < TH; v++) {
+    const lat = (0.5 - (v + 0.5) / TH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat), alat = Math.abs(lat);
+    for (let u = 0; u < TW; u++) {
+      const lon = ((u + 0.5) / TW) * Math.PI * 2 - Math.PI;
+      const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
+      const warp = 0.22 * (fbm(x * 3.1 + 9, y * 3.1 + 4, z * 3.1 + 1, 4) - 0.5);
+      const n = fbm(x * 1.55 + 3, y * 1.55 + 5, z * 1.55 + 7, 6) + warp;
+      const i = v * TW + u;
+      let col, ocean = 0, lights = 0;
+      if (n > THR) {
+        const e = clamp((n - THR) / (1 - THR) * 2.2);
+        const moist = fbm(x * 2.4 + 20, y * 2.4 + 11, z * 2.4 + 3, 4);
+        col = mix([32, 74, 42], [70, 118, 56], smooth(0.35, 0.65, moist));
+        const band = smooth(0.1, 0.32, alat) * (1 - smooth(0.5, 0.75, alat));            // desert belts
+        col = mix(col, [184, 156, 102], band * smooth(0.58, 0.4, moist));
+        col = mix(col, [118, 106, 96], smooth(0.5, 0.8, e));                              // mountains
+        const snow = Math.max(smooth(1.05, 1.3, alat + 0.12 * (moist - 0.5)), smooth(0.8, 1.0, e));
+        col = mix(col, [238, 242, 247], snow);
+        const city = fbm(x * 16, y * 16, z * 16, 2);
+        if (alat < 1.15 && e < 0.45 && city > 0.58) lights = Math.round(255 * smooth(0.58, 0.72, city) * (1 - smooth(0.2, 0.45, e)));
+      } else {
+        const depth = clamp((THR - n) / 0.28);
+        col = mix([34, 104, 160], [5, 22, 66], Math.pow(depth, 0.7));
+        ocean = 1;
+        const ice = smooth(1.2, 1.38, alat + 0.12 * (fbm(x * 4, y * 4, z * 4, 3) - 0.5));
+        if (ice > 0) { col = mix(col, [236, 242, 248], ice); ocean = ice > 0.5 ? 0 : 1; }
+      }
+      texRGB[i * 3] = col[0]; texRGB[i * 3 + 1] = col[1]; texRGB[i * 3 + 2] = col[2];
+      texOcean[i] = ocean; texLights[i] = lights;
+    }
+  }
+
+  // --- cloud texture ---
+  texCloud = new Uint8Array(CW * CH);
+  for (let v = 0; v < CH; v++) {
+    const lat = (0.5 - (v + 0.5) / CH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+    for (let u = 0; u < CW; u++) {
+      const lon = ((u + 0.5) / CW) * Math.PI * 2 - Math.PI;
+      const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
+      const c = fbm(x * 2.1 + 40, y * 3.2 + 8, z * 2.1 + 19, 5);
+      texCloud[v * CW + u] = Math.round(255 * 0.88 * smooth(0.5, 0.7, c));
+    }
+  }
+
+  // --- per-pixel sphere tables (they only depend on the view, so they are computed once) ---
+  const N = S * S;
+  eDiff = new Float32Array(N); eSpec = new Float32Array(N); eRim = new Float32Array(N); eDay = new Float32Array(N);
+  eLon = new Float32Array(N); eLonC = new Float32Array(N); eRow = new Int32Array(N); eRowC = new Int32Array(N); eAlpha = new Uint8Array(N);
+  const roll = -0.38, pitch = 0.42, cr = Math.cos(roll), sr = Math.sin(roll), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  let L = [-0.72, 0.42, 0.55]; const ll = Math.hypot(...L); L = L.map(q => q / ll);
+  const Hh = [L[0], L[1], L[2] + 1]; const hl = Math.hypot(...Hh); const Hv = Hh.map(q => q / hl);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const i = y * S + x, nx = (x + 0.5 - S / 2) / (S / 2), ny = -(y + 0.5 - S / 2) / (S / 2), r2 = nx * nx + ny * ny;
+    if (r2 >= 1) { eAlpha[i] = 0; continue; }
+    const r = Math.sqrt(r2), nz = Math.sqrt(1 - r2);
+    eAlpha[i] = Math.round(255 * clamp((1 - r) * S * 0.5));
+    const dp = nx * L[0] + ny * L[1] + nz * L[2];
+    const dayS = smooth(-0.1, 0.6, dp);
+    eDay[i] = smooth(-0.12, 0.3, dp);
+    eDiff[i] = 0.07 + 0.93 * dayS;
+    eSpec[i] = Math.pow(Math.max(0, nx * Hv[0] + ny * Hv[1] + nz * Hv[2]), 70) * 0.7 * eDay[i];
+    eRim[i] = Math.pow(1 - nz, 2.6) * (0.25 + 0.75 * dayS);
+    const x2 = nx * cr - ny * sr, y2 = nx * sr + ny * cr;              // tilt of the Earth's axis
+    const y3 = y2 * cp - nz * sp, z3 = y2 * sp + nz * cp;              // we look from slightly above the equator
+    const lat = Math.asin(clamp(y3, -1, 1)), lon = Math.atan2(x2, z3);
+    const fu = (lon + Math.PI) / (Math.PI * 2), fv = clamp((0.5 - lat / Math.PI), 0, 0.9999);
+    eLon[i] = fu * TW; eLonC[i] = fu * CW;
+    eRow[i] = Math.floor(fv * TH) * TW; eRowC[i] = Math.floor(fv * CH) * CW;
+  }
+  earthReady = true;
+}
+
+function renderEarth(rot, cloudRot) {
+  if (!earthReady) buildEarth();
+  const d = earthImg.data;
+  const wrap = (v, m) => ((v % m) + m) % m;
+  const sh = wrap(-rot / (Math.PI * 2) * TW, TW), shc = wrap(-cloudRot / (Math.PI * 2) * CW, CW);
+  for (let i = 0, N = S * S; i < N; i++) {
+    const a = eAlpha[i], o = i * 4;
+    if (a === 0) { d[o + 3] = 0; continue; }
+    let u = eLon[i] + sh; if (u >= TW) u -= TW; const ti = eRow[i] + (u | 0);
+    let uc = eLonC[i] + shc; if (uc >= CW) uc -= CW;
+    const ca = texCloud[eRowC[i] + (uc | 0)] / 255, k = ti * 3, lit = eDiff[i];
+    let r = texRGB[k], g = texRGB[k + 1], b = texRGB[k + 2];
+    r = (r * (1 - ca) + 255 * ca) * lit; g = (g * (1 - ca) + 255 * ca) * lit; b = (b * (1 - ca) + 255 * ca) * lit;
+    const sp = texOcean[ti] * eSpec[i] * (1 - ca) * 255; r += sp; g += sp; b += sp * 0.95;
+    const city = texLights[ti] * (1 - eDay[i]) * (1 - ca * 0.9) / 255;
+    r += 255 * city; g += 170 * city; b += 70 * city;
+    const rim = eRim[i] * 0.9; r += 70 * rim; g += 130 * rim; b += 255 * rim;
+    d[o] = r > 255 ? 255 : r; d[o + 1] = g > 255 ? 255 : g; d[o + 2] = b > 255 ? 255 : b; d[o + 3] = a;
+  }
+  earthCtx.putImageData(earthImg, 0, 0);
+}
+
+let lastEarthUpdate = -1;
+function earthGeometry(e) {
+  const Rf = EARTH_FINAL_D * W / 2;
+  const R0 = Math.max(H * 0.95, Rf * 4);
+  const cx0 = W * 0.30, cy0 = H + R0 * 0.38;                         // camera starts close, with the horizon low on the screen
+  const cx1 = W - Rf * 1.25, cy1 = H - Rf * 1.25;
+  return { R: R0 * Math.pow(Rf / R0, e), cx: lerp(cx0, cx1, e), cy: lerp(cy0, cy1, e) };
+}
+
+function drawEarth(t, e) {
+  const { R, cx, cy } = earthGeometry(e);
+  if (cy - R > H || cx + R < 0) return;
+  const now = performance.now();
+  if (fixedAt !== null || now - lastEarthUpdate > 70 || lastEarthUpdate < 0) {
+    renderEarth(t * 0.07, t * 0.085); lastEarthUpdate = now;
+  }
+  const appear = smooth(0, 1.2, t);
+  ctx.globalAlpha = appear;
+  const g = ctx.createRadialGradient(cx, cy, R * 0.96, cx, cy, R * 1.22);   // atmosphere glow
+  g.addColorStop(0, 'rgba(90,150,255,0.42)'); g.addColorStop(0.35, 'rgba(70,120,230,0.14)'); g.addColorStop(1, 'rgba(60,110,230,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, 6.2832); ctx.fill();
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(earthCanvas, cx - R, cy - R, R * 2, R * 2);
+  ctx.globalAlpha = 1;
+}
+
+// =====================================================================
+//  Scenes
+// =====================================================================
+const moonProgress = t => params.has('t') ? parseFloat(params.get('t')) : ((t % MOON_LOOP_S) / MOON_LOOP_S);
+
+function drawDark(t) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#01030a'); g.addColorStop(1, '#091226');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const e = easeInOut(clamp((t - EARTH_START_S) / (EARTH_END_S - EARTH_START_S)));
+  drawStars(t, e);
+  drawMeteors(t);
+  drawEarth(t, e);
+  const [cx, cy] = logoCenter();
+  drawLogo(ctx, cx, cy, logoScale(), dpr, moonProgress(t), '#f2f5fa', smooth(LOGO_FADE_IN_S[0], LOGO_FADE_IN_S[1], t));
+}
+
+function drawLight() {
+  // Light mode is a still logo only: no stars, no Earth, no animation.
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  const [cx, cy] = logoCenter();
+  drawLogo(ctx, cx, cy, logoScale(), dpr, params.has('t') ? parseFloat(params.get('t')) : 0.5, '#0a0f1a', 1);
+}
+
+// =====================================================================
+//  Loop and controls
+// =====================================================================
+let raf = null, startTime = performance.now();
+const running = () => raf !== null;
+
+function loop(now) {
+  drawDark((now - startTime) / 1000);
+  raf = requestAnimationFrame(loop);
+}
+function renderStatic() {
+  if (isDark) drawDark(fixedAt ?? EARTH_END_S + 1); else drawLight();
+}
+function start() {
+  if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+  if (isDark && fixedAt === null) { startTime = performance.now(); lastEarthUpdate = -1; raf = requestAnimationFrame(loop); }
+  else renderStatic();
+}
+
+addEventListener('resize', () => { resize(); });
+// --- pitch page additions ---
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let pausedAt = null;
+function pause() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; pausedAt = performance.now(); } }
+function resume() {
+  if (raf !== null || RM) return;
+  if (pausedAt !== null) { startTime += performance.now() - pausedAt; pausedAt = null; }
+  raf = requestAnimationFrame(loop);
+}
+window.setIntroTagline = function (lines) { TAGLINE = lines; if (!running()) renderStatic(); };
+resize();
+if (RM) renderStatic(); else start();
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? resume() : pause())).observe(host);
+}
+document.addEventListener('visibilitychange', () => document.hidden ? pause() : resume());
+})();
