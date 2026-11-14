@@ -28,7 +28,21 @@ Our framing: the daily panel is designed for long missions in general, and Artem
 - Risks come both from being in space and from being human: the first medical evacuation from the ISS, in January 2026, was for something NASA said was unrelated to spaceflight.
 - On long missions, astronauts are largely responsible for spotting these changes in themselves. On the ISS, medical care works because of three things: real-time contact with an on-call flight surgeon, evacuation to Earth in under 24 hours, and regular resupply. On the Moon, evacuation takes 3 to 11 days, resupply is limited and communication drops; from Mars, a message takes up to 20 minutes each way.
 - Today almost the whole chain (monitor, diagnose, decide, treat) happens on Earth. The useful question is which of those steps must work on board when Earth can't help.
-- NASA lists this as an open gap. There is no system yet that guides medical procedures on board or processes medical information for the crew (HRP gaps Med07 and ExMC 4.01).
+- NASA calls the answer Earth Independent Medical Operations (EIMO): medical care moves from Earth to the crew as missions get farther away (Levin 2023). It is still open. HRP gap Medical-701 asks for tools that let astronauts give medical care on their own.
+
+### NASA's pain points, in priority order
+
+NASA's Human System Risk Board rates 30 health risks as green, yellow or red for each type of mission (Antonsen 2023, Table 4). These are the red ones a health tool can act on. The order is ours: the closer to today the mission where a risk turns red, the higher it goes. Why: it decides what we build, show and say first.
+
+| # | Pain point | NASA risk | Red from |
+| :-- | :-- | :-- | :-- |
+| 1 | The crew has to solve problems alone, with less help from the ground | Human System Integration Architecture | Short stays on the lunar surface |
+| 2 | Medical care has to work without Earth (EIMO) | Medical Conditions | Lunar missions over 30 days |
+| 3 | Mental health and how the crew works together | Behavioral Medical, Team | Team from lunar orbit over 30 days. Behavioral Medical from Mars |
+| 4 | Nutrition | Food and Nutrition | Mars |
+| 5 | Long-term physical damage | SANS (eyes), Bone Fracture, Cardiovascular, Renal Stone | Long Mars missions |
+
+The other red risks (EVA injury, dynamic loads, dust, crew egress, medication) depend on the vehicle and the suit, not on a health panel.
 
 ### Users and key scenarios
 
@@ -84,6 +98,18 @@ A daily health panel used inside the spacecraft. Why: it is what the brief asks 
 - **R10.** Each indicator warns when a value is out of range, explains it and says what to do.
 - **R11.** Each indicator shows its source and the rule behind it, so anyone can check the science.
 
+### How the scope answers NASA's pain points
+
+Pain points are numbered as in section 1. Why: it shows what each requirement is for and which gap to close first.
+
+| # | Pain point | Covered by | Gap |
+| :-- | :-- | :-- | :-- |
+| 1 | Crew solves problems alone | R4, R10, R11 | None in the MVP |
+| 2 | Medical care without Earth (EIMO) | R7, R9, R10. Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The queue of messages to Earth is not decided (section 6) |
+| 3 | Mental health and team | R2, R3, and sleep in R1 | Mood has no rule, so it never warns (MVP architecture, section 5). Nothing covers the team risk (Not decided yet, below) |
+| 4 | Nutrition | Glucose in R1 | Diet, hydration and body mass have no data (data document, Table 3) |
+| 5 | Long-term physical damage | Exercise and heart rate in R1, R7 | Eyes, bone and ECG have no data (data document, Table 3) |
+
 ### Stretch goals (nice to have after MVP)
 
 In this order:
@@ -105,6 +131,7 @@ In this order:
 | Item | Proposed / Open | Owner |
 | :-- | :-- | :-- |
 | Commander weekly report on the crew, plus an alert when someone shows a worrying trend, like a Duolingo classroom (Alex) | Proposed. Suggested out, it conflicts with the privacy decision in section 6 |  |
+| Team risk (pain point 3): how the crew works together. Nothing in the scope covers it, and the commander report above is the only proposal that touches it | Open |  |
 
 ---
 
@@ -190,14 +217,36 @@ built in: [MVP architecture](mvp_architecture.md)  REVIEW pending
 
 **Why it's here:** It turns the design into work. It comes last because it depends on everything above: we can only plan what to build and show once we know what we are building.
 
+The tasks, the two teams and the dates are in the [plan](plan.md).
+
 ### Inputs collected so far, from the meeting
 
 - Build: with AI (Claude Code, Adolfo's account), a front end and back end are doable in about 2 days. Build the base platform first, then split into parallel workstreams: gamification, AI, emergency (Adolfo).
 - Demo: a normal scenario, then an emergency simulation, such as a heart attack with CPR guidance (Adolfo, Alex).
 - Demo. Run the flow live and bring a backup recording.
 - Pitch. We found no open human data for the most severe effects (bone, muscle, eyesight). The panel tracks exercise, the main countermeasure, and their alerts are ready for when data exists.
-- Priority rule. Among the indicators we have data for, show first the ones behind the risks NASA rates highest for a long mission (Antonsen 2023, Table 4). Next steps follow the same rule, as a separate list.
+- Priority rule. Among the indicators we have data for, show first the ones behind the risks NASA rates highest for a long mission (Antonsen 2023, Table 4). Next steps follow the same rule, as a separate list. With the order in section 1 that gives: mood, glucose, heart rate, exercise, then sleep and temperature, whose risks (Sleep Loss, Immune) are yellow.
 - Team: Àngels knows 3D animators for character or background design
+
+### Pitch: NASA's pain points and our answer
+
+In the pitch, name each pain point and answer it, in this order, two lines each: what goes wrong in deep space, then what Real Telemetry does about it. Why: the judges hear the problem and our solution together, in NASA's own terms. The order and the sources are in section 1.
+
+1. **The crew is alone.**
+    - Problem: on the ISS the ground follows every step. Farther out the crew has to handle problems alone, and NASA already rates this red for a short stay on the Moon.
+    - Our answer: the panel is built for a crew with no doctor. Every indicator says how to measure it, why it matters and what to do, and shows its source.
+2. **Medical care without Earth. Say "Earth Independent Medical Operations (EIMO)".**
+    - Problem: today monitoring, diagnosis and decisions happen on Earth. From Mars a message takes up to 20 minutes each way and nobody can be evacuated. NASA calls the fix EIMO and still lists it as open.
+    - Our answer: everything runs on board. The panel warns and says what to do, and the CPR flow guides the crew with or without a link.
+3. **Mental health and team.**
+    - Problem: months of isolation with the same few people. NASA rates behavioural health and team work red for Mars.
+    - Our answer: a daily check-in of mood, next to sleep, kept over months so a slow change shows. How the team works together is what we don't cover yet.
+4. **Nutrition.**
+    - Problem: a Mars crew can't count on resupply, and NASA rates nutrition red for Mars.
+    - Our answer: blood glucose from real astronauts (NASA, Inspiration4), with an alert from the data's own range. Logging diet and hydration on the tablet is next.
+5. **Long-term damage.**
+    - Problem: eyes, bone, heart and kidneys change over a long mission, and NASA rates them red for a long Mars mission.
+    - Our answer: the panel tracks exercise, the main countermeasure, and heart rate, and keeps every history. The alerts for eyes and bone are defined and waiting for data.
 
 ## 8. On-site research for the MVP design
 
@@ -255,6 +304,7 @@ Medical care on the ISS and far from Earth:
 Risk by mission type:
 
 - NASA Human Research Roadmap: <https://humanresearchroadmap.nasa.gov/explore/> (medical conditions risk: <https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=95>)
+- NASA HRP gap Medical-701, in-flight medical capabilities: <https://humanresearchroadmap.nasa.gov/Gaps/gap.aspx?i=716>
 - Platts, 2024, risks by mission: <https://ntrs.nasa.gov/api/citations/20240013142/downloads/Platts%20Maine%202024%20final.pdf>
 - Antonsen et al., 2023, NASA's risk method: <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10485075/>
 

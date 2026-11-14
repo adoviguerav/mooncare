@@ -234,7 +234,7 @@ Three ways to decide an alert. We build them in this order.
 | Exercise | Insufficient exercise | No rule yet | Needs a source |
 | The six mood indicators | Behavioural changes. Deviations in self-report | No rule yet | Needs a definition |
 
-The MVP starts with these three rules. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. The other three indicators are shown with no rule until someone brings a limit and a source.
+The MVP starts with these three rules. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. The other three indicators are shown with no rule until someone brings a limit and a source. The mood rule is the first one to define. Why: mood is our only MVP indicator for mental health, which NASA rates red for Mars (System_design, section 1).
 
 ## 6. Build order
 
