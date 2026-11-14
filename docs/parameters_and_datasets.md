@@ -72,6 +72,30 @@ Important for long missions and already defined in ASTRA-HEALTH, but we found no
 | Cortisol | IMMUNE, MIND | No alert of its own in ASTRA-HEALTH | L3 | Saliva kit and analyser, periodically | No open data |
 | Microbiome | VITAL | Gastrointestinal disturbance. Assess diet, hydration and infection | L4 | Stool kit, analysed with a molecular platform | No open data |
 
+## How often each parameter is measured
+
+The base of the measurement routines (System_design, section 1, pain point 1 in practice). Device and frequency are the ones ASTRA-HEALTH gives in Tables 1 and 2. "Who does it" is ours: a sensor that measures on its own asks nothing of the astronaut, and a measurement by hand becomes a task. The last column is how often the readings really come in our datasets.
+
+| Parameter | Measured with | How often (ASTRA-HEALTH) | Who does it | In our data |
+| :-- | :-- | :-- | :-- | :-- |
+| Heart rate, resting heart rate, heart rate variability | Wearable ECG or smartwatch. On the ISS, the Bio-Monitor shirt | Continuous | Sensor | Every hour, and one resting value a day |
+| Sleep duration, efficiency and time awake | Wrist tracker | Every night | Sensor | Every day |
+| Skin temperature | Wearable | Daily | Sensor | Every day |
+| Activity (very active minutes, steps) | Wearable sensor | Continuous | Sensor | Every day |
+| Blood oxygen (SpO2) | Pulse oximeter or wearable | Daily or continuous | Sensor | Every day |
+| Breathing rate | Wearable sensor | Continuous or daily | Sensor | Every day |
+| Stress score of the watch | Watch | Daily | Sensor | Every day |
+| Cardiovascular fitness (VO2 max) | Watch estimate. On a mission, a standard exercise test | Not given | Sensor | Every day |
+| Radiation dose rate | Detectors inside the ship | Continuous | Sensor of the ship | Every day (mean of the day) |
+| Mood, with fatigue | Self-assessment on the tablet | Daily | Astronaut | Every day with a check-in |
+| Anxiety and affect questionnaires | Questionnaire on the tablet | Weekly or periodically | Astronaut | Every 7 to 14 days |
+| Blood glucose | Glucometer or continuous monitor | Not given | Astronaut | 7 draws in 9 months |
+| Electrolytes, kidney function, albumin, calcium | Portable chemistry analyser, finger blood | Periodically | Astronaut | 7 draws in 9 months |
+| White cells, lymphocytes, haemoglobin | Portable haematology analyser, finger blood | Periodically | Astronaut | 7 draws in 9 months |
+| Inflammation markers, CRP, fibrinogen | Microfluidic analyser or blood test, venous blood | Periodically | Astronaut | 7 draws in 9 months |
+
+What is missing to build the routines: ASTRA-HEALTH says "periodically" for the blood tests and gives no interval. The Inspiration4 draws do not help, because they were taken before and after a 3-day flight, not on a schedule in flight.
+
 ## Cross-module alert we can show with real data
 
 ASTRA-HEALTH defines 12 alerts that combine modules. One of them can be fired with the data we have, for the same person.

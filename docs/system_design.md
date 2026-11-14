@@ -44,6 +44,16 @@ NASA's Human System Risk Board rates 30 health risks as green, yellow or red for
 
 The other red risks (EVA injury, dynamic loads, dust, crew egress, medication) depend on the vehicle and the suit, not on a health panel.
 
+#### Pain point 1 in practice: the crew plans its own health routines
+
+On the ISS the ground plans the crew's day, medical tasks included, and the crew cannot rearrange it (Marquez, NASA, 2024). Health already runs on routines there: a periodic health exam the crew members do on each other every month and a private medical conference every week (NASA, 2006). On a Mars mission there are times with no link at all, so NASA is testing tools for the crew to plan its own day (Playbook, on the ISS and in the CHAPEA analog). That the crew will plan its health measurements itself is our reading of these sources: none of them says it about medical tasks in particular.
+
+What it asks of the app: for each parameter, know with what it is measured and how often, tell the astronaut what is due today, and count a task as done only when its reading has arrived. The table with the device and the cadence of each parameter is in the [data document](parameters_and_datasets.md), "How often each parameter is measured".
+
+- Marquez, NASA Human Research Program workshop, 2024: https://ntrs.nasa.gov/api/citations/20240001818/downloads/MarquezHRP%20IWS2024.pdf
+- NASA, medical operations on the ISS, 2006: https://ntrs.nasa.gov/api/citations/20060051792/downloads/20060051792.pdf
+- NASA, Playbook and crew autonomy, 2019: https://ntrs.nasa.gov/api/citations/20190032485/downloads/20190032485.pdf
+
 ### Users and key scenarios
 
 - **Astronauts:** assess their own health during the mission. They are not doctors: most are engineers or programmers with little biology or medical background, so the tool can't assume they know how to take a measurement or read a result.
@@ -104,7 +114,7 @@ Pain points are numbered as in section 1. Why: it shows what each requirement is
 
 | # | Pain point | Covered by | Gap |
 | :-- | :-- | :-- | :-- |
-| 1 | Crew solves problems alone | R4, R10, R11 | None in the MVP |
+| 1 | Crew solves problems alone | R4, R10, R11 | The app does not say yet what is due to be measured today (plan, task T1) |
 | 2 | Medical care without Earth (EIMO) | R7, R9, R10. The moon server works on its own and syncs with the earth server when it chooses (section 5). Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The earth view of the dashboard is not built yet |
 | 3 | Mental health and team | R2, R3, and sleep in R1 | Mood has no rule, so it never warns (MVP architecture, section 5). Nothing covers the team risk (Not decided yet, below) |
 | 4 | Nutrition | Glucose in R1 | Diet, hydration and body mass have no data (data document, Table 3) |

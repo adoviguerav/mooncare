@@ -140,6 +140,11 @@ Looked at and left for the landing and the pitch, as next steps:
 
 Done when: on the Vercel link, one tap opens the guide and it can be followed to the end.
 
+### Measurement routines
+
+- [ ] **T1. What is due today.** For each parameter the app knows with what it is measured and how often (data document, "How often each parameter is measured"). Today lists what the astronaut has to measure by hand and is due: the check-in, the questionnaires and the blood tests. A task is done when its reading exists, never by ticking a box. What a sensor measures on its own is not a task; it shows only when its data stops arriving. Adds two columns to `cfg.indicator`: who measures it and every how many days.
+    - Done when: a crew member with no check-in today sees it as due, and it shows as done after saving it. A blood test older than its interval shows as due.
+
 ### If there is time after the emergency
 
 - [ ] **R1. Radiation module: solar flare alert.** Idea from Becky's prototype (`apps/landing/index.html`, the Alerts page): when a solar flare is on its way, the panel shows how far it is, a countdown and the steps to take shelter, different in the base, in the rover and in transit. We have no data for it: the RadLab dose rate shows no spike for the storm of 28 Oct 2021, and there is no public dose rate that triggers an action. It would be a simulated event, and the screen must say so.
