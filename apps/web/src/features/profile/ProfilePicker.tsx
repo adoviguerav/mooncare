@@ -14,6 +14,9 @@ export function ProfilePicker({ onPick }: Props) {
       <h1>Real Telemetry</h1>
       <p className="muted">Who is checking in?</p>
       {error !== null && <p role="alert">Could not load the crew. {error}</p>}
+      {crew === null && error === null && (
+        <p className="muted">Loading the crew. The first visit can take up to a minute.</p>
+      )}
       <div className="profiles">
         {crew?.map((crewMember) => (
           <button key={crewMember.id} className="profile" onClick={() => onPick(crewMember)}>

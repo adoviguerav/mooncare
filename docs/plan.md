@@ -15,7 +15,7 @@ Reorganised on 14 Nov. Two decisions behind it:
 | Milestone | What | State |
 | :-- | :-- | :-- |
 | 0 | The platform works with real data | Done |
-| 1 | The app is online | In progress |
+| 1 | The app is online | Done |
 | 2 | The app looks like ours | To do |
 | 3 | One emergency without Earth: chest pain and CPR | To do |
 | 4 | The landing page | To do |
@@ -46,7 +46,7 @@ Reorganised on 14 Nov. Two decisions behind it:
 - [x] Frontend in `apps/web`: profile picker, panel with the alerts first, check-in and indicator detail. Its look is provisional.
 - [x] Local jury pitch (P3).
 
-## Milestone 1 · The app is online
+## Milestone 1 · The app is online (done)
 
 One link opens the real app. It is the link we give the jury (How to win, section 1).
 
@@ -54,8 +54,8 @@ One link opens the real app. It is the link we give the jury (How to win, sectio
 - [x] **D4. Frontend on Vercel**, at https://mooncare-ten.vercel.app. One project from the repo with `apps/web` as its folder. `apps/web/vercel.json` sends `/api` to Render.
     - Done when: the Vercel link shows the panel of Crew 1 with its glucose alert.
 - [x] **D3b. A check-in is stored.** A check-in saved from the Vercel link was read back from the Render database, and then deleted to leave the demo clean. The restart of the backend was not tried: the data lives in the database, not in the backend.
-- [ ] **D5. The app link** goes first in the README (done) and on the project page (P14), before the repo link.
-    - Done when: someone outside the team opens it on a phone in a private window and reaches the panel.
+- [x] **D5. The app link** goes first in the README, before the repo link. It goes first on the project page too, which is P14.
+    - Checked on 14 Nov: the link opened at phone size in a new browser session reaches the panel of Crew 1. While the backend wakes up, the first screen says it is loading.
 
 Done when: the link works from a phone outside our network.
 
