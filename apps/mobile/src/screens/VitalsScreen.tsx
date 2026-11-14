@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { api } from '@mooncare/api'
 import type { PanelIndicator } from '@mooncare/api'
+import { HistoryChart } from '../components/Charts'
+import { useLoad } from '../lib/useLoad'
 import { formatShortDay } from '../lib/dates'
 import { MODULES, MODULE_NAMES, type Module, formatValue, moduleOf, shownUnit, vitalCards } from '../lib/indicators'
 import type { ScreenProps } from './CrewApp'
@@ -26,7 +29,7 @@ export function IndicatorCard({ indicator, onOpen }: { indicator: PanelIndicator
   )
 }
 
-export function VitalsScreen({ panel, onOpenIndicator }: ScreenProps) {
+export function VitalsScreen({ today, panel, onOpenIndicator }: ScreenProps) {
   const [module, setModule] = useState<Module | 'ALL'>('ALL')
   const cards = vitalCards(panel.indicators)
   const present = MODULES.filter((candidate) => cards.some((indicator) => moduleOf(indicator.id) === candidate))
@@ -59,21 +62,61 @@ export function VitalsScreen({ panel, onOpenIndicator }: ScreenProps) {
             const indicator = panel.indicators.find((candidate) => candidate.id === id)
             return indicator ? <IndicatorCard key={id} indicator={indicator} onOpen={onOpenIndicator} /> : null
           })}
-          <div className="card m" style={{ cursor: 'default' }}>
-            <div className="top">
-              <span>VITAL · Radiation today</span>
-              <span className="demo">DEMO</span>
-            </div>
-            <div className="val">
-              0.14<small> mSv</small>
-            </div>
-            <p className="note">
-              Made up. NASA's RadLab measures dose inside the station's modules, not per person, so it needs its own
-              view before it is shown here.
-            </p>
-          </div>
+          <RadiationCard today={today} />
         </div>
       </section>
     </main>
+  )
+}
+
+const RADIATION_DAYS = 30
+
+/** The absorbed dose the base's dosimeters measured today, per instrument. It is the dose where each instrument
+ *  sits, not your personal dose, and instruments of different design are never added together. */
+function RadiationCard({ today }: { today: string }) {
+  const radiation = useLoad(() => api.stationRadiation(today, RADIATION_DAYS), [today])
+  const data = radiation.data
+  const shown = data?.today[0]?.instrument ?? data?.history.at(-1)?.instrument
+  const history = (data?.history ?? [])
+    .filter((dose) => dose.instrument === shown)
+    .map((dose) => ({ taken_at: `${dose.day}T00:00`, value: dose.absorbed_dose_ugy, broken_rule_id: null }))
+
+  return (
+    <div className="card m" style={{ cursor: 'default', gridColumn: '1 / -1' }}>
+      <div className="top">
+        <span>VITAL · Station radiation today</span>
+        <span className="tag mute">Station, not personal</span>
+      </div>
+      {radiation.error && <p className="note">The radiation data cannot be loaded right now.</p>}
+      {data && data.today.length === 0 && <p className="note">No dosimeter has enough readings for this day (at least 12 of its hours).</p>}
+      {data && data.today.length > 0 && (
+        <div className="stats">
+          {data.today.map((dose) => (
+            <div key={dose.instrument}>
+              <span>
+                {dose.instrument} · {dose.module}
+              </span>
+              <b>{Math.round(dose.absorbed_dose_ugy)} µGy</b>
+              <span>
+                {dose.mean_rate_ugy_h.toFixed(1)} µGy/h over {dose.hours_measured} h
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      {history.length > 1 && (
+        <HistoryChart readings={history} height={140} label={`${shown} absorbed dose per day, last ${RADIATION_DAYS} days`} />
+      )}
+      {data && (
+        <p className="note">
+          Absorbed dose per day ({shown} in the chart, last {RADIATION_DAYS} days), from the ISS's Columbus module as
+          a stand-in for the base's dosimeters. Each instrument has its own design, so their values are not added
+          together. No limit is set yet: a limit needs its source first.{' '}
+          <a href={data.source.url} target="_blank" rel="noreferrer">
+            {data.source.name}
+          </a>
+        </p>
+      )}
+    </div>
   )
 }

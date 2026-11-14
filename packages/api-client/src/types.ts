@@ -95,3 +95,32 @@ export type NodeStatus = {
 }
 
 export type SyncResult = { push: SyncOperation | null; pull: SyncOperation | null }
+
+// --- Daily checklist and station radiation (services/api/app/daily.py) ---
+
+export type DailyTaskStatus = {
+  id: string
+  title: string
+  xp: number
+  completion: 'auto_checkin' | 'auto_sleep' | 'manual'
+  done: boolean
+}
+
+export type Progress = { xp: number; level: number; level_xp: number; next_level_xp: number; streak: number }
+
+export type DailyChecklist = { date: string; tasks: DailyTaskStatus[]; progress: Progress }
+
+export type InstrumentDose = {
+  instrument: string
+  module: string
+  absorbed_dose_ugy: number
+  mean_rate_ugy_h: number
+  hours_measured: number
+}
+
+export type StationRadiation = {
+  date: string
+  today: InstrumentDose[]
+  history: { day: string; instrument: string; absorbed_dose_ugy: number }[]
+  source: Source
+}

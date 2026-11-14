@@ -151,20 +151,26 @@ def get_latest_values(readings: list[Reading], up_to_day: str) -> dict[str, floa
     return {reading.indicator_id: reading.value for reading in in_time}
 
 
-def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date() -> None:
+def test_the_real_datasets_give_six_crew_members_a_full_panel_on_the_demo_date() -> None:
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
     assert [(pairing.name, pairing.role) for pairing in CREW] == [
-        ("Crew 1", "commander"),
-        ("Crew 2", "crew_member"),
-        ("Crew 3", "crew_member"),
-        ("Crew 4", "crew_member"),
+        ("Adolfo", "commander"),
+        ("Ivan", "crew_member"),
+        ("Becky", "crew_member"),
+        ("Alex", "crew_member"),
+        ("Valentina", "crew_member"),
+        ("Àngels", "crew_member"),
     ]
-    for panel in panels:
-        assert set(panel) == {indicator.id for indicator in INDICATORS}
-    assert [panel["glucose"] for panel in panels] == [36.0, 84.0, 44.0, 43.0]
-    # Only Crew 2 is over the limit of the mood rule, 7 days
-    assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0]
+    every_indicator = {indicator.id for indicator in INDICATORS}
+    for panel in panels[:4]:
+        assert set(panel) == every_indicator
+    # Inspiration4 had four astronauts: the last two crew members have every indicator but the blood panel
+    for panel in panels[4:]:
+        assert set(panel) == every_indicator - {"glucose"}
+    assert [panel["glucose"] for panel in panels[:4]] == [36.0, 84.0, 44.0, 43.0]
+    # Ivan and Àngels are over the limit of the mood rule, 7 days
+    assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0, 2.0, 9.0]
 
 
 def test_counts_for_each_mood_entry_the_days_with_that_mood_in_the_14_days_ending_on_it() -> None:

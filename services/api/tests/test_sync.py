@@ -2,7 +2,7 @@
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -335,7 +335,7 @@ def test_the_http_client_talks_to_the_earth_endpoints(earth: Node, serve: Callab
     changes, to_seq = earth_server.pull(0)
     received = earth_server.push({"dat.reading": []})
 
-    assert set(changes) == {"cfg.source", "cfg.indicator", "cfg.rule", "dat.crew_member"}
+    assert set(changes) == {"cfg.source", "cfg.indicator", "cfg.rule", "cfg.daily_task", "dat.crew_member"}
     assert to_seq > 0
     assert received == 0
 
@@ -404,3 +404,24 @@ def test_sessions_and_sign_in_events_never_leave_their_server() -> None:
 
     assert "dat.session" not in synchronised
     assert "his.auth_event" not in synchronised
+
+
+def test_push_carries_station_radiation_and_ticked_tasks_with_their_dates(
+    moon: Node, earth: Node, earth_link: InProcessEarth
+) -> None:
+    with moon.sessions() as session:
+        session.add(
+            models.StationDose(
+                day=date(2021, 11, 2), instrument="Lidal", module="Columbus", mean_rate_ugy_h=6.01, absorbed_dose_ugy=144.24, hours_measured=24
+            )
+        )
+        session.add(
+            models.TaskCompletion(crew_member_id=1, task_id="exercise", day=date(2021, 11, 2), done=True, updated_at=sync.now())
+        )
+        session.commit()
+        operation = push_to_earth(session, earth_link)
+
+    assert operation.status == "ok", operation.error
+    with earth.sessions() as session:
+        assert session.get(models.StationDose, (date(2021, 11, 2), "Lidal")).absorbed_dose_ugy == 144.24  # type: ignore[union-attr]
+        assert session.get(models.TaskCompletion, (1, "exercise", date(2021, 11, 2))).done is True  # type: ignore[union-attr]

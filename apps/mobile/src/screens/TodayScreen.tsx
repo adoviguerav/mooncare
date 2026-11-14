@@ -2,14 +2,11 @@ import { useState } from 'react'
 import { NetworkError, api } from '@mooncare/api'
 import type { MoodId, PanelIndicator } from '@mooncare/api'
 import { HistoryChart, Ring } from '../components/Charts'
-import { addDays } from '../lib/dates'
 import { MOODS, formatReading, isCheckinMood, vitalCards } from '../lib/indicators'
-import { queueCheckin } from '../lib/offline'
+import { queueCheckin, readPendingCheckins } from '../lib/offline'
 import { useLoad } from '../lib/useLoad'
 import type { Connection, ScreenProps } from './CrewApp'
 import { IndicatorCard } from './VitalsScreen'
-
-const STREAK_WINDOW_DAYS = 60
 
 export function TodayScreen({
   me,
@@ -29,7 +26,9 @@ export function TodayScreen({
   const checked = withReading.length + moodAlerts
   const inRange = withReading.filter((indicator) => !indicator.broken_rule).length
   const share = checked ? Math.round((inRange / checked) * 100) : 0
-  const streak = useLoad(() => loadStreak(crewMemberId, today), [crewMemberId, today, pendingCheckins])
+  // Streak, XP and level come from the server: the checklist of the day and everything done up to it
+  const checklist = useLoad(() => api.checklist(crewMemberId, today), [crewMemberId, today, pendingCheckins, panel])
+  const progress = checklist.data?.progress
 
   return (
     <main>
@@ -44,17 +43,17 @@ export function TodayScreen({
                   : `${alerts.length} parameter${alerts.length > 1 ? 's need' : ' needs'} your attention today.`}
               </p>
               <div className="row">
-                <span>{streak.data == null ? '…' : `${streak.data}-day check-in streak`}</span>
-                <span>
-                  Level 8 astronaut <span className="demo">DEMO</span>
-                </span>
+                <span>{progress ? `${progress.streak}-day check-in streak` : '…'}</span>
+                <span>{progress ? `Level ${progress.level} astronaut` : ''}</span>
               </div>
               <div className="xp">
-                <i style={{ width: '87%' }} />
+                <i style={{ width: progress ? `${(progress.level_xp / progress.next_level_xp) * 100}%` : '0%' }} />
               </div>
               <div className="row">
-                <span>2,450 XP</span>
-                <span>350 XP to Level 9</span>
+                <span>{progress ? `${progress.xp.toLocaleString('en')} XP` : ''}</span>
+                <span>
+                  {progress ? `${(progress.next_level_xp - progress.level_xp).toLocaleString('en')} XP to Level ${progress.level + 1}` : ''}
+                </span>
               </div>
             </div>
             <div className="glance" role="group" aria-label="Today at a glance">
@@ -65,9 +64,11 @@ export function TodayScreen({
             </div>
           </div>
         </div>
-        <MoodCheckin
-          key={savedMoodsKey(panel.indicators, today)}
-          crewMemberId={crewMemberId} today={today} indicators={panel.indicators} onSaved={onCheckinSaved} connection={connection} />
+        {checkedInToday(panel.indicators, crewMemberId, today) ? (
+          <CheckinDone indicators={panel.indicators} crewMemberId={crewMemberId} today={today} />
+        ) : (
+          <MoodCheckin crewMemberId={crewMemberId} today={today} onSaved={onCheckinSaved} connection={connection} />
+        )}
       </section>
 
       <section className="card nova">
@@ -105,46 +106,52 @@ export function TodayScreen({
   )
 }
 
-/** Consecutive days, up to today, with a check-in. A day counts when at least one mood was chosen. */
-async function loadStreak(crewMemberId: number, today: string): Promise<number> {
-  const from = addDays(today, -STREAK_WINDOW_DAYS)
-  const histories = await Promise.all(MOODS.map((mood) => api.indicator(crewMemberId, mood.id, from, today)))
-  const days = new Set(histories.flatMap((history) => history.readings.filter((reading) => reading.value === 1).map((reading) => reading.taken_at.slice(0, 10))))
-  let day = days.has(today) ? today : addDays(today, -1) // today's check-in may still be to come
-  let streak = 0
-  while (days.has(day)) {
-    streak += 1
-    day = addDays(day, -1)
-  }
-  return streak
-}
-
-/** Changes when the moods saved for today change, so the check-in starts again from what the server has. */
-const savedMoodsKey = (indicators: PanelIndicator[], today: string) =>
+/** The moods the server has for today. A reading from an earlier day means no check-in yet today. */
+const moodsSavedToday = (indicators: PanelIndicator[], today: string): MoodId[] =>
   indicators
     .filter((indicator) => isCheckinMood(indicator.id) && indicator.reading?.value === 1 && indicator.reading.taken_at.startsWith(today))
-    .map((indicator) => indicator.id)
-    .join()
+    .map((indicator) => indicator.id as MoodId)
+
+/** The moods of today's check-in still waiting on this device to be sent, if any. */
+const moodsPendingToday = (crewMemberId: number, today: string): MoodId[] | null =>
+  readPendingCheckins().find((pending) => pending.crewMemberId === crewMemberId && pending.date === today)?.moods ?? null
+
+/** The check-in is once a day: done when the server has today's moods, or this device is waiting to send them. */
+const checkedInToday = (indicators: PanelIndicator[], crewMemberId: number, today: string) =>
+  moodsSavedToday(indicators, today).length > 0 || moodsPendingToday(crewMemberId, today) !== null
+
+/** What replaces the check-in once it is done for the day. It comes back the next morning. */
+function CheckinDone({ indicators, crewMemberId, today }: { indicators: PanelIndicator[]; crewMemberId: number; today: string }) {
+  const pending = moodsPendingToday(crewMemberId, today)
+  const moods = pending ?? moodsSavedToday(indicators, today)
+  const labels = MOODS.filter((mood) => moods.includes(mood.id))
+  return (
+    <div className="card" role="status">
+      <h2 style={{ marginBottom: 4 }}>Check-in done for today ✓</h2>
+      <p className="note" style={{ margin: 0 }}>
+        {labels.map((mood) => `${mood.face} ${mood.label}`).join('  ·  ')}
+      </p>
+      <p className="note">
+        {pending ? 'Saved on this device; it will be sent when the base server answers. ' : ''}
+        See you tomorrow morning for the next one.
+      </p>
+    </div>
+  )
+}
 
 function MoodCheckin({
   crewMemberId,
   today,
-  indicators,
   onSaved,
   connection,
 }: {
   crewMemberId: number
   today: string
-  indicators: PanelIndicator[]
   onSaved: () => void
   connection: Connection
 }) {
-  // The moods saved for today, from the panel. A reading from an earlier day means no check-in yet today.
-  const savedToday = indicators
-    .filter((indicator) => isCheckinMood(indicator.id) && indicator.reading?.value === 1 && indicator.reading.taken_at.startsWith(today))
-    .map((indicator) => indicator.id as MoodId)
-  const [chosen, setChosen] = useState<MoodId[]>(savedToday)
-  const [message, setMessage] = useState(savedToday.length ? 'Your check-in for today is saved. You can change it.' : '')
+  const [chosen, setChosen] = useState<MoodId[]>([])
+  const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
   const toggle = (mood: MoodId) => setChosen((current) => (current.includes(mood) ? current.filter((id) => id !== mood) : [...current, mood]))

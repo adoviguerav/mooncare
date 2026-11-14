@@ -12,10 +12,10 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SEEDS_DIR
+from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, RADLAB_DIR, SEEDS_DIR
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import CrewRole
-from seed_content import INDICATORS, RULES, SOURCES
+from seed_content import DAILY_TASKS, INDICATORS, RULES, SOURCES
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
 LAUNCH_DATE = date(2021, 9, 16)
@@ -58,7 +58,7 @@ class CrewPairing:
     """One fictional crew member: the Inspiration4 astronaut and LifeSnaps volunteer behind their data."""
 
     name: str
-    inspiration4_code: str
+    inspiration4_code: str | None  # None: no blood panel. Inspiration4 had 4 astronauts, never shared
     lifesnaps_id: str
     lifesnaps_offset_days: int = 0
     role: CrewRole = "crew_member"
@@ -78,15 +78,16 @@ class DatasetFiles:
     metabolic_panel: Path
     lifesnaps_hourly: Path
     lifesnaps_daily: Path
+    radlab_dir: Path | None = None  # without it, no station radiation is loaded
 
 
-DATASET_FILES = DatasetFiles(METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV)
+DATASET_FILES = DatasetFiles(METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV, RADLAB_DIR)
 
 
 CREW = [
     # -77 days puts the volunteer's last mood entry (2022-01-17) on 2021-11-01, the day before the demo date.
     CrewPairing(
-        "Crew 1",
+        "Adolfo",
         inspiration4_code="C003",
         lifesnaps_id="621e2f9167b776a240011ccb",
         lifesnaps_offset_days=-77,
@@ -94,22 +95,37 @@ CREW = [
     ),
     # +132 days puts the last day of this volunteer's tense fortnight (2021-06-23) on the demo date.
     CrewPairing(
-        "Crew 2",
+        "Ivan",
         inspiration4_code="C001",
         lifesnaps_id="621e2fce67b776a240279baa",
         lifesnaps_offset_days=132,
     ),
     CrewPairing(
-        "Crew 3",
+        "Becky",
         inspiration4_code="C002",
         lifesnaps_id="621e366567b776a24076a727",
         lifesnaps_offset_days=-75,
     ),
     CrewPairing(
-        "Crew 4",
+        "Alex",
         inspiration4_code="C004",
         lifesnaps_id="621e337667b776a240ce78ab",
         lifesnaps_offset_days=98,
+    ),
+    # Inspiration4 had only four astronauts, so the last two crew members have no blood panel: sharing one
+    # astronaut's real blood values between two fictional people would mislead. Their wearable and mood data is
+    # complete. Each offset puts the volunteer's best fortnight (14 complete days of 14) on the demo date.
+    CrewPairing(
+        "Valentina",
+        inspiration4_code=None,
+        lifesnaps_id="621e33b067b776a240f39e56",
+        lifesnaps_offset_days=100,
+    ),
+    CrewPairing(
+        "Àngels",
+        inspiration4_code=None,
+        lifesnaps_id="621e32af67b776a24045b4cf",
+        lifesnaps_offset_days=99,
     ),
 ]
 
@@ -187,7 +203,7 @@ def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> lis
         dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days
     )
     return (
-        read_glucose_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
+        (read_glucose_readings(dataset_files.metabolic_panel, pairing.inspiration4_code) if pairing.inspiration4_code else [])
         + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
         + daily_readings
         + build_mood_day_counts(daily_readings)
@@ -278,14 +294,66 @@ def build_readings_sql(crew: list[CrewPairing], dataset_files: DatasetFiles) -> 
     return with_header(build_inserts("dat.reading", ("crew_member_id", "indicator_id", "taken_at", "value"), rows))
 
 
+@dataclass(frozen=True)
+class StationDose:
+    day: str
+    instrument: str
+    module: str
+    mean_rate_ugy_h: float
+    absorbed_dose_ugy: float
+    hours_measured: int
+
+
+def read_station_doses(radlab_dir: Path) -> list[StationDose]:
+    """One dose per instrument and day from RadLab's readings (a few per hour, absorbed dose rate in µGy/h).
+
+    The day's dose is its mean rate times 24 hours. A day needs readings in at least 12 of its hours: with fewer,
+    the mean could miss the passages through the South Atlantic Anomaly that carry much of the dose.
+    """
+    rates: dict[tuple[str, str, str], list[float]] = {}
+    hours: dict[tuple[str, str, str], set[str]] = {}
+    for tsv in sorted(radlab_dir.glob("*.tsv")):
+        with tsv.open(newline="", encoding="utf-8") as tsv_file:
+            for row in csv.DictReader(tsv_file, delimiter="\t"):
+                if row.get("absorbed_dose_rate") in (None, ""):
+                    continue
+                key = (row["timestamp"][:10], row["instrument"], row["module"])
+                rates.setdefault(key, []).append(float(row["absorbed_dose_rate"]))
+                hours.setdefault(key, set()).add(row["timestamp"][11:13])
+    doses = []
+    for (day, instrument, module), values in sorted(rates.items()):
+        measured = len(hours[(day, instrument, module)])
+        if measured < 12:
+            continue
+        mean = sum(values) / len(values)
+        doses.append(StationDose(day, instrument, module, round(mean, 4), round(mean * 24, 2), measured))
+    return doses
+
+
+def build_station_dose_sql(radlab_dir: Path | None) -> str:
+    doses = read_station_doses(radlab_dir) if radlab_dir else []
+    log.info("Station radiation: %d instrument-days", len(doses))
+    columns = ("day", "instrument", "module", "mean_rate_ugy_h", "absorbed_dose_ugy", "hours_measured")
+    rows = [(d.day, d.instrument, d.module, d.mean_rate_ugy_h, d.absorbed_dose_ugy, d.hours_measured) for d in doses]
+    return with_header(build_inserts("dat.station_dose", columns, rows) if rows else "-- No RadLab files given\n")
+
+
+def build_daily_tasks_sql() -> str:
+    columns = ("id", "title", "xp", "completion", "display_order")
+    rows = [(t.id, t.title, t.xp, t.completion, position) for position, t in enumerate(DAILY_TASKS, start=1)]
+    return with_header(build_inserts("cfg.daily_task", columns, rows))
+
+
 def build_seed_files(crew: list[CrewPairing], dataset_files: DatasetFiles) -> dict[str, str]:
     """File name to content, in the order they must be loaded."""
     builders: dict[str, Callable[[], str]] = {
         "10_cfg_sources.sql": build_sources_sql,
         "11_cfg_indicators.sql": build_indicators_sql,
         "12_cfg_rules.sql": build_rules_sql,
+        "13_cfg_daily_tasks.sql": build_daily_tasks_sql,
         "20_dat_crew.sql": lambda: build_crew_sql(crew),
         "21_dat_readings.sql": lambda: build_readings_sql(crew, dataset_files),
+        "22_dat_station_dose.sql": lambda: build_station_dose_sql(dataset_files.radlab_dir),
     }
     return {file_name: build() for file_name, build in builders.items()}
 

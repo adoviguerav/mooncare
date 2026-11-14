@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.auth import CurrentUser, require_access_to_crew_member, require_own_crew_member
 from app.auth import router as auth_router
+from app.daily import router as daily_router
 from app.db import DbSession
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.sync_routes import router as sync_router
@@ -88,6 +89,7 @@ def save_readings(
 app = FastAPI(title="Real Telemetry API")
 app.include_router(auth_router)  # /api/auth: sign-in. Every other endpoint needs a signed-in user
 app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
+app.include_router(daily_router)  # /api/crew/{id}/tasks and /api/station/radiation
 
 
 @app.get("/api/crew")

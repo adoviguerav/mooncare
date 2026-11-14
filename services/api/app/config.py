@@ -16,6 +16,7 @@ NASA_DIR = DATABASE_DIR / "datasets" / "nasa"
 LIFESNAPS_DIR = DATABASE_DIR / "datasets" / "lifesnaps"
 
 METABOLIC_PANEL_CSV = NASA_DIR / "metabolic_panel.csv"
+RADLAB_DIR = NASA_DIR / "radlab"  # one TSV per month of ISS dosimeter readings
 LIFESNAPS_DAILY_CSV = LIFESNAPS_DIR / "daily_fitbit_sema_df_unprocessed.csv"
 LIFESNAPS_HOURLY_CSV = LIFESNAPS_DIR / "hourly_fitbit_sema_df_unprocessed.csv"
 

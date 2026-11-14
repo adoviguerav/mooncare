@@ -4,7 +4,7 @@ The .sql files define the tables; these classes only map them. A change to a tab
 in the same commit. Nothing here creates or alters a table.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -136,3 +136,42 @@ class AuthEvent(Base):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("dat.app_user.id"))
     event: Mapped[str]
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# --- Station radiation and daily checklist (database/postgresql/schema/05_station_and_tasks.sql) ---
+
+
+class StationDose(Base):
+    """One instrument's absorbed dose for one day, where the instrument sits. Not a person's dose."""
+
+    __tablename__ = "station_dose"
+    __table_args__ = {"schema": "dat"}
+
+    day: Mapped[date] = mapped_column(primary_key=True)
+    instrument: Mapped[str] = mapped_column(primary_key=True)
+    module: Mapped[str]
+    mean_rate_ugy_h: Mapped[float]
+    absorbed_dose_ugy: Mapped[float]
+    hours_measured: Mapped[int]
+
+
+class DailyTask(Base):
+    __tablename__ = "daily_task"
+    __table_args__ = {"schema": "cfg"}
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    xp: Mapped[int]
+    completion: Mapped[str]  # auto_checkin, auto_sleep or manual
+    display_order: Mapped[int]
+
+
+class TaskCompletion(Base):
+    __tablename__ = "task_completion"
+    __table_args__ = {"schema": "dat"}
+
+    crew_member_id: Mapped[int] = mapped_column(ForeignKey("dat.crew_member.id"), primary_key=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("cfg.daily_task.id"), primary_key=True)
+    day: Mapped[date] = mapped_column(primary_key=True)
+    done: Mapped[bool]
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

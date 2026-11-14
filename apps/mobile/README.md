@@ -23,16 +23,16 @@ The crew member picks their profile and types their 6-digit PIN. The moon server
 
 | Tab | Shows | Data |
 | :-- | :-- | :-- |
-| Today | Greeting, check-in streak, parameters in range, mood check-in, Dr. Nova, the main parameters, heart rate through the day | Real. Level and XP are DEMO |
-| Vitals | Every parameter, filtered by body system, and life support | Real. Radiation is DEMO |
+| Today | Greeting, check-in streak, level and XP, parameters in range, the mood check-in (once a day: it gives way to "Check-in done" until the next morning), Dr. Nova, the main parameters, heart rate through the day | Real |
+| Vitals | Every parameter, filtered by body system, and life support: SpO2, breathing rate and the station's radiation | Real |
 | Sleep | Duration, efficiency, time awake, asleep vs awake in bed, the last 14 nights against the sleep rule | Real |
-| Checklist | Daily tasks | DEMO, kept on the device |
+| Checklist | Today's tasks: the check-in and the tracker worn overnight tick themselves from the data, the others you tick. Each earns XP; 1,000 XP make a level | Real, kept on the server |
 | Data | Every parameter with its latest reading, rule, proposed priority and source | Real |
-| Alerts | The rules the latest readings break, with what to do; a solar flare drill | Real. The drill is DEMO |
+| Alerts | The rules the latest readings break, with what to do; a solar storm shelter drill that times the crew | Real; the drill is practice |
 
 Tapping a parameter opens its history (7, 30 or 90 days) with the rule's limits drawn, how it is measured, why it matters, the rule and where its limit comes from, and the source of the data.
 
-Everything marked DEMO is made up for the prototype; the rest comes from the API. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
+Everything comes from the API. Station radiation is NASA RadLab's absorbed dose per instrument in the ISS's Columbus module: the dose where each instrument sits, not a person's, and never added across instruments. XP rewards the routine, never a health value. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
 
 ## Without a network
 

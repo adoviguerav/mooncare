@@ -57,6 +57,34 @@ SOURCES = [
             "Licence CC BY 4.0."
         ),
     ),
+    Source(
+        id="radlab",
+        name="RadLab (NASA OSDR): ISS dosimeters, Columbus module",
+        url="https://visualization.osdr.nasa.gov/radlab/",
+        citation=(
+            "NASA Open Science Data Repository, RadLab portal and data API, "
+            "https://visualization.osdr.nasa.gov/radlab/. Absorbed dose rate in µGy per hour, as its data API "
+            "documents. The documentation gives no official citation."
+        ),
+    ),
+]
+
+
+@dataclass(frozen=True)
+class DailyTask:
+    id: str
+    title: str
+    xp: int
+    completion: str  # auto_checkin: done when the day has a check-in; auto_sleep: when the tracker recorded sleep
+
+
+# The daily checklist. XP is game design, not a health measure: it rewards the routine, never a value.
+DAILY_TASKS = [
+    DailyTask(id="checkin", title="Daily check-in: how you feel", xp=50, completion="auto_checkin"),
+    DailyTask(id="tracker_overnight", title="Wear your tracker overnight", xp=30, completion="auto_sleep"),
+    DailyTask(id="exercise", title="Resistance exercise session", xp=120, completion="manual"),
+    DailyTask(id="meals", title="Log water and meals", xp=40, completion="manual"),
+    DailyTask(id="read_alerts", title="Read today’s alerts and what to do", xp=30, completion="manual"),
 ]
 
 # REVIEW: the mood names are drafts built from the LifeSnaps column names.

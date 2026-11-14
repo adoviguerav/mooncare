@@ -139,7 +139,7 @@ export function CrewApp({
           {tab === 'today' && <TodayScreen {...screenProps} pendingCheckins={pendingCheckins} connection={connection} />}
           {tab === 'vitals' && <VitalsScreen {...screenProps} />}
           {tab === 'sleep' && <SleepScreen {...screenProps} />}
-          {tab === 'list' && <ChecklistScreen />}
+          {tab === 'list' && <ChecklistScreen {...screenProps} />}
           {tab === 'data' && <DataScreen {...screenProps} />}
           {tab === 'alerts' && <AlertsScreen {...screenProps} />}
         </>
@@ -155,9 +155,9 @@ export function CrewApp({
       )}
 
       <footer className="foot">
-        Readings are real dataset values on their original dates (LifeSnaps, NASA OSDR), shown for a fictional crew.
-        Anything marked DEMO is made up for the prototype. Mood is a private self-report and never triggers a
-        diagnosis.
+        Readings are real dataset values on their original dates, shown for a fictional crew: health data from
+        LifeSnaps and NASA OSDR (Inspiration4), station radiation from NASA RadLab (ISS). Mood is a private
+        self-report and never triggers a diagnosis.
       </footer>
 
       <Tabs current={tab} alertCount={alertCount} onChange={(next) => {

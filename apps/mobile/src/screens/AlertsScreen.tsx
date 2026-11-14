@@ -3,7 +3,7 @@ import { Sheet } from '../components/Sheet'
 import { formatReading } from '../lib/indicators'
 import type { ScreenProps } from './CrewApp'
 
-/** The rules your latest readings break, each with what to do. Then the prototype's solar flare drill, as DEMO. */
+/** The rules your latest readings break, each with what to do. Then a shelter drill to practise. */
 export function AlertsScreen({ panel, onOpenIndicator }: ScreenProps) {
   const alerts = panel.indicators.filter((indicator) => indicator.broken_rule)
   const [drill, setDrill] = useState(false)
@@ -40,13 +40,15 @@ export function AlertsScreen({ panel, onOpenIndicator }: ScreenProps) {
         An alert means a reading is outside a rule's limits. It is a prompt to act or to ask, not a diagnosis.
       </p>
 
-      <h2 className="sec">
-        Emergency drill <span className="demo">DEMO</span>
-      </h2>
+      <h2 className="sec">Practice</h2>
       <section className="card">
-        <p className="note">The prototype's solar flare warning, kept as a drill. Its times and doses are made up.</p>
+        <h3>Solar storm shelter drill</h3>
+        <p className="note">
+          Rehearse getting the whole crew into the storm shelter. It times how long it takes; it does not warn of a
+          real storm. Space weather warnings come from Earth.
+        </p>
         <button className="primary warn" type="button" onClick={() => setDrill(true)}>
-          Start the solar flare drill
+          Start the drill
         </button>
       </section>
       {drill && <SolarFlareDrill onClose={() => setDrill(false)} />}
@@ -61,25 +63,25 @@ const DRILL_STEPS = [
   { title: 'Check in with the crew', detail: 'Confirm everyone is in the shelter.' },
   { title: 'Stay until the all-clear', detail: 'The commander gives it when the dose rate is back to normal.' },
 ]
-const DRILL_SECONDS = 18 * 60 + 42
-
+/** A practice run: a stopwatch from the start until every step is ticked. No made-up storm, flux or dose. */
 function SolarFlareDrill({ onClose }: { onClose: () => void }) {
-  const [left, setLeft] = useState(DRILL_SECONDS)
+  const [elapsed, setElapsed] = useState(0)
   const [done, setDone] = useState<boolean[]>(DRILL_STEPS.map(() => false))
-  useEffect(() => {
-    const timer = window.setInterval(() => setLeft((seconds) => Math.max(0, seconds - 1)), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
   const next = done.indexOf(false)
-  const clock = `00:${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`
+  useEffect(() => {
+    if (next === -1) return // every step done: the stopwatch stops
+    const timer = window.setInterval(() => setElapsed((seconds) => seconds + 1), 1000)
+    return () => window.clearInterval(timer)
+  }, [next])
+  const clock = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`
 
   return (
-    <Sheet label="Solar flare drill" onClose={onClose}>
-      <span className="tag warn">Class X-2.4 solar flare · DRILL</span>
-      <h2>Potential incident warning</h2>
-      <p className="note">Coronal mass ejection inbound. Made-up scenario for practice.</p>
+    <Sheet label="Solar storm shelter drill" onClose={onClose}>
+      <span className="tag warn">Practice drill</span>
+      <h2>Solar storm shelter drill</h2>
+      <p className="note">Tick each step as you do it. The time is how long the crew takes to be safe.</p>
       <div className="eta">
-        <span>ETA impact window</span>
+        <span>{next === -1 ? 'Done in' : 'Time since the start'}</span>
         <b role="timer">{clock}</b>
       </div>
       <div className={`next${next === -1 ? ' ok' : ''}`}>
