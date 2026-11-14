@@ -123,6 +123,26 @@ body::after{content:"";position:fixed;left:50%;bottom:-78vw;width:150vw;max-widt
 h1 .mini{display:block}
 .ptab th,.ptab td{border-bottom-color:color-mix(in srgb,var(--cy) 16%,transparent)}
 #homeBtn{position:fixed;top:calc(88px + env(safe-area-inset-top,0px));right:12px;z-index:45;background:color-mix(in srgb,var(--card) 72%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 16px rgba(2,8,18,.4)}
+
+/* motion */
+.xp i{transition:width .6s ease;animation:grow 1.1s ease-out}@keyframes grow{from{width:0}}
+.drawin{animation:drawin 1.4s ease-out}@keyframes drawin{from{stroke-dashoffset:1}}
+.dmask{animation:dm 1.1s ease-out}@keyframes dm{from{stroke-dashoffset:100}}
+.live{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:13px;color:var(--mute)}.live b{color:var(--ink)}
+.ecg path{fill:none;stroke:var(--cy);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;animation:ecg 2.4s linear infinite}
+.ecg path.trk{animation:none;stroke-dasharray:none;stroke-dashoffset:0;opacity:.25}
+@keyframes ecg{from{stroke-dasharray:.3 1;stroke-dashoffset:.3}to{stroke-dasharray:.3 1;stroke-dashoffset:-1}}
+.q{position:relative}
+.fx{position:absolute;right:64px;top:4px;font-weight:700;color:var(--cy);pointer-events:none;animation:fx 1.2s ease-out forwards}
+@keyframes fx{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-28px)}}
+.cf{position:absolute;left:50%;top:76px;width:8px;height:8px;border-radius:2px;pointer-events:none;animation:cf 1s ease-out forwards}
+@keyframes cf{to{transform:translate(var(--dx),var(--dy)) rotate(240deg);opacity:0}}
+#glance{display:flex;flex-direction:column;align-items:center;width:92px;flex:none}
+#ring{position:fixed;top:calc(6px + env(safe-area-inset-top,0px));right:6px;width:76px;height:76px;z-index:46;pointer-events:none}
+#alertsPage:not([hidden]) .inc{animation:slideup .28s ease-out}
+@keyframes slideup{from{transform:translateY(28px);opacity:0}}
+button:active{transform:scale(.97)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -217,6 +237,7 @@ h1 .mini{display:block}
 </section>
 
 <div class="wrap" id="crewApp" hidden>
+<svg id="ring" viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="35" fill="none" stroke="color-mix(in srgb,var(--warn) 25%,transparent)" stroke-width="3"/><circle id="ringP" cx="38" cy="38" r="35" fill="none" stroke="var(--warn)" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 38 38)" style="transition:stroke-dashoffset 1s linear"/></svg>
 <header>
   <h1 style="display:flex;flex-direction:column;gap:6px">
     <svg class="mini" viewBox="30 55 690 465" role="img" aria-label="Moon Care" style="width:160px;height:auto;overflow:visible">
@@ -248,11 +269,12 @@ h1 .mini{display:block}
 <main id="home">
 <section class="hero">
   <div class="card">
-    <h2>Good morning, Cmdr. Eva</h2>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2>Good morning, Cmdr. Eva</h2>
     <p class="note" style="margin-top:-6px">Lunar dawn cycle initialized. Sol 248 mission readiness starting.</p>
     <div class="row"><span>14-sol streak</span><span>Level 8 astronaut</span></div>
     <div class="xp"><i id="xpBar"></i></div>
-    <div class="row"><span id="xpNow">2,450 XP</span><span id="xpLeft">350 XP to Level 9</span></div>
+    <div class="row"><span id="xpNow">2,450 XP</span><span id="xpLeft">350 XP to Level 9</span></div></div>
+    <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px"></div></div></div>
   </div>
   <div class="card">
     <h2>How are you feeling today?</h2>
@@ -377,6 +399,7 @@ const M=[
   test:m=>m.val<m.lo||m.val>m.hi,msg:"Target 70–140 mg/dL",bar:v=>v/200}
 ];
 const $=id=>document.getElementById(id);
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const st={};const inc={ack:false,done:[true,false,false,false]};
 var rg='1D';const HL={'1D':'24 h ago','5D':'5 days ago','1M':'30 days ago','Total':'Sol 1'},RL={'1D':'1D','5D':'5D','1M':'1M','Total':'total'},RN={'1D':24,'5D':20,'1M':30,'Total':40},BS={'Heart rate':[66,72,4],'Sleep duration':[7.3,8.25,.6],'Body temperature':[36.6,36.6,.12],'Exercise':[44,18,12],'Blood glucose':[94,94,8]};
 function SER(nm,r){r=r||rg;const b=BS[nm];if(!b)return null;const n=RN[r],t=[];for(let i=0;i<n;i++){const x=Math.sin((i+1)*12.9898+nm.length*78.233)*43758.5453;t.push(b[0]+((x-Math.floor(x))-.5)*2*b[2]*(r==='Total'?1.4:1))}t[n-1]=b[1];return t}
@@ -385,6 +408,7 @@ function meas(m){if(!BS[m.name])return'';const t=SER(m.name,'5D'),d=m.name==='Bo
 function HRS(t){const a=t.reduce((x,y)=>x+y)/t.length;$('hrStats').innerHTML=[['Now',t[t.length-1].toFixed(0)+' bpm'],['Average',a.toFixed(0)+' bpm'],['Low',Math.min(...t).toFixed(0)+' bpm'],['High',Math.max(...t).toFixed(0)+' bpm'],['Resting','72 bpm'],['HRV','48 ms']].map(s=>`<div><span>${s[0]}</span><b style="font-size:16px">${s[1]}</b></div>`).join('')}
 const TR={"Heart rate":[64,66,65,67,66,68,72],"Sleep duration":[7.1,6.8,7.4,7.9,7.2,7.6,8.25],"Body temperature":[36.5,36.6,36.5,36.7,36.6,36.5,36.6],"Exercise":[40,52,35,48,44,50,18],"Blood glucose":[91,97,88,102,95,93,94]};
 function spark(m){const t=SER(m.name,'5D');if(!t)return"";const mn=Math.min(...t),r=Math.max(...t)-mn||1,pts=t.map((v,i)=>i*118/(t.length-1)+","+(22-(v-mn)/r*20)).join(" "),d=t[t.length-1]-t.slice(0,-1).reduce((a,b)=>a+b)/(t.length-1);return `<div class="spark"><svg viewBox="0 0 120 24" width="120" height="24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg><span>${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(1)} vs 5D avg</span></div>`}
+const LIVE='<div class="live"><svg class="ecg" viewBox="0 0 120 28" width="120" height="28" aria-hidden="true"><path class="trk" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/><path pathLength="1" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/></svg><span><b id="liveHR">72</b> bpm live</span></div>';
 let filter="All";
 function render(){
   const alerts=M.filter(m=>m.test(m)&&!st[m.name]);
@@ -400,7 +424,7 @@ function render(){
     return `<article class="card m" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span>${m.mod} · ${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
     ${m.bar?`<div class="bar ${a?"warn":""}"><i style="width:${Math.min(100,Math.max(4,m.bar(m.val)*100))}%"></i></div>`:""}
-    <p class="note">${m.msg}</p>${spark(m)}
+    <p class="note">${m.msg}</p>${spark(m)}${m.name==="Heart rate"?LIVE:""}
     </article>`}).join("");
   const mods=["All",...new Set(M.map(m=>m.mod))];
   $("chips").innerHTML=mods.map(x=>`<button aria-pressed="${x===filter}" data-f="${x}">${x==="All"?"All systems":x}</button>`).join("");
@@ -442,7 +466,7 @@ function drawHR(){
   const x=i=>p+i*(W-2*p)/(bpm2.length-1),y=v=>H-p-(v-mn)/(mx-mn)*(H-2*p);
   const bpm2=SER("Heart rate","1D"),pts=bpm2.map((v,i)=>x(i)+","+y(v)).join(" ");
   $("hr").innerHTML=`<rect x="${p}" y="${y(80)}" width="${W-2*p}" height="${y(60)-y(80)}" fill="var(--cy)" opacity=".08"/>${[50,60,70,80,90].map(v=>`<line x1="${p}" x2="${W-p}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p-5}" y="${y(v)+3}" text-anchor="end" font-size="10" fill="var(--mute)">${v}</text>`).join("")}<line x1="${p}" x2="${W-p}" y1="${y(66)}" y2="${y(66)}" stroke="var(--mute)" stroke-dasharray="4 4"/>
-  <polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linejoin="round"/>
+  <path class="drawin" pathLength="1" stroke-dasharray="1" d="M${pts.split(" ").join(" L")}" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linejoin="round"/>
   <text x="${p}" y="${H-6}" font-size="11" fill="var(--mute)">24 h ago</text><text x="${W-p}" y="${H-6}" font-size="11" text-anchor="end" fill="var(--mute)">now</text>
   <text x="${x(5.75)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">18 h</text><text x="${x(11.5)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">12 h</text><text x="${x(17.25)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">6 h</text>`;
 }drawHR();
@@ -452,17 +476,21 @@ function drawHR(){
   const s=[["REM",20,"var(--cy)"],["Deep",17,"#3b82f6"],["Light",55,"#7c9cc4"],["Wake",8,"var(--line)"]];
   const r=46,c=2*Math.PI*r;let off=0,h="";
   s.forEach(a=>{const l=c*a[1]/100;h+=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${a[2]}" stroke-width="14" stroke-dasharray="${l} ${c-l}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=l});
-  $("donut").innerHTML=h+`<text x="60" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">8h 15m</text>`;
+  $("donut").innerHTML='<defs><mask id="dm"><circle class="dmask" cx="60" cy="60" r="46" fill="none" stroke="#fff" stroke-width="18" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></mask></defs><g mask="url(#dm)">'+h+'</g>'+`<text x="60" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">8h 15m</text>`;
   $("legend").innerHTML=s.map(a=>`<li><span><i class="dot" style="background:${a[2]}"></i>${a[0]}</span><b>${a[1]}%</b></li>`).join("");
 })();
 
 // quests
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
+let xpLast=null;
+function xpTo(cur){const el=$("xpNow");if(xpLast===null||RM||$("crewApp").hidden){xpLast=cur;el.textContent=cur.toLocaleString("en-US")+" XP";return}const from=xpLast;xpLast=cur;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/500);el.textContent=Math.round(from+(cur-from)*k).toLocaleString("en-US")+" XP";if(k<1)requestAnimationFrame(s)})(t0)}
+function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=al?"var(--warn)":(n===Q.length?"var(--ok)":"var(--cy)");$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent=al?al+" to review":"All clear";$("glance").setAttribute("aria-label","Today at a glance: "+n+" of "+Q.length+" tasks done, "+(al?al+" readings need attention":"nothing needs attention"))}
 function drawQ(){
-  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),cur=2450+xp-55;$("xpNow").textContent=cur.toLocaleString("en-US")+" XP";$("xpLeft").textContent=Math.max(0,2800-cur)+" XP to Level 9";$("xpBar").style.width=Math.min(100,cur/2800*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
+  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),cur=2450+xp-55;xpTo(cur);$("xpLeft").textContent=Math.max(0,2800-cur)+" XP to Level 9";$("xpBar").style.width=Math.min(100,cur/2800*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
   $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
   $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div><span class="tag">${q[2]}</span></label>`).join("");
-  document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{Q[+el.dataset.i][3]=el.checked;drawQ();save()});
+  document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
+  drawGlance();
 }
 drawQ();
 // incident page
@@ -476,7 +504,7 @@ function drawAlerts(){
 $("steps").onchange=e=>{inc.done[+e.target.dataset.i]=e.target.checked;drawAlerts();save()};
 let armed=0;$("seal").onclick=()=>{const b=$("seal");if(!armed){armed=setTimeout(()=>{armed=0;drawAlerts()},4000);b.textContent="Tap again to confirm seal";return}clearTimeout(armed);armed=0;inc.ack=true;inc.done[1]=true;drawAlerts();render();save()};
 $("tele").onclick=e=>{const t=$("telem");t.hidden=!t.hidden;e.currentTarget.setAttribute("aria-expanded",String(!t.hidden))};
-let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true}
+let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true;const rp=$("ringP");rp.style.strokeDashoffset=100-Math.max(0,eta/1122)*100;$("ring").style.display=inc.ack?"none":"";if(!inc.ack)$("banner").title="Impact window "+t}
 setInterval(()=>{if(eta>0)eta--;tick()},1000);
 var pv='core';
 const P2=[
@@ -512,8 +540,8 @@ function drawCore(){
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
 function route(){const v=view();$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
-  if(v!=="crew"){$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
-  const a=location.hash==="#alerts",p=location.hash==="#parameters";$("home").hidden=p;$("paramPage").hidden=!p;$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
+  if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
+  if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters";$("home").hidden=p;$("paramPage").hidden=!p;$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew")location.hash="dashboard"});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
@@ -533,6 +561,15 @@ $("detR").onclick=e=>{const b=e.target.closest("button");if(b){rg=b.dataset.r;dr
 $("grid").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dataset.i)};$("grid").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDet()});
 $("etaBar").onclick=()=>{location.hash="alerts"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.dataset.t;if(k==="alerts"){location.hash="alerts";return}if(k==="data"){location.hash="parameters";return}if(location.hash==="#parameters"){location.hash="dashboard";setTimeout(()=>b.click(),60);return}({today:$("home"),vitals:$("chips"),sleep:$("donut").closest(".card"),list:$("quests").closest(".card")})[k].scrollIntoView({behavior:"smooth",block:"start"})});
+// motion helpers
+function countUp(el){const n=el.firstChild;if(!n||n.nodeType!==3)return;const m=n.nodeValue.match(/^([^\d]*)(\d[\d,]*\.?\d*)([\s\S]*)$/);if(!m)return;const raw=m[2],dec=(raw.split(".")[1]||"").length,comma=raw.includes(","),to=parseFloat(raw.replace(/,/g,"")),t0=performance.now();
+  const f=v=>comma?v.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec}):v.toFixed(dec);
+  (function s(t){if(!el.isConnected)return;const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);n.nodeValue=m[1]+f(to*e)+m[3];if(k<1)requestAnimationFrame(s)})(t0)}
+function countAll(){if(RM)return;document.querySelectorAll("#crewApp .val, #xpNow").forEach(countUp)}
+function glanceIn(){const r=$("gRing");r.style.transition="none";r.style.strokeDashoffset=100;void r.getBoundingClientRect();r.style.transition="";drawGlance()}
+function fx(i){if(RM)return;const L=document.querySelectorAll("#quests .q")[i];if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="+"+Q[i][4]+" XP";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
+function party(){if(RM)return;const host=$("quests").closest(".card");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
+setInterval(()=>{const e=document.getElementById("liveHR");if(e&&!RM&&!$("crewApp").hidden)e.textContent=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2)},3000);
 // landing and role switching
 $("goCrew").onclick=()=>{location.hash="crew"};
 $("goAdmin").onclick=()=>{location.hash="admin"};
