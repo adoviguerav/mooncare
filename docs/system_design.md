@@ -105,7 +105,7 @@ Pain points are numbered as in section 1. Why: it shows what each requirement is
 | # | Pain point | Covered by | Gap |
 | :-- | :-- | :-- | :-- |
 | 1 | Crew solves problems alone | R4, R10, R11 | None in the MVP |
-| 2 | Medical care without Earth (EIMO) | R7, R9, R10. Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The queue of messages to Earth is not decided (section 6) |
+| 2 | Medical care without Earth (EIMO) | R7, R9, R10. Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The link to the ground is decided (section 6) and not built yet |
 | 3 | Mental health and team | R2, R3, and sleep in R1 | Mood has no rule, so it never warns (MVP architecture, section 5). Nothing covers the team risk (Not decided yet, below) |
 | 4 | Nutrition | Glucose in R1 | Diet, hydration and body mass have no data (data document, Table 3) |
 | 5 | Long-term physical damage | Exercise and heart rate in R1, R7 | Eyes, bone and ECG have no data (data document, Table 3) |
@@ -218,7 +218,7 @@ flowchart TD
 | Sensors and devices | Send readings on their own (Bio-Monitor shirt, wrist tracker, glucose monitor). Today the readings come from the datasets and the check-in | Planned |
 | Onboard AI | Guides emergencies by voice and explains alerts. It only advises (E1 to E6) | Planned (stretch) |
 | GROUND backend | Receives a copy of what the ship sends when the link is up. The ship never waits for it | Planned |
-| Flight surgeon | Sees on the ground the results that need attention | Planned |
+| Flight surgeon | Sees on the ground the full panel of each crew member (section 6) | Planned |
 
 One database is enough for now. A second one on the ground comes with the GROUND backend.
 
@@ -233,6 +233,8 @@ How the built part works is in the [MVP architecture](mvp_architecture.md).
 ### Privacy and access
 
 - Health data is private day to day. In an emergency, crewmates are alerted and see only the data needed to act, while it lasts.
+- The flight surgeon on the ground sees the full panel of each crew member: indicators, history and alerts. Why: they are the crew's doctor, as on the ISS today. Privacy between crewmates on board does not change.
+- Data goes one way, from the ship to the ground. The ground looks and does not answer. With the link down, the ship keeps working and what is new waits in a queue until the link is back.
 
 ### Not decided yet
 
@@ -242,7 +244,6 @@ How the built part works is in the [MVP architecture](mvp_architecture.md).
 | Only a doctor on board can see everyone's data | Proposed |  |
 | The commander can see everyone's data | Proposed |  |
 | Individual accounts with a password, like Netflix profiles | Proposed |  |
-| Every alert level works on board. Earth is notified when the link is up, and the message waits in a queue when it is down | Proposed |  |
 
 ---
 

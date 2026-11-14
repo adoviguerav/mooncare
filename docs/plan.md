@@ -88,8 +88,7 @@ Backend:
     - Done when: a night under 7 hours shows the alert with its explanation and what to do.
 - [x] **B2. Mood rule** (R10). The rule at the end of this document.
     - Done when: the crew member with the tense fortnight shows the alert on the demo date, and Crew 1 does not.
-- [ ] **B6. Panel order** by the priority rule (System_design, section 7): mood, glucose, heart rate, exercise, sleep, temperature.
-    - Done when: the panel returns them in that order.
+
 
 Frontend:
 
@@ -102,8 +101,6 @@ Frontend:
 
 Both teams:
 
-- [ ] **D1. Public repo with a README.**
-    - Done when: the repo opens in a private window and the README has the steps to run it.
 - [ ] **P5.** Pick one global award category: Best Use of Science, Best Use of Technology or Best Mission Concept.
 - [ ] **P6.** Write the opening sentence: user, problem and result.
 - [ ] **P7.** First draft of the project page, in English, submitted.
