@@ -1450,6 +1450,90 @@ button.card:active {
   color: var(--alert);
 }
 
+/* --- Study notes of a parameter --- */
+
+.learn-notes {
+  display: grid;
+  gap: 22px;
+}
+
+/* Title of a block: in between the title of the card and the body. Body: as in .explain. */
+.learn h3 {
+  margin-bottom: 6px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.learn p:not(.eyebrow),
+.learn-moves li {
+  max-width: 62ch;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.learn-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: start;
+  gap: 22px;
+}
+
+.learn-figure {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  color: var(--mute);
+  font-size: 0.8125rem;
+}
+
+.learn-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.learn-moves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 22px;
+}
+
+.learn-moves ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+}
+
+.learn-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.learn-sources ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The drawing comes in when the notes open */
+  .learn[open] .learn-figure {
+    animation: rise 0.5s 0.1s backwards;
+  }
+}
+
 /* --- History chart --- */
 
 .chart-box {
@@ -2042,5 +2126,14 @@ button.card:active {
   .status-link {
     width: 100%;
     padding-left: 42px;
+  }
+
+  .learn-body,
+  .learn-moves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .learn-figure {
+    max-width: 280px;
   }
 }

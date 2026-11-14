@@ -43,9 +43,15 @@ export default function App() {
   }
   return (
     <IndicatorScreen
+      // A new screen for each parameter: it loads its data once, when it opens
+      key={indicatorId}
       crewMember={crewMember}
       indicatorId={indicatorId}
       onBack={() => setIndicatorId(null)}
+      onOpenIndicator={(id) => {
+        setIndicatorId(id)
+        window.scrollTo(0, 0)
+      }}
     />
   )
 }
