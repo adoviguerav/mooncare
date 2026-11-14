@@ -19,10 +19,12 @@ const GROUPS = [
   },
   { title: 'Blood cells', indicatorIds: ['white_blood_cells', 'lymphocytes', 'hemoglobin'] },
   { title: 'Inflammation', indicatorIds: ['il_6', 'tnf_alpha', 'il_1_beta', 'ifn_gamma', 'crp', 'fibrinogen'] },
-  { title: 'Heart', indicatorIds: ['heart_rate', 'resting_heart_rate'] },
+  { title: 'Heart', indicatorIds: ['heart_rate', 'resting_heart_rate', 'heart_rate_variability', 'vo2_max'] },
+  { title: 'Breathing', indicatorIds: ['spo2', 'breathing_rate'] },
   { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
-  { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency'] },
+  { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency', 'sleep_awake_minutes'] },
   { title: 'Temperature', indicatorIds: ['skin_temperature'] },
+  { title: 'Mind', indicatorIds: ['stress_score', 'anxiety_score', 'positive_affect', 'negative_affect'] },
   // shortcut: the mood rule is shown as cards of its own; F4 puts it inside the mood card
   { title: 'Mood over the last 14 days', indicatorIds: MOOD_DAY_COUNT_IDS },
 ]

@@ -77,7 +77,7 @@ What changed from the SQLite model of the base: the two schemas, `display_order`
 Choices and why:
 
 - One narrow `reading` table, not one column per indicator. A new indicator is new rows in `indicator`, `reading` and, if it has a limit, `rule`. No schema change (R8).
-- One numeric value per reading. Mood is six yes or no indicators, stored as 1 or 0, because a LifeSnaps day can hold several moods. In the daily file 981 days have one mood, 973 have two, 335 have three and 1 has four.
+- One numeric value per reading. Mood is seven yes or no indicators, stored as 1 or 0, because a LifeSnaps day can hold several moods. In the daily file 981 days have one mood, 973 have two, 335 have three and 1 has four.
 - No `alert` table. A reading is an alert when `value < rule.low OR value > rule.high` for a rule of its indicator. Storing that again would duplicate what `reading` and `rule` already say.
 - A rule may set only one side. Use two rules when the low side and the high side need different text.
 - Limits live only in `rule`. The frontend never hardcodes one.
@@ -93,7 +93,8 @@ How each dataset becomes readings:
 
 | File | Indicator ids | Note |
 | :-- | :-- | :-- |
-| LifeSnaps daily | `resting_heart_rate`, `sleep_duration`, `sleep_efficiency`, `skin_temperature`, `very_active_minutes`, `steps`, `mood_happy`, `mood_sad`, `mood_tense`, `mood_alert`, `mood_rested`, `mood_neutral` | One reading per person, day and indicator. Each mood column holds 0 or 1 and becomes its own indicator. The frontend shows the six as one card |
+| LifeSnaps daily | `resting_heart_rate`, `sleep_duration`, `sleep_efficiency`, `skin_temperature`, `very_active_minutes`, `steps`, `mood_happy`, `mood_sad`, `mood_tense`, `mood_alert`, `mood_rested`, `mood_neutral`, `mood_tired`, `spo2`, `breathing_rate`, `heart_rate_variability`, `stress_score`, `sleep_awake_minutes`, `vo2_max` | One reading per person, day and indicator. Each mood column holds 0 or 1 and becomes its own indicator. The frontend shows the seven moods as one card |
+| LifeSnaps questionnaires (STAI, PANAS) | `anxiety_score`, `positive_affect`, `negative_affect` | One reading per person and answered questionnaire, 2 to 7 each |
 | LifeSnaps daily, computed | `mood_sad_days_14`, `mood_tense_days_14` | For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen (section 5) |
 | LifeSnaps hourly | `heart_rate` | One reading per person and hour |
 | Inspiration4 metabolic panel | `glucose`, `sodium`, `potassium`, `chloride`, `creatinine`, `urea_nitrogen`, `egfr`, `albumin`, `calcium` | 7 readings of each per crew member |
@@ -124,7 +125,7 @@ Endpoints:
 | `GET /api/crew` | The crew members with their role, `commander` or `crew_member`, for the profile picker |
 | `GET /api/crew/{id}/panel?date=` | For each indicator, its latest reading up to the end of `date`, with its `taken_at`, and the rule it breaks, if any, with that rule's text (R1, R10) |
 | `GET /api/crew/{id}/indicators/{indicator_id}?from=&to=` | The indicator's text, source and rules, plus its readings between the two dates, each with the rule it breaks, if any (R4, R7, R10, R11) |
-| `PUT /api/crew/{id}/checkins/{date}` | Body: moods, the list of mood indicator ids chosen. Saves the six mood readings for the date in the path, 1 for the chosen ones and 0 for the rest. Replaces them if they exist and returns what was saved (R2, R3) |
+| `PUT /api/crew/{id}/checkins/{date}` | Body: moods, the list of mood indicator ids chosen. Saves the seven mood readings for the date in the path, 1 for the chosen ones and 0 for the rest. Replaces them if they exist and returns what was saved (R2, R3) |
 
 The dataset days are in 2021 and 2022, so "today" is the `date` the frontend sends, not the clock. The frontend prompts for the check-in when the panel's mood readings are not from `date` (R3).
 
@@ -204,8 +205,8 @@ The numbers are examples. Text shown as "..." comes from the seed script. PUT /a
 ```
 
 - The returned moods come in the order of the check-in: happy, sad, tense, alert, rested, neutral.
-- An empty list is valid and saves the six as 0. A mood id that is not one of the six returns 422 and saves nothing.
-- The six readings are stored at T00:00 of the date in the path.
+- An empty list is valid and saves the seven as 0. A mood id that is not one of the seven returns 422 and saves nothing.
+- The seven readings are stored at T00:00 of the date in the path.
 
 ## 4. Flow
 
@@ -250,11 +251,12 @@ Three ways to decide an alert. We build them in this order.
 | `creatinine`, `calcium` | Renal deterioration. Calcium has no alert in ASTRA-HEALTH | 0.5 to 1.35 mg/dL and 8.6 to 10.4 mg/dL | The range columns in the Inspiration4 file. They differ by astronaut and draw, so the rule takes the widest: the lowest minimum and the highest maximum |
 | `white_blood_cells`, `lymphocytes`, `hemoglobin` | Lymphocyte reduction. Nutritional deficiency risk | 3.8 to 10.8 thousand/µL, 850 to 3900 cells/µL and 11.7 to 17.1 g/dL | The range columns in the Inspiration4 blood count file. Haemoglobin has two ranges, so the rule takes the widest |
 | Inflammation markers, CRP, fibrinogen | Increased inflammation, above baseline | No rule | The files give no range |
+| `vo2_max` | Reduced cardiovascular fitness | Below 32.9 mL/kg/min | NASA-STD-3001, Volume 1, V1 4001. The value is the watch's estimate |
 | `skin_temperature` | Possible infection. Raised temperature plus symptoms | No rule yet | Needs a source |
 | Exercise | Insufficient exercise | No rule yet | Needs a source |
 | `mood_sad_days_14`, `mood_tense_days_14` | Behavioural changes. Deviations in self-report | Above 7 of the last 14 days, for Sad and for Tense or anxious | PHQ-2 and GAD-2: "more than half the days" over the last 2 weeks. An adaptation, to confirm with Àngels ([plan](plan.md), Mood rule) |
 
-There are sixteen rules: glucose, resting heart rate, sleep, the two mood ones, eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium) and three from the blood count (white cells, lymphocytes and haemoglobin). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
+There are seventeen rules, one of them with a NASA limit (VO2 max): glucose, resting heart rate, sleep, the two mood ones, eight more from the Inspiration4 metabolic panel (sodium, potassium, chloride, urea nitrogen, eGFR, albumin, creatinine and calcium) and three from the blood count (white cells, lymphocytes and haemoglobin). The file gives eGFR twice, by race; we load the lower one. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
 
 The mood rule needs no change to the data model. Each of the two `_days_14` indicators holds on how many of the 14 days ending on that day the mood was chosen. A day with no check-in counts as not chosen. The seed script computes them for every day with a mood entry, and the check-in recomputes the two of its own day. They are in the panel like any other indicator, and the frontend shows them with the mood card.
 

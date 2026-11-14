@@ -19,6 +19,8 @@ from seed import (
     CARDIOVASCULAR_PANEL_COLUMNS,
     read_blood_readings,
     read_heart_rate_readings,
+    read_questionnaire_readings,
+    STAI_COLUMNS,
     to_sql_literal,
 )
 from seed_content import INDICATORS, RULES
@@ -186,7 +188,7 @@ def test_loads_the_blood_rules_with_the_ranges_of_the_nasa_file(
 
     load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
 
-    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id > 5 ORDER BY id") == [
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id BETWEEN 6 AND 16 ORDER BY id") == [
         (6, "sodium", 135.0, 146.0),
         (7, "potassium", 3.5, 5.3),
         (8, "chloride", 98.0, 110.0),
@@ -352,6 +354,43 @@ def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(tmp_path: Pat
         Reading("mood_alert", "2021-11-01T00:00", 0.0),
         Reading("mood_rested", "2021-11-01T00:00", 1.0),
         Reading("mood_neutral", "2021-11-01T00:00", 0.0),
+    ]
+
+
+def test_reads_the_questionnaire_scores_of_the_paired_volunteer_shifted_by_the_crew_offset(tmp_path: Path) -> None:
+    stai = write_csv(
+        tmp_path / "stai.csv",
+        ",user_id,type,submitdate,stai_stress,stai_stress_category\n"
+        f"0,{VOLUNTEER},stai,2021-12-26,54.0,Above average\n"
+        f"1,{OTHER_VOLUNTEER},stai,2021-12-26,40.0,Below average\n",
+    )
+
+    assert read_questionnaire_readings(stai, STAI_COLUMNS, VOLUNTEER, -77) == [
+        Reading("anxiety_score", "2021-10-10T00:00", 54.0)
+    ]
+
+
+def test_a_stress_score_of_zero_produces_no_reading(tmp_path: Path) -> None:
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        "id,date," + ",".join(DAILY_COLUMNS.values()) + "\n"
+        + f"{VOLUNTEER},2021-11-01," + ",".join("0.0" if column == "stress_score" else "" for column in DAILY_COLUMNS.values()) + "\n"
+        + f"{VOLUNTEER},2021-11-02," + ",".join("70.0" if column == "stress_score" else "" for column in DAILY_COLUMNS.values()) + "\n",
+    )
+
+    assert read_daily_readings(daily, VOLUNTEER, 0) == [Reading("stress_score", "2021-11-02T00:00", 70.0)]
+
+
+def test_loads_the_vo2_max_rule_with_the_nasa_limit(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE indicator_id = 'vo2_max'") == [
+        (17, "vo2_max", 32.9, None)
     ]
 
 

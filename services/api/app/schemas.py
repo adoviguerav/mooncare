@@ -80,7 +80,9 @@ class IndicatorResponse(BaseModel):
     readings: list[HistoryReading]
 
 
-MoodId = Literal["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
+MoodId = Literal[
+    "mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral", "mood_tired"
+]
 
 
 class Checkin(BaseModel):

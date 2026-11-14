@@ -76,6 +76,7 @@ MOOD_NAMES = {
     "mood_alert": "Alert",
     "mood_rested": "Rested or relaxed",
     "mood_neutral": "Neutral",
+    "mood_tired": "Tired",
 }
 
 # Indicator id, which is also its name, to the normal range of the Inspiration4 metabolic panel file, in mmol/L
@@ -325,6 +326,114 @@ INDICATORS = [
             ("fibrinogen", "Fibrinogen", "ng/mL"),
         ]
     ],
+    Indicator(
+        id="spo2",
+        name="Blood oxygen (SpO2)",
+        unit="%",
+        how_to_measure=(
+            "With a pulse oximeter, or a wrist tracker during the night. On the ISS, the Bio-Monitor shirt measures it."
+        ),
+        why_it_matters=(
+            "How much oxygen your blood carries. A low value, or one that falls from your own baseline, is a reason to repeat it and to assess breathing and circulation."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="breathing_rate",
+        name="Breathing rate during sleep",
+        unit="breaths/min",
+        how_to_measure=(
+            "A wearable sensor measures it while you sleep. On the ISS, the Bio-Monitor shirt measures it."
+        ),
+        why_it_matters=(
+            "How many breaths you take each minute while asleep. An abnormal rate, or one with symptoms, is a reason for a respiratory assessment."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="heart_rate_variability",
+        name="Heart rate variability",
+        unit="ms",
+        how_to_measure=(
+            "A wrist tracker or an ECG works it out from the time between heartbeats (RMSSD)."
+        ),
+        why_it_matters=(
+            "How much the time between your heartbeats changes. It is a signal of physical stress: follow its trend against your own baseline."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="stress_score",
+        name="Stress score of the watch",
+        unit="points",
+        how_to_measure=(
+            "The watch works it out each day, from 1 to 100. It is not a questionnaire."
+        ),
+        why_it_matters=(
+            "A daily score the watch computes from your body signals. Follow its trend against your own baseline."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="sleep_awake_minutes",
+        name="Time awake during the night",
+        unit="min",
+        how_to_measure=(
+            "A wrist tracker measures it every night."
+        ),
+        why_it_matters=(
+            "How long you were awake after going to bed. Frequent awakenings mean lower sleep quality."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="vo2_max",
+        name="Cardiovascular fitness (VO2 max)",
+        unit="mL/kg/min",
+        how_to_measure=(
+            "Estimated by the watch from heart rate and activity. On a mission it is measured in a standard exercise test."
+        ),
+        why_it_matters=(
+            "How much oxygen your body can use during hard exercise. It falls in microgravity without enough exercise, and a spacewalk needs a minimum."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="anxiety_score",
+        name="Anxiety questionnaire (STAI)",
+        unit="points",
+        how_to_measure=(
+            "A questionnaire on the tablet, every few weeks."
+        ),
+        why_it_matters=(
+            "The score of the STAI anxiety questionnaire. A rising score is a reason to ask for confidential psychological support."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="positive_affect",
+        name="Positive affect (PANAS)",
+        unit="points",
+        how_to_measure=(
+            "A questionnaire on the tablet, every few weeks."
+        ),
+        why_it_matters=(
+            "The positive score of the PANAS questionnaire: how strongly you felt positive emotions. Follow its trend over time."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="negative_affect",
+        name="Negative affect (PANAS)",
+        unit="points",
+        how_to_measure=(
+            "A questionnaire on the tablet, every few weeks."
+        ),
+        why_it_matters=(
+            "The negative score of the PANAS questionnaire: how strongly you felt negative emotions. Follow its trend over time."
+        ),
+        source_id="lifesnaps",
+    ),
     *[
         Indicator(
             id=mood_id,
@@ -332,7 +441,7 @@ INDICATORS = [
             unit=None,
             how_to_measure="In the daily check-in on the tablet.",
             why_it_matters=(
-                "One of the six moods of the daily check-in. A change in the moods you report over time "
+                "One of the moods of the daily check-in. A change in the moods you report over time "
                 "can be a sign of a behavioural change. It is not a diagnosis."
             ),
             source_id="lifesnaps",
@@ -561,6 +670,21 @@ RULES = [
         threshold_source=(
             "Widest of the normal ranges given for haemoglobin in the Inspiration4 blood count file "
             "(NASA OSDR, OSD-569). The file gives a different range by astronaut and draw."
+        ),
+    ),
+    Rule(
+        indicator_id="vo2_max",
+        low=32.9,
+        title="Cardiovascular fitness below the NASA limit",
+        explanation=(
+            "Your VO2 max is below 32.9 mL/kg/min, the minimum NASA sets during a mission with spacewalks "
+            "in microgravity."
+        ),
+        action="Review your exercise plan and your tolerance to effort.",
+        threshold_source=(
+            "NASA-STD-3001, Volume 1, requirement V1 4001: in-mission VO2 max at or above 32.9 mL/kg/min. "
+            "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-031-exercise-overview.pdf. "
+            "The value shown is an estimate by the watch, not an exercise test."
         ),
     ),
 ]

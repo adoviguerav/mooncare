@@ -41,7 +41,7 @@ DAILY = (
     f"0,{VOLUNTEER},2021-11-01,68.9,0,7751.0,463.0,99.0,33.58,0.0,1.0,0.0,0.0,0.0,0.0\n"
     f"1,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,,,,,,,\n"
 )
-MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
+MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral", "mood_tired"]
 
 LoadClient = Callable[[str], TestClient]
 
@@ -258,6 +258,7 @@ def test_saving_a_checkin_returns_what_was_saved_and_the_panel_of_that_day_shows
         "mood_alert": {"taken_at": "2021-11-02T00:00", "value": 0.0},
         "mood_rested": {"taken_at": "2021-11-02T00:00", "value": 1.0},
         "mood_neutral": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+        "mood_tired": {"taken_at": "2021-11-02T00:00", "value": 0.0},
     }
 
 
@@ -297,7 +298,7 @@ def test_a_checkin_for_an_unknown_crew_member_returns_404(client: TestClient) ->
     assert response.json() == {"detail": "Crew member 99 not found"}
 
 
-def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> None:
+def test_a_checkin_with_no_moods_saves_the_seven_as_zero(client: TestClient) -> None:
     response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": []})
 
     assert response.status_code == 200
