@@ -196,19 +196,29 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 <div class="wrap" id="crewApp" hidden>
 <header>
   <h1 style="display:flex;flex-direction:column;gap:6px">
-    <svg class="mini" viewBox="40 75 690 375" role="img" aria-label="Moon Care" style="width:112px;height:auto;overflow:visible">
+    <svg class="mini" viewBox="30 55 690 465" role="img" aria-label="Moon Care" style="width:150px;height:auto;border-radius:14px;filter:drop-shadow(0 6px 18px rgba(5,13,26,.45))">
       <defs>
         <linearGradient id="sgInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
         <radialGradient id="sgMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+        <radialGradient id="sgGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".5"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="sgBg" cx=".5" cy=".3" r=".9"><stop offset="0" stop-color="#0d2745"/><stop offset="1" stop-color="#050d1a"/></radialGradient>
+        <clipPath id="sgClip"><rect x="30" y="55" width="690" height="465" rx="44"/></clipPath>
       </defs>
-      <rect x="40" y="75" width="690" height="375" rx="36" fill="#050d1a"/>
-      <g fill="none" stroke="url(#sgInk)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <g clip-path="url(#sgClip)">
+        <rect x="30" y="55" width="690" height="465" fill="url(#sgBg)"/>
+        <circle cx="480" cy="150" r="150" fill="url(#sgGlow)"/>
+        <g fill="#e6f1fb" opacity=".7"><circle cx="70" cy="85" r="2.5"/><circle cx="230" cy="70" r="2"/><circle cx="660" cy="95" r="2.5"/><circle cx="700" cy="290" r="2"/><circle cx="50" cy="300" r="2.2"/><circle cx="600" cy="500" r="2"/><circle cx="120" cy="500" r="2.4"/><circle cx="395" cy="72" r="2"/></g>
+      </g>
+      <rect x="30.5" y="55.5" width="689" height="464" rx="44" fill="none" stroke="#2fd8ff" stroke-opacity=".35" stroke-width="2"/>
+      <g fill="none" stroke="url(#sgInk)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
         <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="4"/><path d="M610 220V90L690 220V90"/>
         <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
         <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
       </g>
       <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#sgMoon)"/>
+      <g fill="#0d2745"><circle cx="437" cy="125" r="6"/><circle cx="447" cy="106" r="3"/><circle cx="438" cy="172" r="5"/><circle cx="448" cy="196" r="3"/><circle cx="433" cy="150" r="3"/></g>
+      <path d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535" fill="none" stroke="#2fd8ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <small>Sol 248 · Lunar Base Alpha · Online</small>
   </h1>
