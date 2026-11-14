@@ -26,8 +26,8 @@ Not built yet:
 
 ## 2. How the two teams work in parallel
 
-- **Backend, data and AI** (2 people) works in `services/api` and `database`, on the branch `feat/backend`.
-- **Design, frontend, web and app** (2 people) works in `apps`, on the branch `feat/frontend`.
+- **Backend, data and AI** (2 people) works in `services/api` and `database`, on the branch `feat/backend`. Adolfo and Ivan.
+- **Design, frontend, web and app** (2 people) works in `apps`, on the branch `feat/frontend`. Becky and Alex.
 - Each team merges into `main` when a task passes its check. The rules are in [branches.md](branches.md).
 - The contracts in the MVP architecture, section 3, are the line between the two teams. They say exactly what the backend returns. The check-in contract is already written there, so the frontend can build its screen before the endpoint exists.
 - A change to a contract is agreed by both teams first.
@@ -119,7 +119,7 @@ Proposed, to confirm.
 
 | Team | People |
 | :-- | :-- |
-| Backend, data and AI (2) |  |
-| Design, frontend, web and app (2) |  |
+| Backend, data and AI | Adolfo, Ivan |
+| Design, frontend, web and app | Becky, Alex |
 | Medical review of the rules |  |
 | Pitch and submission |  |

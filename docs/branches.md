@@ -1,6 +1,6 @@
 # Real Telemetry · Branches
 
-Two teams, two branches. What each team builds is in the [plan](plan.md).
+Two teams. Each team has one branch, and each person has their own branch off it. What each team builds is in the [plan](plan.md).
 
 | Branch | Team | Folders it owns |
 | :-- | :-- | :-- |
@@ -10,12 +10,20 @@ Two teams, two branches. What each team builds is in the [plan](plan.md).
 
 `docs/` and the README belong to both teams.
 
+| Personal branch | Person | Merges into |
+| :-- | :-- | :-- |
+| `feat/backend-adolfo` | Adolfo | `feat/backend` |
+| `feat/backend-ivan` | Ivan | `feat/backend` |
+| `feat/frontend-becky` | Becky | `feat/frontend` |
+| `feat/frontend-alex` | Alex | `feat/frontend` |
+
 ## How to work
 
-1. Work on your team's branch. The two of you push to it directly. Pull before you start, and push often.
-2. When a task from the plan passes its "done when" check, merge your branch into `main` and push. No pull request and no review needed.
-3. After any merge into `main`, both teams merge `main` into their branch. Do it at least every few hours.
-4. Stay inside your folders. Then the two branches never touch the same file and merges have no conflicts.
+1. Work on your personal branch and push often.
+2. When a piece works, merge your branch into your team's branch and push. Then your teammate merges the team branch into theirs.
+3. When a task from the plan passes its "done when" check, merge the team branch into `main` and push. No pull request and no review needed.
+4. After any merge into `main`, both teams merge `main` into their team branch, and each person merges the team branch into theirs. Do it at least every few hours.
+5. Stay inside your team's folders. Then the two teams never touch the same file. Inside a team, say which task you take before you start, so the two of you do not edit the same file.
 
 ## The line between the teams
 
