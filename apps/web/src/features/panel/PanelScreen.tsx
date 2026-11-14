@@ -1,8 +1,23 @@
+import { useState } from 'react'
+import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
 import { formatTakenAt, formatValue } from '../../lib/format.ts'
 import { useApi } from '../../hooks/useApi.ts'
+
+const MOOD_PREFIX = 'mood_'
+const MOOD_CHOSEN = 1
+
+// Which indicators are shown together. An indicator in no group goes under OTHER_GROUP.
+const GROUPS = [
+  { title: 'Blood', indicatorIds: ['glucose'] },
+  { title: 'Heart', indicatorIds: ['heart_rate', 'resting_heart_rate'] },
+  { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
+  { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency'] },
+  { title: 'Temperature', indicatorIds: ['skin_temperature'] },
+]
+const OTHER_GROUP = 'Other'
 
 type Props = {
   crewMember: CrewMember
@@ -11,7 +26,7 @@ type Props = {
 }
 
 export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Props) {
-  const { data: panel, error } = useApi(() => fetchPanel(crewMember.id, TODAY))
+  const [savedCheckins, setSavedCheckins] = useState(0)
 
   return (
     <main className="screen">
@@ -24,17 +39,99 @@ export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Pr
           Switch profile
         </button>
       </header>
-      {error !== null && <p role="alert">Could not load the panel. {error}</p>}
-      <div className="cards">
-        {panel?.indicators.map((indicator) => (
-          <IndicatorCard
-            key={indicator.id}
-            indicator={indicator}
-            onOpen={() => onOpenIndicator(indicator.id)}
-          />
-        ))}
-      </div>
+      <PanelContent
+        key={savedCheckins}
+        crewMemberId={crewMember.id}
+        onOpenIndicator={onOpenIndicator}
+        onCheckinSaved={() => setSavedCheckins(savedCheckins + 1)}
+      />
     </main>
+  )
+}
+
+type PanelContentProps = {
+  crewMemberId: number
+  onOpenIndicator: (indicatorId: string) => void
+  onCheckinSaved: () => void
+}
+
+// Remounted with a new key after each saved check-in, so the panel is fetched again
+function PanelContent({ crewMemberId, onOpenIndicator, onCheckinSaved }: PanelContentProps) {
+  const { data: panel, error } = useApi(() => fetchPanel(crewMemberId, TODAY))
+  const [editingCheckin, setEditingCheckin] = useState(false)
+
+  if (error !== null) return <p role="alert">Could not load the panel. {error}</p>
+  if (panel === null) return null
+
+  const moods = panel.indicators.filter((indicator) => indicator.id.startsWith(MOOD_PREFIX))
+  const measurements = panel.indicators.filter((indicator) => !indicator.id.startsWith(MOOD_PREFIX))
+  const withAlert = measurements.filter((indicator) => indicator.broken_rule !== null)
+  const withoutAlert = measurements.filter((indicator) => indicator.broken_rule === null)
+  const todayMoods = moods.filter((mood) => mood.reading?.taken_at.startsWith(TODAY))
+  const chosenToday = todayMoods.filter((mood) => mood.reading?.value === MOOD_CHOSEN)
+
+  return (
+    <>
+      {todayMoods.length === 0 || editingCheckin ? (
+        <CheckinForm
+          crewMemberId={crewMemberId}
+          date={TODAY}
+          moods={moods}
+          chosenToday={chosenToday.map((mood) => mood.id)}
+          onSaved={onCheckinSaved}
+        />
+      ) : (
+        <div className="card mood-card">
+          <span className="card-name">Your mood today</span>
+          <span className="card-value">
+            {chosenToday.map((mood) => mood.name).join(', ') || 'No mood chosen'}
+          </span>
+          <button className="link-button" onClick={() => setEditingCheckin(true)}>
+            Change
+          </button>
+        </div>
+      )}
+      <section>
+        <h2>Needs attention</h2>
+        {withAlert.length === 0 ? (
+          <p className="muted">No alerts today.</p>
+        ) : (
+          <IndicatorCards indicators={withAlert} onOpenIndicator={onOpenIndicator} />
+        )}
+      </section>
+      {groupIndicators(withoutAlert).map((group) => (
+        <section key={group.title}>
+          <h2>{group.title}</h2>
+          <IndicatorCards indicators={group.indicators} onOpenIndicator={onOpenIndicator} />
+        </section>
+      ))}
+    </>
+  )
+}
+
+type IndicatorGroup = { title: string; indicators: PanelIndicator[] }
+
+function groupIndicators(indicators: PanelIndicator[]): IndicatorGroup[] {
+  const groupedIds = GROUPS.flatMap((group) => group.indicatorIds)
+  const groups = [
+    ...GROUPS.map((group) => ({
+      title: group.title,
+      indicators: indicators.filter((indicator) => group.indicatorIds.includes(indicator.id)),
+    })),
+    { title: OTHER_GROUP, indicators: indicators.filter((indicator) => !groupedIds.includes(indicator.id)) },
+  ]
+  return groups.filter((group) => group.indicators.length > 0)
+}
+
+type IndicatorCardsProps = { indicators: PanelIndicator[]; onOpenIndicator: (indicatorId: string) => void }
+
+function IndicatorCards({ indicators, onOpenIndicator }: IndicatorCardsProps) {
+  return (
+    <div className="cards">
+      {indicators.map((indicator) => (
+        <IndicatorCard key={indicator.id} indicator={indicator} onOpen={() => onOpenIndicator(indicator.id)} />
+      ))}
+    </div>
   )
 }
 

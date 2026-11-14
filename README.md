@@ -53,6 +53,8 @@ cd services/api && uv run uvicorn app.main:app --port 8000
 cd apps/web && npm run dev
 ```
 
+Each crew member is fictional: the blood values of one Inspiration4 astronaut and the wearable and mood data of one LifeSnaps volunteer. The values are real. The LifeSnaps dates are shifted by a fixed number of days so they line up with the mission dates.
+
 Open http://localhost:5173. "Today" is the demo date, 2021-11-02; add `?date=YYYY-MM-DD` to look at another day.
 
 ## Tests

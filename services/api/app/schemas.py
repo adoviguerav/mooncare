@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -73,3 +74,15 @@ class IndicatorResponse(BaseModel):
     indicator: Indicator
     rules: list[Rule]
     readings: list[HistoryReading]
+
+
+MoodId = Literal["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
+
+
+class Checkin(BaseModel):
+    moods: list[MoodId]
+
+
+class CheckinResponse(BaseModel):
+    date: date
+    moods: list[MoodId]

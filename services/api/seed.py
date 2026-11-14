@@ -31,6 +31,12 @@ DAILY_COLUMNS = {
     "sleep_duration": "minutesAsleep",  # minutes asleep, not time in bed (the file's sleep_duration, in ms)
     "sleep_efficiency": "sleep_efficiency",
     "skin_temperature": "nightly_temperature",  # skin temperature during the night, not core temperature
+    "mood_happy": "HAPPY",
+    "mood_sad": "SAD",
+    "mood_tense": "TENSE/ANXIOUS",
+    "mood_alert": "ALERT",
+    "mood_rested": "RESTED/RELAXED",
+    "mood_neutral": "NEUTRAL",
 }
 
 ROWS_PER_INSERT = 1000
@@ -69,7 +75,13 @@ DATASET_FILES = DatasetFiles(METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAP
 
 
 CREW = [
-    CrewPairing("Crew 1", inspiration4_code="C003", lifesnaps_id="621e2f9167b776a240011ccb"),
+    # -77 days puts the volunteer's last mood entry (2022-01-17) on 2021-11-01, the day before the demo date.
+    CrewPairing(
+        "Crew 1",
+        inspiration4_code="C003",
+        lifesnaps_id="621e2f9167b776a240011ccb",
+        lifesnaps_offset_days=-77,
+    ),
 ]
 
 

@@ -125,11 +125,13 @@ In this order:
 3. **Other environments:** adapt the tool to a space station, a rover or a base on the Moon or another planet; the displays may change with each environment. JAXA and NASA agreed in 2024 that Japan will build a pressurized rover for Artemis. Why: we start with the spacecraft because it is the most useful.
 4. **Cross-indicator warnings.** Warn about problems that only show when several indicators are read together, with a risk level
 5. **Indicator models.** Models that learn each indicator and detect when something is going badly. They come after personal baseline rules (MVP architecture, section 5)
+6. **Two profile types: commander and crew member.** The commander is responsible for the crew's health (section 1), so their profile shows the crew, not only themselves. What they see is not decided yet (below, and section 6)
 
 ### Not decided yet
 
 | Item | Proposed / Open | Owner |
 | :-- | :-- | :-- |
+| What the commander profile sees (stretch goal 6). Two options: only who has an alert and who has checked in, with no values, which keeps the privacy decision in section 6. Or each crew member's full panel, which changes it | Open |  |
 | Commander weekly report on the crew, plus an alert when someone shows a worrying trend, like a Duolingo classroom (Alex) | Proposed. Suggested out, it conflicts with the privacy decision in section 6 |  |
 | Team risk (pain point 3): how the crew works together. Nothing in the scope covers it, and the commander report above is the only proposal that touches it | Open |  |
 
@@ -196,7 +198,7 @@ flowchart TD
     dashboard["Web dashboard (tablet)"]
     apps["Mobile apps"]
     sensors["Sensors and devices"]
-    ship["SHIP backend · SQLite · rules and alerts"]
+    ship["SHIP backend · PostgreSQL · rules and alerts"]
     ai["Onboard AI (only advises)"]
     ground["GROUND backend"]
     surgeon["Flight surgeon"]
@@ -211,7 +213,7 @@ flowchart TD
 | Part | What it does | Status |
 | :-- | :-- | :-- |
 | Web dashboard | The tablet app each astronaut uses | Built (MVP) |
-| SHIP backend | Stores the readings in one SQLite file, applies the rules and returns the alerts. Everything the crew needs runs here | Built (MVP) |
+| SHIP backend | Stores the readings in a PostgreSQL database, applies the rules and returns the alerts. Everything the crew needs runs here | Built (MVP) |
 | Mobile apps | The same panel on a phone | Planned |
 | Sensors and devices | Send readings on their own (Bio-Monitor shirt, wrist tracker, glucose monitor). Today the readings come from the datasets and the check-in | Planned |
 | Onboard AI | Guides emergencies by voice and explains alerts. It only advises (E1 to E6) | Planned (stretch) |

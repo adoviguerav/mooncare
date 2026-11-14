@@ -135,8 +135,8 @@ def test_stores_one_reading_per_day_and_daily_column_of_the_paired_volunteer(tmp
     daily = write_csv(
         tmp_path / "daily.csv",
         "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
-        f"0,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,\n"
-        f"1,{OTHER_VOLUNTEER},2021-11-02,55.0,30,9000.0,480.0,95.0,33.0\n",
+        f"0,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,,,,,,,\n"
+        f"1,{OTHER_VOLUNTEER},2021-11-02,55.0,30,9000.0,480.0,95.0,33.0,,,,,,\n",
     )
 
     assert read_daily_readings(daily, VOLUNTEER, offset_days=1) == [
@@ -145,6 +145,26 @@ def test_stores_one_reading_per_day_and_daily_column_of_the_paired_volunteer(tmp
         Reading("steps", "2021-11-03T00:00", 8122.0),
         Reading("sleep_duration", "2021-11-03T00:00", 355.0),
         Reading("sleep_efficiency", "2021-11-03T00:00", 98.0),
+    ]
+
+
+def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(tmp_path: Path) -> None:
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        ",id,date,resting_hr,very_active_minutes,steps,minutesAsleep,sleep_efficiency,nightly_temperature,"
+        "HAPPY,SAD,TENSE/ANXIOUS,ALERT,RESTED/RELAXED,NEUTRAL\n"
+        f"0,{VOLUNTEER},2021-10-30,,,,,,,1.0,0.0,0.0,0.0,1.0,0.0\n"
+        f"1,{VOLUNTEER},2021-10-31,,,,,,,,,,,,\n"
+        f"2,{OTHER_VOLUNTEER},2021-10-30,,,,,,,0.0,1.0,0.0,0.0,0.0,0.0\n",
+    )
+
+    assert read_daily_readings(daily, VOLUNTEER, offset_days=2) == [
+        Reading("mood_happy", "2021-11-01T00:00", 1.0),
+        Reading("mood_sad", "2021-11-01T00:00", 0.0),
+        Reading("mood_tense", "2021-11-01T00:00", 0.0),
+        Reading("mood_alert", "2021-11-01T00:00", 0.0),
+        Reading("mood_rested", "2021-11-01T00:00", 1.0),
+        Reading("mood_neutral", "2021-11-01T00:00", 0.0),
     ]
 
 

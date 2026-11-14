@@ -34,4 +34,4 @@ The contracts in the [MVP architecture](mvp_architecture.md), section 3, say exa
 
 ## Run it
 
-The steps are in the [README](../README.md). The datasets are in the repo, so after cloning you only run the seed script.
+The steps are in the [README](../README.md). The datasets and the seed files are in the repo, so after cloning you only start the database.

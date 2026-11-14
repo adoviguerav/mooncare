@@ -1,20 +1,23 @@
 from datetime import date, datetime, time, timedelta
-from typing import Annotated
+from typing import Annotated, get_args
 
 from fastapi import FastAPI, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import distinct_on
+from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session
 
 from app import models
 from app.db import DbSession
 from app.schemas import (
     BrokenRule,
+    Checkin,
+    CheckinResponse,
     CrewMember,
     CrewResponse,
     HistoryReading,
     Indicator,
     IndicatorResponse,
+    MoodId,
     PanelIndicator,
     PanelReading,
     PanelResponse,
@@ -22,6 +25,7 @@ from app.schemas import (
     Source,
 )
 
+MOOD_IDS = get_args(MoodId)
 TAKEN_AT_FORMAT = "%Y-%m-%dT%H:%M"  # the contracts give taken_at as YYYY-MM-DDTHH:MM
 
 
@@ -156,3 +160,30 @@ def get_indicator(
         rules=rules,
         readings=history,
     )
+
+
+@app.put("/api/crew/{crew_member_id}/checkins/{checkin_date}")
+def save_checkin(
+    crew_member_id: int, checkin_date: date, checkin: Checkin, session: DbSession
+) -> CheckinResponse:
+    require_crew_member(session, crew_member_id)
+    chosen_moods = [mood_id for mood_id in MOOD_IDS if mood_id in checkin.moods]
+    save_moods = insert(models.Reading).values(
+        [
+            {
+                "crew_member_id": crew_member_id,
+                "indicator_id": mood_id,
+                "taken_at": start_of(checkin_date),
+                "value": float(mood_id in chosen_moods),
+            }
+            for mood_id in MOOD_IDS
+        ]
+    )
+    session.execute(
+        save_moods.on_conflict_do_update(
+            index_elements=["crew_member_id", "indicator_id", "taken_at"],
+            set_={"value": save_moods.excluded.value},
+        )
+    )
+    session.commit()
+    return CheckinResponse(date=checkin_date, moods=chosen_moods)
