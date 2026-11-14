@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from seed import (
+    DAILY_COLUMNS,
     CrewPairing,
     Reading,
     read_daily_readings,
@@ -12,22 +13,18 @@ from seed import (
     read_heart_rate_readings,
     to_sql_literal,
 )
-from seed_content import RULES
+from seed_content import INDICATORS, RULES
 
 METABOLIC_PANEL_HEADER = (
     "Sample Name,glucose_value_milligram_per_deciliter,"
     "glucose_range_min_milligram_per_deciliter,glucose_range_max_milligram_per_deciliter\n"
 )
 HOURLY_HEADER = "id,date,hour,bpm\n"
-DAILY_HEADER = (
-    "id,date,resting_hr,minutesAsleep,sleep_efficiency,nightly_temperature,very_active_minutes,steps,"
-    "ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
-)
 VOLUNTEER = "621e2f9167b776a240011ccb"
 OTHER_VOLUNTEER = "621e2fce67b776a240279baa"
 CREW = [CrewPairing("Crew 1", "C003", VOLUNTEER)]
 
-LoadSeeds = Callable[[list[CrewPairing], Path, Path, Path], None]
+LoadSeeds = Callable[[list[CrewPairing], Path, Path], None]
 FetchAll = Callable[[str], list[tuple]]
 
 
@@ -53,7 +50,7 @@ def test_stores_each_glucose_draw_on_its_calendar_date(
     )
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
+    load_seeds(CREW, metabolic_panel, hourly)
 
     assert fetch_all(
         "SELECT taken_at, value FROM dat.reading WHERE indicator_id = 'glucose' ORDER BY taken_at"
@@ -90,7 +87,7 @@ def test_loads_the_glucose_rule_with_the_limits_of_the_nasa_file(
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
+    load_seeds(CREW, metabolic_panel, hourly)
 
     assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule") == [(1, "glucose", 65.0, 99.0)]
 
@@ -100,7 +97,7 @@ def test_a_new_row_gets_the_next_id_after_the_seeded_ones(
 ) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
-    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
+    load_seeds(CREW, metabolic_panel, hourly)
 
     new_ids = fetch_all(
         "INSERT INTO cfg.rule (indicator_id, high, title, explanation, action, threshold_source) "
@@ -134,49 +131,45 @@ def test_shifts_the_volunteer_days_by_the_crew_offset(tmp_path: Path) -> None:
     ]
 
 
+def test_stores_one_reading_per_day_and_daily_column_of_the_paired_volunteer(tmp_path: Path) -> None:
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
+        f"0,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,,,,,,,\n"
+        f"1,{OTHER_VOLUNTEER},2021-11-02,55.0,30,9000.0,480.0,95.0,33.0,,,,,,\n",
+    )
+
+    assert read_daily_readings(daily, VOLUNTEER, offset_days=1) == [
+        Reading("resting_heart_rate", "2021-11-03T00:00", 68.0),
+        Reading("very_active_minutes", "2021-11-03T00:00", 0.0),
+        Reading("steps", "2021-11-03T00:00", 8122.0),
+        Reading("sleep_duration", "2021-11-03T00:00", 355.0),
+        Reading("sleep_efficiency", "2021-11-03T00:00", 98.0),
+    ]
+
+
 def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(tmp_path: Path) -> None:
     daily = write_csv(
         tmp_path / "daily.csv",
-        DAILY_HEADER
-        + f"{VOLUNTEER},2021-10-30,,,,,,,0.0,1.0,0.0,1.0,0.0,0.0\n"
-        + f"{VOLUNTEER},2021-10-31,,,,,,,,,,,,\n"
-        + f"{OTHER_VOLUNTEER},2021-10-30,,,,,,,0.0,0.0,0.0,0.0,1.0,0.0\n",
+        ",id,date,resting_hr,very_active_minutes,steps,minutesAsleep,sleep_efficiency,nightly_temperature,"
+        "HAPPY,SAD,TENSE/ANXIOUS,ALERT,RESTED/RELAXED,NEUTRAL\n"
+        f"0,{VOLUNTEER},2021-10-30,,,,,,,1.0,0.0,0.0,0.0,1.0,0.0\n"
+        f"1,{VOLUNTEER},2021-10-31,,,,,,,,,,,,\n"
+        f"2,{OTHER_VOLUNTEER},2021-10-30,,,,,,,0.0,1.0,0.0,0.0,0.0,0.0\n",
     )
 
-    assert sorted(read_daily_readings(daily, VOLUNTEER, offset_days=2), key=lambda r: r.indicator_id) == [
-        Reading("mood_alert", "2021-11-01T00:00", 0.0),
+    assert read_daily_readings(daily, VOLUNTEER, offset_days=2) == [
         Reading("mood_happy", "2021-11-01T00:00", 1.0),
-        Reading("mood_neutral", "2021-11-01T00:00", 0.0),
-        Reading("mood_rested", "2021-11-01T00:00", 1.0),
         Reading("mood_sad", "2021-11-01T00:00", 0.0),
         Reading("mood_tense", "2021-11-01T00:00", 0.0),
+        Reading("mood_alert", "2021-11-01T00:00", 0.0),
+        Reading("mood_rested", "2021-11-01T00:00", 1.0),
+        Reading("mood_neutral", "2021-11-01T00:00", 0.0),
     ]
 
 
-def test_stores_the_daily_wearable_values_of_the_volunteer_on_the_shifted_day(tmp_path: Path) -> None:
-    daily = write_csv(
-        tmp_path / "daily.csv",
-        DAILY_HEADER
-        + f"{VOLUNTEER},2022-01-18,61.5,367.0,98.0,31.25,0,4958.0,,,,,,\n"
-        + f"{VOLUNTEER},2022-01-19,62.5,134.0,99.0,,0,3800.0,,,,,,\n"
-        + f"{OTHER_VOLUNTEER},2022-01-18,70.0,400.0,90.0,33.0,12,9000.0,,,,,,\n",
-    )
-
-    readings = read_daily_readings(daily, VOLUNTEER, offset_days=-77)
-
-    assert sorted(readings, key=lambda r: (r.taken_at, r.indicator_id)) == [
-        Reading("resting_heart_rate", "2021-11-02T00:00", 61.5),
-        Reading("skin_temperature", "2021-11-02T00:00", 31.25),
-        Reading("sleep_duration", "2021-11-02T00:00", 367.0),
-        Reading("sleep_efficiency", "2021-11-02T00:00", 98.0),
-        Reading("steps", "2021-11-02T00:00", 4958.0),
-        Reading("very_active_minutes", "2021-11-02T00:00", 0.0),
-        Reading("resting_heart_rate", "2021-11-03T00:00", 62.5),
-        Reading("sleep_duration", "2021-11-03T00:00", 134.0),
-        Reading("sleep_efficiency", "2021-11-03T00:00", 99.0),
-        Reading("steps", "2021-11-03T00:00", 3800.0),
-        Reading("very_active_minutes", "2021-11-03T00:00", 0.0),
-    ]
+def test_every_daily_indicator_has_its_text_and_source() -> None:
+    assert set(DAILY_COLUMNS) <= {indicator.id for indicator in INDICATORS}
 
 
 @pytest.mark.parametrize(

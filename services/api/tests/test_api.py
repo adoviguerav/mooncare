@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.main import app
-from seed import CrewPairing
+from seed import DAILY_COLUMNS, CrewPairing
+from seed_content import INDICATORS
 
-LoadSeeds = Callable[[list[CrewPairing], Path, Path, Path], None]
+LoadSeeds = Callable[..., None]
 
 VOLUNTEER = "621e2f9167b776a240011ccb"
 
@@ -32,20 +33,14 @@ HOURLY = (
     f"{VOLUNTEER},2021-11-02,23.0,64.25\n"
     f"{VOLUNTEER},2021-11-03,0.0,58.0\n"
 )
+# Columns in the order of DAILY_COLUMNS: resting_hr, very_active_minutes, steps, minutesAsleep,
+# sleep_efficiency, nightly_temperature, then the six moods: HAPPY, SAD, TENSE/ANXIOUS, ALERT,
+# RESTED/RELAXED, NEUTRAL. The file starts with an unnamed index column.
 DAILY = (
-    "id,date,resting_hr,minutesAsleep,sleep_efficiency,nightly_temperature,very_active_minutes,steps,"
-    "ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
-    f"{VOLUNTEER},2021-11-01,63.5,307.0,96.0,34.75,0,7876.0,0.0,0.0,0.0,0.0,1.0,0.0\n"
-    f"{VOLUNTEER},2021-11-02,61.5,367.0,98.0,31.25,0,4958.0,,,,,,\n"
+    "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
+    f"0,{VOLUNTEER},2021-11-01,68.9,0,7751.0,463.0,99.0,33.58,0.0,1.0,0.0,0.0,0.0,0.0\n"
+    f"1,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,,,,,,,\n"
 )
-DAILY_WEARABLE_IDS = [
-    "resting_heart_rate",
-    "sleep_duration",
-    "sleep_efficiency",
-    "skin_temperature",
-    "very_active_minutes",
-    "steps",
-]
 MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
 
 LoadClient = Callable[[str], TestClient]
@@ -94,9 +89,8 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
     assert response.status_code == 200
     panel = response.json()
     assert panel["date"] == "2021-11-02"
-    indicators = {indicator["id"]: indicator for indicator in panel["indicators"]}
-    assert set(indicators) == {"glucose", "heart_rate", *DAILY_WEARABLE_IDS, *MOOD_IDS}
-    glucose, heart_rate = indicators["glucose"], indicators["heart_rate"]
+    assert [indicator["id"] for indicator in panel["indicators"]] == [indicator.id for indicator in INDICATORS]
+    glucose, heart_rate = panel["indicators"][:2]
     assert glucose == {
         "id": "glucose",
         "name": "Blood glucose",
@@ -122,9 +116,20 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
 def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) -> None:
     response = client.get("/api/crew/1/panel", params={"date": "2021-01-01"})
 
-    indicators = response.json()["indicators"]
-    assert {i["id"] for i in indicators} == {"glucose", "heart_rate", *DAILY_WEARABLE_IDS, *MOOD_IDS}
-    assert all(i["reading"] is None and i["broken_rule"] is None for i in indicators)
+    assert [(i["id"], i["reading"], i["broken_rule"]) for i in response.json()["indicators"]] == [
+        (indicator.id, None, None) for indicator in INDICATORS
+    ]
+
+
+def test_panel_shows_the_daily_indicators_of_that_day(client: TestClient) -> None:
+    response = client.get("/api/crew/1/panel", params={"date": "2021-11-02"})
+
+    readings = {i["id"]: i["reading"] for i in response.json()["indicators"]}
+    assert readings["resting_heart_rate"] == {"taken_at": "2021-11-02T00:00", "value": 68.0}
+    assert readings["sleep_duration"] == {"taken_at": "2021-11-02T00:00", "value": 355.0}
+    assert readings["steps"] == {"taken_at": "2021-11-02T00:00", "value": 8122.0}
+    # An empty cell on 2021-11-02 leaves the reading of the day before
+    assert readings["skin_temperature"] == {"taken_at": "2021-11-01T00:00", "value": 33.58}
 
 
 def test_panel_carries_the_last_reading_forward_to_later_days(client: TestClient) -> None:
@@ -295,18 +300,3 @@ def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> No
     assert get_panel_moods(client, "2021-11-02") == {
         mood_id: {"taken_at": "2021-11-02T00:00", "value": 0.0} for mood_id in MOOD_IDS
     }
-
-
-def test_panel_returns_the_daily_wearable_indicators_of_the_demo_date(client: TestClient) -> None:
-    response = client.get("/api/crew/1/panel", params={"date": "2021-11-02"})
-
-    indicators = {i["id"]: i for i in response.json()["indicators"]}
-    assert [(i, indicators[i]["unit"], indicators[i]["reading"]) for i in DAILY_WEARABLE_IDS] == [
-        ("resting_heart_rate", "bpm", {"taken_at": "2021-11-02T00:00", "value": 61.5}),
-        ("sleep_duration", "min", {"taken_at": "2021-11-02T00:00", "value": 367.0}),
-        ("sleep_efficiency", "%", {"taken_at": "2021-11-02T00:00", "value": 98.0}),
-        ("skin_temperature", "°C", {"taken_at": "2021-11-02T00:00", "value": 31.25}),
-        ("very_active_minutes", "min", {"taken_at": "2021-11-02T00:00", "value": 0.0}),
-        ("steps", "steps", {"taken_at": "2021-11-02T00:00", "value": 4958.0}),
-    ]
-    assert all(indicators[i]["name"] != "" for i in DAILY_WEARABLE_IDS)

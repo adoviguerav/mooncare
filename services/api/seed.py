@@ -1,7 +1,7 @@
 """Writes the INSERT files in database/postgresql/seeds from the datasets.
 
 Run it after changing the crew, a text, a rule or how a dataset becomes readings, and commit the result.
-Loading the files into a database is done by database/postgresql/scripts/apply.sh.
+Loading the files into a database is done by load_database.py.
 """
 
 import csv
@@ -12,12 +12,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from app.config import (
-    LIFESNAPS_DAILY_CSV,
-    LIFESNAPS_HOURLY_CSV,
-    METABOLIC_PANEL_CSV,
-    SEEDS_DIR,
-)
+from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SEEDS_DIR
 from seed_content import INDICATORS, RULES, SOURCES
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
@@ -26,13 +21,16 @@ LANDING_DATE = date(2021, 9, 18)
 SAMPLE_LABEL_PATTERN = re.compile(r"([LR])[+-](\d+)")
 
 GLUCOSE_COLUMN = "glucose_value_milligram_per_deciliter"
+
+# LifeSnaps daily file: indicator id to the column it comes from (docs/parameters_and_datasets.md, table 1).
+# One reading per person, day and indicator, at T00:00. An empty cell produces no reading.
 DAILY_COLUMNS = {
     "resting_heart_rate": "resting_hr",
-    "sleep_duration": "minutesAsleep",
-    "sleep_efficiency": "sleep_efficiency",
-    "skin_temperature": "nightly_temperature",
     "very_active_minutes": "very_active_minutes",
     "steps": "steps",
+    "sleep_duration": "minutesAsleep",  # minutes asleep, not time in bed (the file's sleep_duration, in ms)
+    "sleep_efficiency": "sleep_efficiency",
+    "skin_temperature": "nightly_temperature",  # skin temperature during the night, not core temperature
     "mood_happy": "HAPPY",
     "mood_sad": "SAD",
     "mood_tense": "TENSE/ANXIOUS",
@@ -62,6 +60,18 @@ class Reading:
     indicator_id: str
     taken_at: str
     value: float
+
+
+@dataclass(frozen=True)
+class DatasetFiles:
+    """The raw files the readings come from."""
+
+    metabolic_panel: Path
+    lifesnaps_hourly: Path
+    lifesnaps_daily: Path
+
+
+DATASET_FILES = DatasetFiles(METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV)
 
 
 CREW = [
@@ -114,10 +124,19 @@ def read_daily_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) ->
             if row["id"] != lifesnaps_id:
                 continue
             day = datetime.fromisoformat(row["date"]).date() + timedelta(days=offset_days)
+            taken_at = f"{day.isoformat()}T00:00"
             for indicator_id, column in DAILY_COLUMNS.items():
                 if row[column] != "":
-                    readings.append(Reading(indicator_id, f"{day.isoformat()}T00:00", float(row[column])))
+                    readings.append(Reading(indicator_id, taken_at, float(row[column])))
     return readings
+
+
+def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> list[Reading]:
+    return (
+        read_glucose_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
+        + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+        + read_daily_readings(dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+    )
 
 
 # --- From rows to SQL ---
@@ -159,13 +178,14 @@ def reset_identity(table: str) -> str:
     return f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), (SELECT max(id) FROM {table}));\n"
 
 
-def as_transaction(body: str) -> str:
-    return GENERATED_HEADER + "\nBEGIN;\n\n" + body + "\nCOMMIT;\n"
+def with_header(body: str) -> str:
+    # No BEGIN or COMMIT here: whoever loads the files decides the transaction, so a failed load leaves nothing
+    return GENERATED_HEADER + "\n" + body
 
 
 def build_sources_sql() -> str:
     rows = [(source.id, source.name, source.url, source.citation) for source in SOURCES]
-    return as_transaction(build_inserts("cfg.source", ("id", "name", "url", "citation"), rows))
+    return with_header(build_inserts("cfg.source", ("id", "name", "url", "citation"), rows))
 
 
 def build_indicators_sql() -> str:
@@ -175,7 +195,7 @@ def build_indicators_sql() -> str:
         (i.id, i.name, i.unit, i.how_to_measure, i.why_it_matters, i.source_id, position)
         for position, i in enumerate(INDICATORS, start=1)
     ]
-    return as_transaction(build_inserts("cfg.indicator", columns, rows))
+    return with_header(build_inserts("cfg.indicator", columns, rows))
 
 
 def build_rules_sql() -> str:
@@ -185,40 +205,32 @@ def build_rules_sql() -> str:
         (position, r.indicator_id, r.low, r.high, r.title, r.explanation, r.action, r.threshold_source)
         for position, r in enumerate(RULES, start=1)
     ]
-    return as_transaction(build_inserts("cfg.rule", columns, rows) + reset_identity("cfg.rule"))
+    return with_header(build_inserts("cfg.rule", columns, rows) + reset_identity("cfg.rule"))
 
 
 def build_crew_sql(crew: list[CrewPairing]) -> str:
     rows = [(position, pairing.name) for position, pairing in enumerate(crew, start=1)]
-    return as_transaction(build_inserts("dat.crew_member", ("id", "name"), rows) + reset_identity("dat.crew_member"))
+    return with_header(build_inserts("dat.crew_member", ("id", "name"), rows) + reset_identity("dat.crew_member"))
 
 
-def build_readings_sql(
-    crew: list[CrewPairing], metabolic_panel_csv: Path, hourly_csv: Path, daily_csv: Path
-) -> str:
+def build_readings_sql(crew: list[CrewPairing], dataset_files: DatasetFiles) -> str:
     rows: list[tuple[int, str, str, float]] = []
     for crew_member_id, pairing in enumerate(crew, start=1):
-        readings = (
-            read_glucose_readings(metabolic_panel_csv, pairing.inspiration4_code)
-            + read_heart_rate_readings(hourly_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
-            + read_daily_readings(daily_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
-        )
+        readings = read_crew_readings(pairing, dataset_files)
         rows.extend((crew_member_id, reading.indicator_id, reading.taken_at, reading.value) for reading in readings)
         log.info("%s: %d readings", pairing.name, len(readings))
     rows.sort()
-    return as_transaction(build_inserts("dat.reading", ("crew_member_id", "indicator_id", "taken_at", "value"), rows))
+    return with_header(build_inserts("dat.reading", ("crew_member_id", "indicator_id", "taken_at", "value"), rows))
 
 
-def build_seed_files(
-    crew: list[CrewPairing], metabolic_panel_csv: Path, hourly_csv: Path, daily_csv: Path
-) -> dict[str, str]:
+def build_seed_files(crew: list[CrewPairing], dataset_files: DatasetFiles) -> dict[str, str]:
     """File name to content, in the order they must be loaded."""
     builders: dict[str, Callable[[], str]] = {
         "10_cfg_sources.sql": build_sources_sql,
         "11_cfg_indicators.sql": build_indicators_sql,
         "12_cfg_rules.sql": build_rules_sql,
         "20_dat_crew.sql": lambda: build_crew_sql(crew),
-        "21_dat_readings.sql": lambda: build_readings_sql(crew, metabolic_panel_csv, hourly_csv, daily_csv),
+        "21_dat_readings.sql": lambda: build_readings_sql(crew, dataset_files),
     }
     return {file_name: build() for file_name, build in builders.items()}
 
@@ -232,4 +244,4 @@ def write_seed_files(seeds_dir: Path, seed_files: dict[str, str]) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    write_seed_files(SEEDS_DIR, build_seed_files(CREW, METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV))
+    write_seed_files(SEEDS_DIR, build_seed_files(CREW, DATASET_FILES))

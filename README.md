@@ -17,6 +17,7 @@ services/
     app/            main.py (routes), schemas.py, models.py (SQLAlchemy), db.py, config.py
     seed.py           Crew and the code that turns the CSV files into the INSERT files
     seed_content.py   Sources, indicators and rules, with their text
+    load_database.py  Creates the tables and loads the INSERT files into PostgreSQL or Supabase
     download_data.py  tests/
 database/
   postgresql/ schema/ (CREATE), seeds/ (INSERT), docker-compose.yml. See its README
@@ -26,23 +27,20 @@ docs/         Design documents
 
 ## Setup (once)
 
-You need [uv](https://docs.astral.sh/uv/), Docker and Node 22.
+You need [uv](https://docs.astral.sh/uv/), PostgreSQL (local, or a Supabase project) and Node 22.
 
-The backend uses PostgreSQL: a local one in Docker, or Supabase. Both are built from the same `.sql` files, and `DATABASE_PROVIDER` in `services/api/.env` picks one. Details in [database/postgresql](database/postgresql/README.md).
+The backend uses PostgreSQL: a local server or Supabase. Both are built from the same `.sql` files, and `DATABASE_PROVIDER` in `services/api/.env` picks one. Details in [database/postgresql](database/postgresql/README.md).
 
 ```sh
-cd database/postgresql
-cp .env.example .env             # set POSTGRES_PASSWORD
-docker compose up -d             # creates the tables and loads the seeds on its first start
-
-cd ../../services/api
-cp .env.example .env             # DATABASE_PROVIDER=postgresql, and the same password in POSTGRESQL_URL
+cd services/api
+cp .env.example .env               # DATABASE_PROVIDER and the connection string of that database
+uv run python load_database.py     # creates the tables and loads the data, if they are not there yet
 
 cd ../../apps/web
 npm install
 ```
 
-After changing the crew, a text, a rule or the datasets, regenerate the INSERT files with `cd services/api && uv run python seed.py`, commit them, and rebuild the local database with `docker compose down -v && docker compose up -d`.
+After changing the crew, a text, a rule or the datasets: regenerate the INSERT files with `uv run python seed.py`, commit them, and reload with `uv run python load_database.py --rebuild`.
 
 ## Run
 
@@ -61,7 +59,7 @@ Open http://localhost:5173. "Today" is the demo date, 2021-11-02; add `?date=YYY
 
 ## Tests
 
-The backend tests create a throwaway database on the local PostgreSQL server and drop it at the end, so the Docker database must be running.
+The backend tests create throwaway databases on the server of `POSTGRESQL_URL` and drop them at the end, so that server must be running. They never touch Supabase.
 
 ```sh
 cd services/api && uv run pytest
