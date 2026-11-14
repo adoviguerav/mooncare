@@ -460,6 +460,7 @@ function resume() {
   if (pausedAt !== null) { startTime += performance.now() - pausedAt; pausedAt = null; }
   raf = requestAnimationFrame(loop);
 }
+window.MoonCareEarth = { canvas: earthCanvas, render: renderEarth };
 window.setIntroTagline = function (lines) { TAGLINE = lines; if (!running()) renderStatic(); };
 resize();
 if (RM) renderStatic(); else start();
