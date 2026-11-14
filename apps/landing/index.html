@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,7 +12,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#050d1a;--card:#0b1a2e;--line:#1b3550;--ink:#e6f1fb;--mute:#8aa3bb;--cy:#2fd8ff;--ok:#3be0a0;--warn:#ffb84a;--bad:#ff7b72;--warnbg:#3a2a0a;--okbg:#0b2f27;--badbg:#3b1514;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Space Grotesk",system-ui,sans-serif}
+body{margin:0;background:radial-gradient(ellipse at 50% -8%,#0d2745,#050d1a 62%) fixed,#050d1a;color:var(--ink);font:400 15px/1.5 "Space Grotesk",system-ui,sans-serif}
 .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 96px}
 header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
 h1{font-size:22px;margin:0}h1 small{display:block;font-size:13px;font-weight:400;color:var(--mute)}
@@ -79,8 +79,8 @@ footer{font-size:12px;color:var(--mute);margin-top:20px}
 #tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}#tabs button{flex:1;min-height:56px;font:inherit;font-size:13px;background:none;border:0;color:var(--mute);cursor:pointer}#tabs button:hover{color:var(--cy)}
 .ptab{width:100%;border-collapse:collapse;font-size:14px}.ptab th,.ptab td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}.ptab th{color:var(--mute);font-weight:500}
 .m h3{margin:4px 0;font-size:18px}.pd{margin:8px 0 0;font-size:14px}.pd dt{color:var(--mute);font-size:13px;margin-top:10px}.pd dd{margin:2px 0 0}
-body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--cy) 38%,transparent),transparent 42%),radial-gradient(circle at 88% 28%,color-mix(in srgb,var(--warn) 26%,transparent),transparent 40%),radial-gradient(circle at 35% 92%,color-mix(in srgb,#7c4dff 32%,transparent),transparent 46%)}
-.card{background:color-mix(in srgb,var(--card) 52%,transparent);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 28%,transparent),0 8px 32px rgba(0,0,0,.18)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;opacity:.8;background-image:radial-gradient(circle at 18% 6%,rgba(47,216,255,.22),transparent 38%),radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#cfe9ff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),radial-gradient(1px 1px at 60px 180px,#fff,transparent),radial-gradient(1px 1px at 140px 150px,#cfe9ff,transparent);background-size:auto,200px 200px,200px 200px,200px 200px,200px 200px,200px 200px}
+.card{background:color-mix(in srgb,var(--card) 64%,transparent);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid color-mix(in srgb,var(--cy) 24%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--cy) 20%,transparent),0 8px 32px rgba(2,8,18,.45)}
 .inc.card{background:color-mix(in srgb,var(--card) 90%,transparent);border-color:var(--warn);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 #tabs{background:color-mix(in srgb,var(--card) 58%,transparent);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%)}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.acts button,.back{font:inherit;font-size:13px;border:1px solid var(--cy);background:transparent;color:var(--cy);border-radius:8px;padding:6px 12px;cursor:pointer}.back{margin-bottom:14px}
@@ -116,6 +116,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--warn) 55%,transparent)}70%,100%{box-shadow:0 0 0 14px transparent}}
 @media(prefers-reduced-motion:reduce){#banner{animation:none!important}}
 #crewApp>header{padding-right:80px}
+
+body::after{content:"";position:fixed;left:50%;bottom:-78vw;width:150vw;max-width:1400px;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;z-index:-1;pointer-events:none;opacity:.4;background:radial-gradient(circle at 50% 0,#58b7f2,#1f66b8 28%,#0a2a5e 60%,transparent 72%);box-shadow:0 -10px 60px rgba(47,216,255,.35)}
+.moods button[aria-pressed="true"]{background:color-mix(in srgb,var(--cy) 16%,transparent)}
+#tabs{border-top-color:color-mix(in srgb,var(--cy) 28%,transparent)}
+h1 .mini{display:block}
+.ptab th,.ptab td{border-bottom-color:color-mix(in srgb,var(--cy) 16%,transparent)}
 </style>
 </head>
 <body>
@@ -150,7 +156,23 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 
 <div class="adm" id="adminApp" hidden>
   <header>
-    <h1>Mission control<small>Admin · Lunar Base Alpha · Sol 248</small></h1>
+    <h1 style="display:flex;flex-direction:column;gap:6px"><svg class="mini" viewBox="30 55 690 465" role="img" aria-label="Moon Care" style="width:160px;height:auto;overflow:visible">
+      <defs>
+        <linearGradient id="agInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
+        <radialGradient id="agMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+        <radialGradient id="agGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".5"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle cx="480" cy="150" r="170" fill="url(#agGlow)"/>
+      <g fill="none" stroke="url(#agInk)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
+        <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="4"/><path d="M610 220V90L690 220V90"/>
+        <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
+        <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
+      </g>
+      <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#agMoon)"/>
+      <g fill="#0d2745"><circle cx="437" cy="125" r="6"/><circle cx="447" cy="106" r="3"/><circle cx="438" cy="172" r="5"/><circle cx="448" cy="196" r="3"/><circle cx="433" cy="150" r="3"/></g>
+      <path d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535" fill="none" stroke="#2fd8ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><small>Mission control · Admin · Sol 248</small></h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="back" id="gsOpen" type="button" style="margin:0">Summary for ground team</button>
       <button class="back" id="admHome" type="button" style="margin:0">Switch role</button>
@@ -196,20 +218,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 <div class="wrap" id="crewApp" hidden>
 <header>
   <h1 style="display:flex;flex-direction:column;gap:6px">
-    <svg class="mini" viewBox="30 55 690 465" role="img" aria-label="Moon Care" style="width:150px;height:auto;border-radius:14px;filter:drop-shadow(0 6px 18px rgba(5,13,26,.45))">
+    <svg class="mini" viewBox="30 55 690 465" role="img" aria-label="Moon Care" style="width:160px;height:auto;overflow:visible">
       <defs>
         <linearGradient id="sgInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
         <radialGradient id="sgMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
         <radialGradient id="sgGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".5"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
-        <radialGradient id="sgBg" cx=".5" cy=".3" r=".9"><stop offset="0" stop-color="#0d2745"/><stop offset="1" stop-color="#050d1a"/></radialGradient>
-        <clipPath id="sgClip"><rect x="30" y="55" width="690" height="465" rx="44"/></clipPath>
       </defs>
-      <g clip-path="url(#sgClip)">
-        <rect x="30" y="55" width="690" height="465" fill="url(#sgBg)"/>
-        <circle cx="480" cy="150" r="150" fill="url(#sgGlow)"/>
-        <g fill="#e6f1fb" opacity=".7"><circle cx="70" cy="85" r="2.5"/><circle cx="230" cy="70" r="2"/><circle cx="660" cy="95" r="2.5"/><circle cx="700" cy="290" r="2"/><circle cx="50" cy="300" r="2.2"/><circle cx="600" cy="500" r="2"/><circle cx="120" cy="500" r="2.4"/><circle cx="395" cy="72" r="2"/></g>
-      </g>
-      <rect x="30.5" y="55.5" width="689" height="464" rx="44" fill="none" stroke="#2fd8ff" stroke-opacity=".35" stroke-width="2"/>
+      <circle cx="480" cy="150" r="170" fill="url(#sgGlow)"/>
       <g fill="none" stroke="url(#sgInk)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
         <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="4"/><path d="M610 220V90L690 220V90"/>
