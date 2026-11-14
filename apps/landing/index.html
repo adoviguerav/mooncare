@@ -288,6 +288,13 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 #msPage{background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}
 .hz summary{color:var(--ink)}
 .mbtn+.tag{margin-left:0}
+
+#bsPage{position:fixed;inset:0;z-index:54;display:flex;justify-content:center;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(2,8,18,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#bsPage[hidden]{display:none}
+.glassx{max-height:calc(100dvh - 32px);overflow-y:auto;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.04) 45%,rgba(255,255,255,.1)),rgba(10,28,52,.34)!important;-webkit-backdrop-filter:blur(26px) saturate(190%)!important;backdrop-filter:blur(26px) saturate(190%)!important;border-color:rgba(255,255,255,.28)!important}
+#bsPage:not([hidden]) .glassx{animation:slideup .28s ease-out}
+.bpart [data-s],.bhit{cursor:pointer}.bpart [data-s]:hover{fill:rgba(47,216,255,.16)}
+.bhit:hover{fill:rgba(47,216,255,.18)}
 </style>
 </head>
 <body>
@@ -514,10 +521,12 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <div class="chips" id="bTabs" role="group" aria-label="View" style="margin-top:6px"></div>
   <div id="bSys">
     <div class="bmap" id="bmap"></div>
-    <div class="card" id="bPanel" aria-live="polite"></div>
   </div>
   <div id="bHaz" hidden></div>
   <p class="note" style="margin-top:14px">Explanations are plain-language summaries of NASA Human Research Program hazard areas, still to be checked against the Resources tab. Blood pressure ranges are the AHA/ACC 2017 Earth reference. Mission limits are to be confirmed with the flight surgeon.</p>
+</section>
+<section id="bsPage" role="dialog" aria-modal="true" aria-label="Body system details" hidden>
+  <div class="inc card glassx"><button class="back x" id="bsX" type="button" aria-label="Close"><span aria-hidden="true">×</span></button><div id="bsBody"></div></div>
 </section>
 <section id="msPage" role="dialog" aria-modal="true" aria-label="Measure and act" hidden>
   <div class="inc card">
@@ -874,11 +883,11 @@ $("ptiles").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dat
 $("ptiles").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};
 setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME];document.querySelectorAll("[data-live]").forEach(e=>{const k=e.dataset.live;e.textContent=k==="hr"?M[0].val+Math.round(Math.sin(t/4000)*2+(Math.random()-.5)*2):k==="spo2"?d.spo2-(Math.sin(t/9000)>.85?1:0):d.br+(Math.sin(t/6000)>.6?1:0)})},3000);
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
-function route(){const v=view();$("tabs").hidden=v!=="crew";if(v!=="crew"){$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
+function route(){const v=view();$("tabs").hidden=v!=="crew";if(v!=="crew"){$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
   if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("msPage").hidden){closeMS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
 window.addEventListener("hashchange",route);
@@ -1043,26 +1052,18 @@ let bsel=null,bview="sys";
 function drawEnv(){const e=ENV[ENVK];$("envLine").textContent="Sol 248 · "+e.n+" · Online";
   $("envChips").innerHTML=Object.keys(ENV).map(k=>`<button type="button" aria-pressed="${k===ENVK}" data-k="${k}">${ENV[k].t}</button>`).join("")}
 function figure(){const a=Object.fromEntries(SYS.map(s=>[s.id,sysAlert(s)]));
-  const L=SYS.map(s=>{const x2=s.side==="l"?122:238,c=a[s.id]?"#ffb84a":"#2fd8ff";return`<path d="M${x2} ${s.y}L${s.dot[0]} ${s.dot[1]}" stroke="${c}" stroke-opacity=".5" stroke-dasharray="3 3" fill="none"/><circle class="bdot" cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}"/><circle cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}" stroke="#fff" stroke-opacity=".6"/>`}).join("");
+  const L=SYS.map(s=>{const x2=s.side==="l"?122:238,c=a[s.id]?"#ffb84a":"#2fd8ff";return`<path d="M${x2} ${s.y}L${s.dot[0]} ${s.dot[1]}" stroke="${c}" stroke-opacity=".5" stroke-dasharray="3 3" fill="none"/><circle class="bdot" cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}"/><circle cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}" stroke="#fff" stroke-opacity=".6"/><circle class="bhit" data-s="${s.id}" cx="${s.dot[0]}" cy="${s.dot[1]}" r="17" fill="transparent"/>`}).join("");
   return`<svg viewBox="0 0 360 400" aria-hidden="true"><defs><radialGradient id="bgl" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".22"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient></defs>
   <ellipse cx="180" cy="200" rx="110" ry="190" fill="url(#bgl)"/>
-  <g class="bpart"><ellipse cx="180" cy="48" rx="21" ry="26"/><rect x="173" y="72" width="14" height="14" rx="5"/><path d="M152 90Q180 82 208 90Q214 96 212 110L208 188Q180 200 152 188L148 110Q146 96 152 90Z"/><rect x="134" y="92" width="15" height="104" rx="7.5" transform="rotate(5 141 92)"/><rect x="211" y="92" width="15" height="104" rx="7.5" transform="rotate(-5 219 92)"/><ellipse cx="180" cy="200" rx="30" ry="14"/><rect x="152" y="205" width="27" height="150" rx="13.5"/><rect x="181" y="205" width="27" height="150" rx="13.5"/><ellipse cx="166" cy="362" rx="17" ry="7"/><ellipse cx="194" cy="362" rx="17" ry="7"/></g>${L}</svg>`}
+  <g class="bpart"><ellipse data-s="brain" cx="180" cy="48" rx="21" ry="26"/><rect x="173" y="72" width="14" height="14" rx="5"/><path data-s="heart" d="M152 90Q180 82 208 90Q214 96 212 110L208 188Q180 200 152 188L148 110Q146 96 152 90Z"/><rect data-s="bones" x="134" y="92" width="15" height="104" rx="7.5" transform="rotate(5 141 92)"/><rect data-s="bones" x="211" y="92" width="15" height="104" rx="7.5" transform="rotate(-5 219 92)"/><ellipse data-s="metab" cx="180" cy="200" rx="30" ry="14"/><rect data-s="bones" x="152" y="205" width="27" height="150" rx="13.5"/><rect data-s="bones" x="181" y="205" width="27" height="150" rx="13.5"/><ellipse cx="166" cy="362" rx="17" ry="7"/><ellipse cx="194" cy="362" rx="17" ry="7"/></g>${L}</svg>`}
 function drawBody(){
-  const al=SYS.filter(sysAlert);if(!bsel||!SYS.find(s=>s.id===bsel))bsel=(al[0]||SYS[1]).id;
+  const al=SYS.filter(sysAlert);
   $("bSum").textContent=al.length?al.length+" of "+SYS.length+" body systems need your attention: "+al.map(s=>s.n.toLowerCase()).join(", ")+".":"All "+SYS.length+" body systems look good. Tap a system to see what it means.";
   drawEnv();
   $("bTabs").innerHTML=[["sys","By body system"],["haz","By hazard"]].map(x=>`<button type="button" aria-pressed="${bview===x[0]}" data-v="${x[0]}">${x[1]}</button>`).join("");
   $("bSys").hidden=bview!=="sys";$("bHaz").hidden=bview!=="haz";
   if(bview==="sys"){
     $("bmap").innerHTML=figure()+SYS.map(s=>`<button type="button" class="bn ${s.side}${sysAlert(s)?" w":""}" data-s="${s.id}" aria-pressed="${s.id===bsel}" style="top:${s.y/4}%"><span class="pic">${ico(s.ic,18)}</span><span>${s.n}</span><i class="sd" aria-hidden="true"></i></button>`).join("");
-    const s=SYS.find(x=>x.id===bsel),a=sysAlert(s);
-    $("bPanel").innerHTML=`<h2 class="h2i"><span class="pic">${ico(s.ic)}</span>${s.n}</h2>
-     <div class="chips" style="margin:2px 0 8px">${s.haz.map(z=>`<span class="lchip n">${ico("info",14)}${z}</span>`).join("")}</div>
-     <div>${s.ind().map(i=>`<div class="irow"><span>${i[0]}</span><span><b>${i[1]}</b> ${i[2]?'<span class="tag warn">Check</span>':'<span class="tag ok">OK</span>'}</span></div>`).join("")}</div>
-     <h3 class="sec" style="margin-top:14px">Why it matters in space</h3><p style="margin:0">${s.why}</p>
-     <h3 class="sec">What you can do</h3><ul class="alist">${s.act.map(x=>`<li>${x}</li>`).join("")}</ul>
-     <div class="callbox"><span class="pic">${ico("alert",20)}</span><span><b>When to call the flight surgeon</b><br>${s.call}</span></div>
-     <div class="acts" style="margin-top:12px">${s.btn.map(b=>`<button type="button" ${b.ms?`data-ms="${b.ms}"`:b.go?`data-go="${b.go}"`:`data-di="${b.di}"`}>${b.l}</button>`).join("")}</div>`;
   }else drawHaz();
 }
 function allInd(ids){return SYS.filter(s=>ids.includes(s.id)).flatMap(s=>s.ind().map(i=>({s:s.id,l:i[0],v:i[1],a:i[2]})))}
@@ -1075,8 +1076,20 @@ function drawHaz(){const e=ENV[ENVK];
    {n:"Hostile closed environment",ic:"dome",d:"Recycled air, shared surfaces and limited food all affect your health.",env:e.cl,sys:["metab","immune"],pick:["Blood glucose","Skin temperature","Nutrition panel"],act:{l:"Measure glucose",ms:"glu"}}];
   $("bHaz").innerHTML=HZ.map((z,k)=>{const rows=allInd(z.sys).filter(r=>z.pick.includes(r.l)),bad=rows.some(r=>r.a);
     return`<details class="card hz" ${k===0?"open":""}><summary><span class="pic">${ico(z.ic)}</span><b>${z.n}</b>${z.sys.length?(bad?'<span class="tag warn">Check</span>':'<span class="tag ok">OK</span>'):'<span class="tag" style="background:var(--line);color:var(--mute)">Context</span>'}<span class="chev" aria-hidden="true">›</span></summary><div class="hb"><p style="margin:0 0 6px">${z.d}</p><p class="note" style="margin:0 0 8px"><b>Here:</b> ${z.env}</p>${rows.map(r=>`<div class="irow"><span>${r.l}</span><span><b>${r.v}</b> ${r.a?'<span class="tag warn">Check</span>':'<span class="tag ok">OK</span>'}</span></div>`).join("")}<div class="acts hzact"><button type="button" ${z.act.ms?`data-ms="${z.act.ms}"`:z.act.go?`data-go="${z.act.go}"`:'data-msg="1"'}>${z.act.l}</button></div></div></details>`}).join("")}
-function bodyClick(e){const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.s){bsel=b.dataset.s;drawBody();return}
+function openSys(id){bsel=id;const s=SYS.find(x=>x.id===id),a=sysAlert(s);
+  $("bsBody").innerHTML=`<h2 class="h2i"><span class="pic">${ico(s.ic)}</span>${s.n}</h2>
+     <div class="chips" style="margin:2px 0 8px">${s.haz.map(z=>`<span class="lchip n">${ico("info",14)}${z}</span>`).join("")}</div>
+     <div>${s.ind().map(i=>`<div class="irow"><span>${i[0]}</span><span><b>${i[1]}</b> ${i[2]?'<span class="tag warn">Check</span>':'<span class="tag ok">OK</span>'}</span></div>`).join("")}</div>
+     <h3 class="sec" style="margin-top:14px">Why it matters in space</h3><p style="margin:0">${s.why}</p>
+     <h3 class="sec">What you can do</h3><ul class="alist">${s.act.map(x=>`<li>${x}</li>`).join("")}</ul>
+     <div class="callbox"><span class="pic">${ico("alert",20)}</span><span><b>When to call the flight surgeon</b><br>${s.call}</span></div>
+     <div class="acts" style="margin-top:12px">${s.btn.map(b=>`<button type="button" ${b.ms?`data-ms="${b.ms}"`:b.go?`data-go="${b.go}"`:`data-di="${b.di}"`}>${b.l}</button>`).join("")}</div>`;
+  document.querySelectorAll("#bmap .bn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.s===id)));
+  $("bsPage").hidden=false;document.body.style.overflow="hidden";$("bsX").focus()}
+function closeBS(){$("bsPage").hidden=true;bsel=null;document.querySelectorAll("#bmap .bn").forEach(b=>b.setAttribute("aria-pressed","false"));document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden)?"":"hidden"}
+$("bsX").onclick=closeBS;$("bsPage").onclick=e=>{if(e.target.id==="bsPage")closeBS();const b=e.target.closest("button[data-ms],button[data-go],button[data-di]");if(!b)return;const d=b.dataset;closeBS();if(d.ms)openMeasure(d.ms);else if(d.go)location.hash=d.go;else if(d.di)openDet(+d.di)};
+function bodyClick(e){const t=e.target.closest("[data-s]");if(t){openSys(t.dataset.s);return}const b=e.target.closest("button");if(!b)return;
+  
   if(b.dataset.v){bview=b.dataset.v;drawBody();return}
   if(b.dataset.k){ENVK=b.dataset.k;try{localStorage.setItem("mooncare-env",ENVK)}catch(x){}drawBody();render();return}
   if(b.dataset.ms){openMeasure(b.dataset.ms);return}
