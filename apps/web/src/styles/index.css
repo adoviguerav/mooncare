@@ -231,6 +231,14 @@ section {
   color: var(--accent);
 }
 
+.mood-card {
+  align-items: flex-start;
+}
+
+.mood-card .card-value {
+  font-size: 1.5rem;
+}
+
 .checkin p {
   flex-basis: 100%;
   margin: 0;
