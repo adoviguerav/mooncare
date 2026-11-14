@@ -1,6 +1,6 @@
 // The contracts of docs/mvp_architecture.md, section 3.
 
-export type CrewRole = 'commander' | 'crew_member'
+export type CrewRole = 'commander' | 'medical_officer' | 'crew_member'
 
 export type CrewMember = { id: number; name: string; role: CrewRole }
 
@@ -13,6 +13,10 @@ export type PanelIndicator = {
   name: string
   unit: string | null
   reading: Reading | null
+  measured_by: 'sensor' | 'astronaut' | 'computed'
+  cadence_days: number | null
+  // A new reading is expected by the day of the panel and has not arrived
+  due: boolean
   broken_rule: BrokenRule | null
 }
 
@@ -33,6 +37,9 @@ export type Rule = {
   id: number
   low: number | null
   high: number | null
+  // Set on a personal baseline rule, which has no low or high
+  baseline_direction: 'above' | 'below' | null
+  baseline_deviations: number | null
   title: string
   explanation: string
   action: string
@@ -50,6 +57,7 @@ export type MoodId =
   | 'mood_alert'
   | 'mood_rested'
   | 'mood_neutral'
+  | 'mood_tired'
 
 export type Checkin = { date: string; moods: MoodId[] }
 

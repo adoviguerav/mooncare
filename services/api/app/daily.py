@@ -1,13 +1,13 @@
-"""The daily routine: the checklist with its XP, level and check-in streak, and the station's radiation.
+"""The daily routine: the checklist with its XP, level and check-in streak.
 
 The checklist mixes tasks the data completes on its own (a check-in that day, sleep recorded by the tracker)
 with tasks the crew member ticks. XP is game design: it rewards the routine and never depends on a health value.
 """
 
 from datetime import date, timedelta
-from typing import Annotated, Literal
+from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import Date, cast, func, select
 from sqlalchemy.dialects.postgresql import insert
@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from app import models
 from app.auth import CurrentUser, now, require_access_to_crew_member, require_own_crew_member
 from app.db import DbSession
-from app.schemas import Source
 
 router = APIRouter(prefix="/api", tags=["daily"])
 
@@ -24,7 +23,6 @@ XP_PER_LEVEL = 1000
 STREAK_WINDOW_DAYS = 400
 CHECKIN_MOODS = ("mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral")
 SLEEP_INDICATOR = "sleep_duration"
-RADIATION_SOURCE = "radlab"
 
 
 # --- Contracts ---
@@ -54,27 +52,6 @@ class DailyChecklist(BaseModel):
 
 class TaskUpdate(BaseModel):
     done: bool
-
-
-class InstrumentDose(BaseModel):
-    instrument: str
-    module: str
-    absorbed_dose_ugy: float
-    mean_rate_ugy_h: float
-    hours_measured: int
-
-
-class DayDose(BaseModel):
-    day: date
-    instrument: str
-    absorbed_dose_ugy: float
-
-
-class StationRadiation(BaseModel):
-    date: date
-    today: list[InstrumentDose]  # empty when no instrument measured that day
-    history: list[DayDose]  # the last `days` days, oldest first
-    source: Source
 
 
 # --- Checklist ---
@@ -207,33 +184,3 @@ def tick_task(
     )
     session.commit()
     return build_checklist(session, crew_member_id, day)
-
-
-# --- Station radiation ---
-
-
-@router.get("/station/radiation")
-def get_station_radiation(
-    session: DbSession,
-    user: CurrentUser,
-    on: Annotated[date, Query(alias="date")],
-    days: Annotated[int, Query(ge=1, le=120)] = 30,
-) -> StationRadiation:
-    """The absorbed dose each station instrument measured on the day, and its history. Not a person's dose."""
-    today = session.scalars(
-        select(models.StationDose).where(models.StationDose.day == on).order_by(models.StationDose.instrument)
-    ).all()
-    history = session.scalars(
-        select(models.StationDose)
-        .where(models.StationDose.day > on - timedelta(days=days), models.StationDose.day <= on)
-        .order_by(models.StationDose.day, models.StationDose.instrument)
-    ).all()
-    source = session.get(models.Source, RADIATION_SOURCE)
-    if source is None:
-        raise HTTPException(status_code=404, detail="The radiation source is not loaded")
-    return StationRadiation(
-        date=on,
-        today=[InstrumentDose.model_validate(dose, from_attributes=True) for dose in today],
-        history=[DayDose(day=dose.day, instrument=dose.instrument, absorbed_dose_ugy=dose.absorbed_dose_ugy) for dose in history],
-        source=Source.model_validate(source, from_attributes=True),
-    )

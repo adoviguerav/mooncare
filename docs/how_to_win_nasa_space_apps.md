@@ -27,7 +27,7 @@ We need:
 - The project page in English, with text and screenshots. It is what they read.
 - A 30-second video of the app, with English subtitles. NASA requires a demo, and going over 30 seconds makes the project ineligible.
 - The public GitHub repo with a README.
-- The app deployed: frontend on Vercel, backend and a Postgres database on Railway. The link goes in the README and on the project page.
+- The app deployed: frontend on Vercel, backend and a Postgres database on Render. The link goes in the README and on the project page.
 
 ### The link we share is the app, not the repo
 

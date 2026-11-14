@@ -3,8 +3,10 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.baseline import BaselineDirection
 
-CrewRole = Literal["commander", "crew_member"]
+
+CrewRole = Literal["commander", "medical_officer", "crew_member"]
 
 
 class CrewMember(BaseModel):
@@ -29,11 +31,17 @@ class BrokenRule(BaseModel):
     action: str
 
 
+MeasuredBy = Literal["sensor", "astronaut", "computed"]
+
+
 class PanelIndicator(BaseModel):
     id: str
     name: str
     unit: str | None
     reading: PanelReading | None
+    measured_by: MeasuredBy
+    cadence_days: int | None
+    due: bool  # a new reading is expected by the day of the panel and has not arrived
     broken_rule: BrokenRule | None
 
 
@@ -62,6 +70,8 @@ class Rule(BaseModel):
     id: int
     low: float | None
     high: float | None
+    baseline_direction: BaselineDirection | None  # set on a personal baseline rule, which has no low or high
+    baseline_deviations: float | None
     title: str
     explanation: str
     action: str
@@ -80,7 +90,9 @@ class IndicatorResponse(BaseModel):
     readings: list[HistoryReading]
 
 
-MoodId = Literal["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
+MoodId = Literal[
+    "mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral", "mood_tired"
+]
 
 
 class Checkin(BaseModel):

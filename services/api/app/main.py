@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import date, datetime, time, timedelta
 from typing import Annotated, get_args
 
@@ -10,6 +11,7 @@ from app import models
 from app.auth import CurrentUser, require_access_to_crew_member, require_own_crew_member
 from app.auth import router as auth_router
 from app.daily import router as daily_router
+from app.baseline import BASELINE_WINDOW_DAYS, find_baseline_limit
 from app.db import DbSession
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.sync_routes import router as sync_router
@@ -59,11 +61,42 @@ def get_rules_by_indicator(session: Session) -> dict[str, list[Rule]]:
     return rules_by_indicator
 
 
-def find_broken_rule(rules: list[Rule], value: float) -> Rule | None:
-    for rule in rules:
+def has_baseline_rule(rules: list[Rule]) -> bool:
+    return any(rule.baseline_direction is not None for rule in rules)
+
+
+def start_of_baseline_window(taken_at: datetime) -> datetime:
+    return taken_at - timedelta(days=BASELINE_WINDOW_DAYS)
+
+
+def get_baseline_values(session: Session, crew_member_id: int, indicator_id: str, taken_at: datetime) -> list[float]:
+    """The values of the baseline window that ends just before a reading."""
+    return list(
+        session.scalars(
+            select(models.Reading.value).where(
+                models.Reading.crew_member_id == crew_member_id,
+                models.Reading.indicator_id == indicator_id,
+                models.Reading.taken_at >= start_of_baseline_window(taken_at),
+                models.Reading.taken_at < taken_at,
+            )
+        )
+    )
+
+
+def is_broken(rule: Rule, value: float, baseline_values: Sequence[float]) -> bool:
+    if rule.baseline_direction is None or rule.baseline_deviations is None:
         below_low = rule.low is not None and value < rule.low
         above_high = rule.high is not None and value > rule.high
-        if below_low or above_high:
+        return below_low or above_high
+    limit = find_baseline_limit(baseline_values, rule.baseline_direction, rule.baseline_deviations)
+    if limit is None:
+        return False
+    return value > limit if rule.baseline_direction == "above" else value < limit
+
+
+def find_broken_rule(rules: list[Rule], value: float, baseline_values: Sequence[float]) -> Rule | None:
+    for rule in rules:
+        if is_broken(rule, value, baseline_values):
             return rule
     return None
 
@@ -86,10 +119,23 @@ def save_readings(
     )
 
 
+def is_due(indicator: models.Indicator, latest_reading: models.Reading | None, day: date) -> bool:
+    """Whether a new reading is expected by this day and has not arrived."""
+    if indicator.cadence_days is None:
+        return False
+    if latest_reading is None:
+        return True
+    days_since_reading = (day - latest_reading.taken_at.date()).days
+    if indicator.measured_by == "astronaut":
+        return days_since_reading >= indicator.cadence_days
+    # A sensor reports during the day, so it is late only after a whole interval with nothing
+    return days_since_reading > indicator.cadence_days
+
+
 app = FastAPI(title="Real Telemetry API")
 app.include_router(auth_router)  # /api/auth: sign-in. Every other endpoint needs a signed-in user
 app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
-app.include_router(daily_router)  # /api/crew/{id}/tasks and /api/station/radiation
+app.include_router(daily_router)  # /api/crew/{id}/tasks: the daily checklist, XP, level and streak
 
 
 @app.get("/api/crew")
@@ -128,7 +174,13 @@ def get_panel(
         broken_rule = None
         if reading is not None:
             panel_reading = PanelReading(taken_at=format_taken_at(reading.taken_at), value=reading.value)
-            rule = find_broken_rule(rules_by_indicator.get(indicator.id, []), reading.value)
+            rules = rules_by_indicator.get(indicator.id, [])
+            baseline_values = (
+                get_baseline_values(session, crew_member_id, indicator.id, reading.taken_at)
+                if has_baseline_rule(rules)
+                else []
+            )
+            rule = find_broken_rule(rules, reading.value, baseline_values)
             if rule is not None:
                 broken_rule = BrokenRule(id=rule.id, title=rule.title, explanation=rule.explanation, action=rule.action)
         panel_indicators.append(
@@ -137,6 +189,9 @@ def get_panel(
                 name=indicator.name,
                 unit=indicator.unit,
                 reading=panel_reading,
+                measured_by=indicator.measured_by,  # type: ignore[arg-type]
+                cadence_days=indicator.cadence_days,
+                due=is_due(indicator, reading, panel_date),
                 broken_rule=broken_rule,
             )
         )
@@ -159,20 +214,29 @@ def get_indicator(
         raise HTTPException(status_code=404, detail=f"Indicator {indicator_id!r} not found")
 
     rules = get_rules_by_indicator(session).get(indicator_id, [])
+    history_start = start_of(from_date)
+    # A baseline rule compares each reading with the ones before it, so those are read too
+    first_needed = start_of_baseline_window(history_start) if has_baseline_rule(rules) else history_start
     readings = session.scalars(
         select(models.Reading)
         .where(
             models.Reading.crew_member_id == crew_member_id,
             models.Reading.indicator_id == indicator_id,
-            models.Reading.taken_at >= start_of(from_date),
+            models.Reading.taken_at >= first_needed,
             models.Reading.taken_at < start_of_next_day(to_date),
         )
         .order_by(models.Reading.taken_at)
-    )
+    ).all()
 
     history = []
     for reading in readings:
-        broken_rule = find_broken_rule(rules, reading.value)
+        if reading.taken_at < history_start:
+            continue
+        window_start = start_of_baseline_window(reading.taken_at)
+        baseline_values = [
+            earlier.value for earlier in readings if window_start <= earlier.taken_at < reading.taken_at
+        ]
+        broken_rule = find_broken_rule(rules, reading.value, baseline_values)
         history.append(
             HistoryReading(
                 taken_at=format_taken_at(reading.taken_at),

@@ -22,7 +22,7 @@ from app.db import build_engine
 from seed import DAILY_COLUMNS, CrewPairing, DatasetFiles, build_seed_files
 
 SEEDED_TABLES = (
-    "his.auth_event, dat.session, dat.app_user, dat.task_completion, dat.station_dose, dat.reading, dat.crew_member, "
+    "his.auth_event, dat.session, dat.app_user, dat.task_completion, dat.reading, dat.crew_member, "
     "cfg.daily_task, cfg.rule, cfg.indicator, cfg.source"
 )
 # The LifeSnaps daily file starts with an unnamed index column

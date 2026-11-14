@@ -1,7 +1,7 @@
-"""The daily checklist with its XP, level and streak, and the station's radiation."""
+"""The daily checklist with its XP, level and streak."""
 
 from collections.abc import Callable, Iterator
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -37,13 +37,6 @@ def client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Iterator[Te
             session.add(models.Reading(crew_member_id=1, indicator_id="mood_happy", taken_at=datetime.fromisoformat(f"{day}T00:00"), value=1.0))
         session.add(models.Reading(crew_member_id=1, indicator_id="mood_sad", taken_at=datetime.fromisoformat("2021-10-29T00:00"), value=0.0))
         session.add(models.Reading(crew_member_id=1, indicator_id="sleep_duration", taken_at=datetime.fromisoformat("2021-11-02T00:00"), value=400.0))
-        session.add_all(
-            [
-                models.StationDose(day=date(2021, 11, 1), instrument="Lidal", module="Columbus", mean_rate_ugy_h=6.0, absorbed_dose_ugy=144.0, hours_measured=24),
-                models.StationDose(day=date(2021, 11, 2), instrument="Lidal", module="Columbus", mean_rate_ugy_h=6.01, absorbed_dose_ugy=144.24, hours_measured=24),
-                models.StationDose(day=date(2021, 11, 2), instrument="REM-Lid", module="Columbus", mean_rate_ugy_h=13.5, absorbed_dose_ugy=324.0, hours_measured=24),
-            ]
-        )
         session.commit()
 
     def get_test_session() -> Iterator[Session]:
@@ -111,21 +104,3 @@ def test_a_crew_member_ticks_only_their_own_tasks(client: TestClient) -> None:
 def test_unknown_crew_member_or_task_returns_404(client: TestClient) -> None:
     assert client.get("/api/crew/9/tasks/2021-11-02").status_code == 404
     assert client.put("/api/crew/1/tasks/2021-11-02/juggling", json={"done": True}).status_code == 404
-
-
-def test_station_radiation_gives_each_instrument_of_the_day_and_its_history(client: TestClient) -> None:
-    body = client.get("/api/station/radiation", params={"date": "2021-11-02", "days": 7}).json()
-
-    assert [(dose["instrument"], dose["absorbed_dose_ugy"]) for dose in body["today"]] == [("Lidal", 144.24), ("REM-Lid", 324.0)]
-    assert [(dose["day"], dose["instrument"]) for dose in body["history"]] == [
-        ("2021-11-01", "Lidal"),
-        ("2021-11-02", "Lidal"),
-        ("2021-11-02", "REM-Lid"),
-    ]
-    assert body["source"]["id"] == "radlab"
-
-
-def test_a_day_without_measurements_has_no_dose(client: TestClient) -> None:
-    body = client.get("/api/station/radiation", params={"date": "2021-12-25"}).json()
-
-    assert body["today"] == []

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MoodFace } from '../../components/MoodFace.tsx'
 import { saveCheckin } from '../../lib/api.ts'
 import type { MoodId, PanelIndicator } from '../../lib/api.ts'
 
@@ -10,9 +11,9 @@ type Props = {
   onSaved: () => void
 }
 
-// shortcut: a bare form, enough to save a check-in; the real check-in screen (F2) replaces it
 export function CheckinForm({ crewMemberId, date, moods, chosenToday, onSaved }: Props) {
   const [chosen, setChosen] = useState(chosenToday)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   function toggle(moodId: string) {
@@ -20,25 +21,36 @@ export function CheckinForm({ crewMemberId, date, moods, chosenToday, onSaved }:
   }
 
   async function save() {
+    setSaving(true)
     try {
       await saveCheckin(crewMemberId, date, chosen as MoodId[])
       onSaved()
     } catch (saveError) {
       setError(`Could not save the check-in. ${(saveError as Error).message}`)
+      setSaving(false)
     }
   }
 
   return (
-    <fieldset className="checkin">
-      <legend>How are you today?</legend>
-      {moods.map((mood) => (
-        <label key={mood.id}>
-          <input type="checkbox" checked={chosen.includes(mood.id)} onChange={() => toggle(mood.id)} />
-          {mood.name}
-        </label>
-      ))}
-      <button onClick={save}>Save check-in</button>
+    <div className="checkin">
+      <p className="muted">Choose every mood that fits. It stays private to you.</p>
+      <div className="moods" role="group" aria-label="Your mood today">
+        {moods.map((mood) => (
+          <button
+            key={mood.id}
+            className="mood"
+            aria-pressed={chosen.includes(mood.id)}
+            onClick={() => toggle(mood.id)}
+          >
+            <MoodFace moodId={mood.id} />
+            <span>{mood.name}</span>
+          </button>
+        ))}
+      </div>
+      <button className="primary" onClick={save} disabled={saving}>
+        {saving ? 'Saving' : 'Save check-in'}
+      </button>
       {error !== null && <p role="alert">{error}</p>}
-    </fieldset>
+    </div>
   )
 }

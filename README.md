@@ -1,5 +1,7 @@
 # Real Telemetry
 
+**Open the app: https://mooncare-ten.vercel.app** . The first visit can take about a minute, while the backend wakes up.
+
 A daily health panel for astronauts, built for the NASA Space Apps Challenge 2026. The design is in [docs/](docs/): start with [system_design.md](docs/system_design.md), then [mvp_architecture.md](docs/mvp_architecture.md). Who builds what is in [plan.md](docs/plan.md), and how we use branches is in [branches.md](docs/branches.md).
 
 ## Layout
@@ -7,11 +9,11 @@ A daily health panel for astronauts, built for the NASA Space Apps Challenge 202
 ```
 apps/
   web/        Tablet web app: React + Vite + TypeScript
-    src/features/   One folder per screen: profile, panel, indicator
+    src/features/   One folder per screen: profile, panel, indicator, checkin
     src/lib/        API client (the contracts as types), formatting, config
     src/hooks/  src/styles/
   mobile/     Crew app for the phone (PWA): React + Vite + TypeScript, connected to the moon server. See its README
-  landing/    Empty for now
+  landing/    Landing page prototype (static HTML)
 services/
   api/        FastAPI backend
     app/            main.py (routes), schemas.py, models.py (SQLAlchemy), db.py, config.py
@@ -73,6 +75,8 @@ curl -X POST http://localhost:8000/api/sync                    # the moon sends 
 ```
 
 How it works, the endpoints and the configuration are in [docs/moon_earth_sync.md](docs/moon_earth_sync.md).
+
+How the emergency guide works is in [docs/emergency_guide.md](docs/emergency_guide.md).
 
 ## Tests
 

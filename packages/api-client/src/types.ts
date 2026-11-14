@@ -66,7 +66,14 @@ export type HistoryReading = { taken_at: string; value: number; broken_rule_id: 
 
 export type IndicatorDetail = { indicator: Indicator; rules: Rule[]; readings: HistoryReading[] }
 
-export type MoodId = 'mood_happy' | 'mood_sad' | 'mood_tense' | 'mood_alert' | 'mood_rested' | 'mood_neutral'
+export type MoodId =
+  | 'mood_happy'
+  | 'mood_sad'
+  | 'mood_tense'
+  | 'mood_alert'
+  | 'mood_rested'
+  | 'mood_neutral'
+  | 'mood_tired'
 
 export type Checkin = { date: string; moods: MoodId[] }
 
@@ -96,7 +103,7 @@ export type NodeStatus = {
 
 export type SyncResult = { push: SyncOperation | null; pull: SyncOperation | null }
 
-// --- Daily checklist and station radiation (services/api/app/daily.py) ---
+// --- Daily checklist (services/api/app/daily.py) ---
 
 export type DailyTaskStatus = {
   id: string
@@ -109,18 +116,3 @@ export type DailyTaskStatus = {
 export type Progress = { xp: number; level: number; level_xp: number; next_level_xp: number; streak: number }
 
 export type DailyChecklist = { date: string; tasks: DailyTaskStatus[]; progress: Progress }
-
-export type InstrumentDose = {
-  instrument: string
-  module: string
-  absorbed_dose_ugy: number
-  mean_rate_ugy_h: number
-  hours_measured: number
-}
-
-export type StationRadiation = {
-  date: string
-  today: InstrumentDose[]
-  history: { day: string; instrument: string; absorbed_dose_ugy: number }[]
-  source: Source
-}

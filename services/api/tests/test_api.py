@@ -43,9 +43,9 @@ DAILY = (
     f"0,{VOLUNTEER},2021-11-01,68.9,0,7751.0,463.0,99.0,33.58,0.0,1.0,0.0,0.0,0.0,0.0\n"
     f"1,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,,,,,,,\n"
 )
-MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
+MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral", "mood_tired"]
 
-LoadClient = Callable[[str], TestClient]
+LoadClient = Callable[..., TestClient]
 
 
 @pytest.fixture
@@ -56,13 +56,13 @@ def build_client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Itera
         with Session(engine) as session:
             yield session
 
-    def build(metabolic_panel_rows: str) -> TestClient:
+    def build(metabolic_panel_rows: str, daily_rows: str = DAILY) -> TestClient:
         metabolic_panel = tmp_path / "panel.csv"
         metabolic_panel.write_text(metabolic_panel_rows, encoding="utf-8")
         hourly = tmp_path / "hourly.csv"
         hourly.write_text(HOURLY, encoding="utf-8")
         daily = tmp_path / "daily.csv"
-        daily.write_text(DAILY, encoding="utf-8")
+        daily.write_text(daily_rows, encoding="utf-8")
         load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER, role="commander")], metabolic_panel, hourly, daily)
         return TestClient(app)
 
@@ -103,6 +103,9 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
         "name": "Blood glucose",
         "unit": "mg/dL",
         "reading": {"taken_at": "2021-11-02T00:00", "value": 36.0},
+        "measured_by": "astronaut",
+        "cadence_days": 30,
+        "due": False,
         "broken_rule": {
             "id": 1,
             "title": glucose["broken_rule"]["title"],
@@ -116,8 +119,39 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
         "name": "Heart rate",
         "unit": "bpm",
         "reading": {"taken_at": "2021-11-02T23:00", "value": 64.25},
+        "measured_by": "sensor",
+        "cadence_days": 1,
+        "due": False,
         "broken_rule": None,
     }
+
+
+def test_a_blood_test_is_due_30_days_after_the_last_draw_and_not_the_day_before(client: TestClient) -> None:
+    # The draw before these dates is the one of 2021-11-02
+    day_29 = get_panel_indicator(client, "2021-12-01", "glucose")
+    day_30 = get_panel_indicator(client, "2021-12-02", "glucose")
+
+    assert (day_29["due"], day_30["due"]) == (False, True)
+
+
+def test_the_checkin_is_due_until_it_is_saved_and_due_again_the_next_day(client: TestClient) -> None:
+    before = get_panel_indicator(client, "2021-11-05", "mood_happy")
+    client.put("/api/crew/1/checkins/2021-11-05", json={"moods": ["mood_happy"]})
+    after = get_panel_indicator(client, "2021-11-05", "mood_happy")
+    next_day = get_panel_indicator(client, "2021-11-06", "mood_happy")
+
+    assert (before["measured_by"], before["cadence_days"]) == ("astronaut", 1)
+    assert (before["due"], after["due"], next_day["due"]) == (True, False, True)
+
+
+def test_a_sensor_is_due_only_after_a_whole_day_with_no_data_and_a_computed_value_never(
+    client: TestClient,
+) -> None:
+    # The last heart rate reading is of 2021-11-03
+    assert get_panel_indicator(client, "2021-11-04", "heart_rate")["due"] is False
+    assert get_panel_indicator(client, "2021-11-05", "heart_rate")["due"] is True
+    count = get_panel_indicator(client, "2021-11-20", "mood_sad_days_14")
+    assert (count["measured_by"], count["cadence_days"], count["due"]) == ("computed", None, False)
 
 
 def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) -> None:
@@ -179,8 +213,10 @@ def test_indicator_returns_text_source_rules_and_history_with_the_rule_each_read
     assert set(detail["indicator"]["source"]) == {"id", "name", "url", "citation"}
     assert [(rule["id"], rule["low"], rule["high"]) for rule in detail["rules"]] == [(1, 65.0, 99.0)]
     assert set(detail["rules"][0]) == {
-        "id", "low", "high", "title", "explanation", "action", "threshold_source",
-    }
+        "id", "low", "high", "baseline_direction", "baseline_deviations",
+        "title", "explanation", "action", "threshold_source",
+    }  # fmt: skip
+    assert detail["rules"][0]["baseline_direction"] is None
     assert detail["readings"] == [
         {"taken_at": "2021-08-03T00:00", "value": 62.0, "broken_rule_id": 1},
         {"taken_at": "2021-09-13T00:00", "value": 75.0, "broken_rule_id": None},
@@ -265,6 +301,7 @@ def test_saving_a_checkin_returns_what_was_saved_and_the_panel_of_that_day_shows
         "mood_alert": {"taken_at": "2021-11-02T00:00", "value": 0.0},
         "mood_rested": {"taken_at": "2021-11-02T00:00", "value": 1.0},
         "mood_neutral": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+        "mood_tired": {"taken_at": "2021-11-02T00:00", "value": 0.0},
     }
 
 
@@ -304,7 +341,7 @@ def test_a_checkin_for_an_unknown_crew_member_returns_404(client: TestClient) ->
     assert response.json() == {"detail": "Crew member 99 not found"}
 
 
-def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> None:
+def test_a_checkin_with_no_moods_saves_the_seven_as_zero(client: TestClient) -> None:
     response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": []})
 
     assert response.status_code == 200
@@ -355,3 +392,72 @@ def test_a_tense_day_more_than_14_days_back_does_not_count(client: TestClient) -
 
     tense_days = get_panel_indicator(client, "2021-11-02", "mood_tense_days_14")
     assert tense_days["reading"] == {"taken_at": "2021-11-02T00:00", "value": 2.0}
+
+
+BASELINE_RULE_ID = 18  # resting heart rate above the personal baseline
+# Median 50 and a median distance to it of 1, so the limit is 50 + 3 x 1.4826 = 54.45 bpm
+USUAL_RESTING_HEART_RATES = [50, 51, 49, 50, 52, 48, 50, 51, 49, 50, 52, 48, 50, 51, 49]
+
+
+def build_daily_resting_heart_rates(value_by_date: dict[str, float]) -> str:
+    """A daily file with only the resting heart rate, one row per date."""
+    empty_columns = "," * (len(DAILY_COLUMNS) - 1)
+    rows = [f"{row},{VOLUNTEER},{day},{value}{empty_columns}\n" for row, (day, value) in enumerate(value_by_date.items())]
+    return DAILY.splitlines()[0] + "\n" + "".join(rows)
+
+
+def with_usual_days(first_day: int, last_reading: dict[str, float]) -> str:
+    usual = {f"2021-10-{first_day + n:02d}": float(v) for n, v in enumerate(USUAL_RESTING_HEART_RATES)}
+    return build_daily_resting_heart_rates(usual | last_reading)
+
+
+def test_panel_alerts_on_a_resting_heart_rate_far_above_the_usual_of_that_crew_member(
+    build_client: LoadClient,
+) -> None:
+    client = build_client(METABOLIC_PANEL, with_usual_days(1, {"2021-10-16": 55.0}))
+
+    resting_heart_rate = get_panel_indicator(client, "2021-10-16", "resting_heart_rate")
+
+    assert resting_heart_rate["reading"]["value"] == 55.0
+    assert resting_heart_rate["broken_rule"]["id"] == BASELINE_RULE_ID
+    assert resting_heart_rate["broken_rule"]["title"] == "Resting heart rate above your usual"
+
+
+def test_panel_does_not_alert_on_a_resting_heart_rate_just_under_the_personal_limit(
+    build_client: LoadClient,
+) -> None:
+    client = build_client(METABOLIC_PANEL, with_usual_days(1, {"2021-10-16": 54.0}))
+
+    assert get_panel_indicator(client, "2021-10-16", "resting_heart_rate")["broken_rule"] is None
+
+
+def test_readings_older_than_28_days_are_not_part_of_the_baseline(build_client: LoadClient) -> None:
+    client = build_client(METABOLIC_PANEL, with_usual_days(1, {"2021-10-31": 55.0}))
+
+    # The window starts on 2021-10-03, so only 13 of the 15 usual days are left in it: too few for a baseline
+    assert get_panel_indicator(client, "2021-10-31", "resting_heart_rate")["broken_rule"] is None
+
+
+def test_the_fixed_limit_still_alerts_before_there_is_a_baseline(build_client: LoadClient) -> None:
+    client = build_client(METABOLIC_PANEL, build_daily_resting_heart_rates({"2021-10-16": 101.0}))
+
+    assert get_panel_indicator(client, "2021-10-16", "resting_heart_rate")["broken_rule"]["id"] == 2
+
+
+def test_indicator_history_marks_a_baseline_alert_using_readings_from_before_the_asked_dates(
+    build_client: LoadClient,
+) -> None:
+    client = build_client(METABOLIC_PANEL, with_usual_days(1, {"2021-10-16": 55.0}))
+
+    detail = client.get(
+        "/api/crew/1/indicators/resting_heart_rate", params={"from": "2021-10-15", "to": "2021-10-16"}
+    ).json()
+
+    assert detail["readings"] == [
+        {"taken_at": "2021-10-15T00:00", "value": 49.0, "broken_rule_id": None},
+        {"taken_at": "2021-10-16T00:00", "value": 55.0, "broken_rule_id": BASELINE_RULE_ID},
+    ]
+    assert [
+        (rule["id"], rule["low"], rule["high"], rule["baseline_direction"], rule["baseline_deviations"])
+        for rule in detail["rules"]
+    ] == [(2, None, 100.0, None, None), (BASELINE_RULE_ID, None, None, "above", 3.0)]

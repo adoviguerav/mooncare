@@ -12,7 +12,7 @@ export function SleepScreen({ crewMemberId, today, panel, onOpenIndicator }: Scr
   const find = (id: string) => panel.indicators.find((indicator) => indicator.id === id)
   const duration = find('sleep_duration')
   const efficiency = find('sleep_efficiency')
-  const awake = find('minutes_awake')
+  const awake = find('sleep_awake_minutes')
   const history = useLoad(() => api.indicator(crewMemberId, 'sleep_duration', addDays(today, -NIGHTS + 1), today), [crewMemberId, today])
 
   const asleepMinutes = duration?.reading?.value ?? null

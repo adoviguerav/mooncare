@@ -12,7 +12,6 @@ import type {
   NodeStatus,
   Panel,
   SignInUsersResponse,
-  StationRadiation,
   SyncOperation,
   SyncResult,
 } from './types'
@@ -75,12 +74,10 @@ export const api = {
   saveCheckin: (crewMemberId: number, date: string, moods: MoodId[]) =>
     request<Checkin>('PUT', `/crew/${crewMemberId}/checkins/${date}`, { moods }),
 
-  // Daily checklist and station radiation
+  // Daily checklist
   checklist: (crewMemberId: number, date: string) => request<DailyChecklist>('GET', `/crew/${crewMemberId}/tasks/${date}`),
   tickTask: (crewMemberId: number, date: string, taskId: string, done: boolean) =>
     request<DailyChecklist>('PUT', `/crew/${crewMemberId}/tasks/${date}/${taskId}`, { done }),
-  stationRadiation: (date: string, days = 30) =>
-    request<StationRadiation>('GET', `/station/radiation?${query({ date, days: String(days) })}`),
 
   // Moon and earth servers
   node: () => request<NodeStatus>('GET', '/node'),

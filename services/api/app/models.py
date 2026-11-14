@@ -34,6 +34,8 @@ class Indicator(Base):
     how_to_measure: Mapped[str]
     why_it_matters: Mapped[str]
     source_id: Mapped[str] = mapped_column(ForeignKey("cfg.source.id"))
+    measured_by: Mapped[str]
+    cadence_days: Mapped[int | None]
     display_order: Mapped[int]
 
     source: Mapped[Source] = relationship(lazy="joined")
@@ -47,6 +49,8 @@ class Rule(Base):
     indicator_id: Mapped[str] = mapped_column(ForeignKey("cfg.indicator.id"))
     low: Mapped[float | None]
     high: Mapped[float | None]
+    baseline_direction: Mapped[str | None]
+    baseline_deviations: Mapped[float | None]
     title: Mapped[str]
     explanation: Mapped[str]
     action: Mapped[str]
@@ -138,21 +142,7 @@ class AuthEvent(Base):
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
-# --- Station radiation and daily checklist (database/postgresql/schema/05_station_and_tasks.sql) ---
-
-
-class StationDose(Base):
-    """One instrument's absorbed dose for one day, where the instrument sits. Not a person's dose."""
-
-    __tablename__ = "station_dose"
-    __table_args__ = {"schema": "dat"}
-
-    day: Mapped[date] = mapped_column(primary_key=True)
-    instrument: Mapped[str] = mapped_column(primary_key=True)
-    module: Mapped[str]
-    mean_rate_ugy_h: Mapped[float]
-    absorbed_dose_ugy: Mapped[float]
-    hours_measured: Mapped[int]
+# --- Daily checklist (database/postgresql/schema/05_daily_tasks.sql) ---
 
 
 class DailyTask(Base):

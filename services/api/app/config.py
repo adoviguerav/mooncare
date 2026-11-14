@@ -16,9 +16,15 @@ NASA_DIR = DATABASE_DIR / "datasets" / "nasa"
 LIFESNAPS_DIR = DATABASE_DIR / "datasets" / "lifesnaps"
 
 METABOLIC_PANEL_CSV = NASA_DIR / "metabolic_panel.csv"
-RADLAB_DIR = NASA_DIR / "radlab"  # one TSV per month of ISS dosimeter readings
+RADLAB_DIR = NASA_DIR / "radlab"
+BLOOD_COUNT_CSV = NASA_DIR / "blood_count.csv"
+CARDIOVASCULAR_PANEL_CSV = NASA_DIR / "cardiovascular_panel.csv"
+IMMUNE_PANEL_EVE_CSV = NASA_DIR / "immune_panel_eve.csv"
+IMMUNE_PANEL_ALAMAR_CSV = NASA_DIR / "immune_panel_alamar.csv"
 LIFESNAPS_DAILY_CSV = LIFESNAPS_DIR / "daily_fitbit_sema_df_unprocessed.csv"
 LIFESNAPS_HOURLY_CSV = LIFESNAPS_DIR / "hourly_fitbit_sema_df_unprocessed.csv"
+LIFESNAPS_STAI_CSV = LIFESNAPS_DIR / "stai.csv"
+LIFESNAPS_PANAS_CSV = LIFESNAPS_DIR / "panas.csv"
 
 DatabaseProvider = Literal["postgresql", "supabase"]
 NodeRole = Literal["moon", "earth"]

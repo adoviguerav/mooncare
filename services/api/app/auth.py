@@ -4,8 +4,10 @@
 - A session lasts 10 days. The browser keeps it in an HttpOnly cookie that page scripts cannot read; a native
   client may ask for the token and send it as `Authorization: Bearer`. Only the token's SHA-256 is stored.
 - After 5 wrong PINs in 15 minutes the account is locked for 15 minutes.
-- Who signs in where: crew members and commanders on the moon, the earth administrator on earth.
-- What each one sees: a crew member only their own data; a commander the whole crew, on the moon; the earth
+- Who signs in where: crew members, the medical officer and the commander on the moon, the earth administrator on
+  earth.
+- What each one sees: a crew member only their own data; the commander and the medical officer the whole crew, on
+  the moon; the earth
   administrator the whole crew, on earth. The backend checks it on every request; the frontend never decides.
 """
 
@@ -25,15 +27,19 @@ from app import models
 from app.config import NodeRole, Settings, get_settings
 from app.db import DbSession
 
-Role = Literal["crew_member", "commander", "earth_admin"]
+Role = Literal["crew_member", "medical_officer", "commander", "earth_admin"]
 
 SESSION_DAYS = 10
 SESSION_COOKIE = "mooncare_session"
 MAX_FAILED_LOGINS = 5
 LOCK_MINUTES = 15
-ROLES_BY_NODE: dict[NodeRole, set[str]] = {"moon": {"crew_member", "commander"}, "earth": {"earth_admin"}}
-# Roles that see every crew member's data, on the server where they sign in
-CREW_WIDE_ROLES = {"commander", "earth_admin"}
+ROLES_BY_NODE: dict[NodeRole, set[str]] = {
+    "moon": {"crew_member", "medical_officer", "commander"},
+    "earth": {"earth_admin"},
+}
+# Roles that see every crew member's data, on the server where they sign in. The medical officer is the crew
+# member in charge of health on board (System_design, section 1)
+CREW_WIDE_ROLES = {"commander", "medical_officer", "earth_admin"}
 WRONG_PIN = "Wrong name or PIN"
 
 _hasher = PasswordHasher()
@@ -199,7 +205,7 @@ CurrentUser = Annotated[models.AppUser, Depends(get_current_user)]
 def require_crew_wide(user: CurrentUser) -> models.AppUser:
     """Commanders on the moon and the earth administrator: the dashboard and the sync."""
     if user.role not in CREW_WIDE_ROLES:
-        raise HTTPException(status_code=403, detail="Only a commander or the earth administrator can do this")
+        raise HTTPException(status_code=403, detail="Only the commander, the medical officer or the earth administrator can do this")
     return user
 
 

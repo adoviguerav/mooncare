@@ -14,6 +14,9 @@ CREATE TABLE cfg.indicator (
   how_to_measure TEXT NOT NULL,      -- the brief asks for it per measurement
   why_it_matters TEXT NOT NULL,      -- the short explanation for R4
   source_id      TEXT NOT NULL REFERENCES cfg.source (id),
+  -- Who takes the measurement: a sensor on its own, the astronaut by hand, or the system from other readings
+  measured_by    TEXT NOT NULL CHECK (measured_by IN ('sensor', 'astronaut', 'computed')),
+  cadence_days   INTEGER CHECK (cadence_days > 0),   -- a new reading is expected every this many days. NULL when computed
   display_order  INTEGER NOT NULL UNIQUE   -- order of the panel. SQLite used rowid; PostgreSQL has none
 );
 
@@ -22,11 +25,15 @@ CREATE TABLE cfg.rule (
   indicator_id     TEXT NOT NULL REFERENCES cfg.indicator (id),
   low              DOUBLE PRECISION,
   high             DOUBLE PRECISION,
+  -- A personal baseline rule has no fixed limit: the reading is compared with that person's recent readings
+  baseline_direction  TEXT CHECK (baseline_direction IN ('above', 'below')),
+  baseline_deviations DOUBLE PRECISION CHECK (baseline_deviations > 0),   -- how far from the usual value it alerts
   title            TEXT NOT NULL,
   explanation      TEXT NOT NULL,
   action           TEXT NOT NULL,
   threshold_source TEXT NOT NULL,    -- where the limit comes from (R11). Never a limit without it
-  CHECK (low IS NOT NULL OR high IS NOT NULL),
+  CHECK ((low IS NOT NULL OR high IS NOT NULL) <> (baseline_direction IS NOT NULL)),   -- fixed or baseline, never both
+  CHECK ((baseline_direction IS NULL) = (baseline_deviations IS NULL)),
   CHECK (low IS NULL OR high IS NULL OR low <= high)
 );
 

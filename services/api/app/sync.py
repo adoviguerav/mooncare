@@ -38,7 +38,6 @@ EARTH_TABLES: list[Table] = [
 # Written on the moon and sent to earth
 MOON_TABLES: list[Table] = [
     models.Reading.__table__,  # type: ignore[list-item]
-    models.StationDose.__table__,  # type: ignore[list-item]  # the base's own dosimeters
     models.TaskCompletion.__table__,  # type: ignore[list-item]
 ]
 

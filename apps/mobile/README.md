@@ -32,7 +32,7 @@ The crew member picks their profile and types their 6-digit PIN. The moon server
 
 Tapping a parameter opens its history (7, 30 or 90 days) with the rule's limits drawn, how it is measured, why it matters, the rule and where its limit comes from, and the source of the data.
 
-Everything comes from the API. Station radiation is NASA RadLab's absorbed dose per instrument in the ISS's Columbus module: the dose where each instrument sits, not a person's, and never added across instruments. XP rewards the routine, never a health value. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
+Everything comes from the API. Radiation is the station's dose rate from NASA RadLab (ISS): the same reading for every crew member, not a personal dose. XP rewards the routine, never a health value. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
 
 ## Without a network
 
