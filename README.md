@@ -73,6 +73,8 @@ curl -X POST http://localhost:8000/api/sync                    # the moon sends 
 
 How it works, the endpoints and the configuration are in [docs/moon_earth_sync.md](docs/moon_earth_sync.md).
 
+How the emergency guide works is in [docs/emergency_guide.md](docs/emergency_guide.md).
+
 ## Tests
 
 The backend tests create throwaway databases on the server of `POSTGRESQL_URL` and drop them at the end, so that server must be running. They never touch Supabase.
