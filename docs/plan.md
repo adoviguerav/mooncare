@@ -113,12 +113,12 @@ The jury opens the app from a link and uses it as if they were the astronauts (H
 
 Backend:
 
-- [ ] **D3. Backend and Postgres on Railway.** Create the account, a service from the repo with `services/api` as its folder, and a Postgres database next to it. `database/postgresql/scripts/apply.sh` runs once against it to create the tables and load the seeds.
-    - Done when: `/api/crew` answers from the Railway address, and a check-in is still there after a restart.
+- [ ] **D3. Backend and Postgres on Render** (not Railway, decided on 14 Nov). A web service from the repo with `services/api` as its folder, at https://mooncare-73hi.onrender.com, and a Postgres database next to it. The free service sleeps after 15 minutes without use, so the first visit takes about a minute. `database/postgresql/scripts/apply.sh` runs once against it to create the tables and load the seeds.
+    - Done when: `/api/crew` answers from the Render address, and a check-in is still there after a restart.
 
 Frontend:
 
-- [ ] **D4. Frontend on Vercel.** It needs D3. Create the account and a project from the repo, with `apps/web` as its folder. A rewrite sends `/api` to the Railway address, so the frontend code does not change.
+- [ ] **D4. Frontend on Vercel.** It needs D3. Create the account and a project from the repo, with `apps/web` as its folder. A rewrite in `apps/web/vercel.json` sends `/api` to the Render address, so the frontend code does not change.
     - Done when: the Vercel link shows the panel of Crew 1 with its glucose alert.
 - [ ] **D5. The app link** goes first in the README and on the project page, before the repo link.
     - Done when: someone outside the team opens it on a phone in a private window and reaches the panel.

@@ -105,7 +105,7 @@ An empty cell produces no reading.
 | Component | What it does | Reads | Writes |
 | :-- | :-- | :-- | :-- |
 | Seed script | Turns the raw CSV files and `seed_content.py` into INSERT files, which are kept in git. Run it again after changing the crew, a text, a rule or how a dataset becomes readings | Raw CSV files | `database/postgresql/seeds` |
-| PostgreSQL database | The only place data is stored. Built from the schema files and the INSERT files, in Docker on a laptop and on Railway for the jury |  |  |
+| PostgreSQL database | The only place data is stored. Built from the schema files and the INSERT files, in Docker on a laptop and on Render for the jury |  |  |
 | Backend API | Serves the crew, the panel and the history, with alerts computed. Saves the check-in | PostgreSQL | PostgreSQL |
 | Frontend | Tablet web app. Profile picker, panel, indicator detail, check-in, CPR flow | Backend API |  |
 
