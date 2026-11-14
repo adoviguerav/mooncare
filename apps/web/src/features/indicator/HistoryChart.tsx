@@ -17,7 +17,12 @@ const DAYS_UP_TO_MS = 120 * MS_PER_DAY
 
 const HOUR_FORMAT = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
 const DAY_FORMAT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-const MONTH_FORMAT = new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+const DAY_AND_YEAR_FORMAT = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: '2-digit',
+  timeZone: 'UTC',
+})
 const TICK_FORMAT = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 })
 
 type Props = { name: string; unit: string | null; readings: HistoryReading[]; rules: Rule[] }
@@ -147,5 +152,5 @@ function getTimeTicks(firstTime: number, timeSpan: number, maxCount: number): nu
 
 function getTimeFormat(timeSpan: number): Intl.DateTimeFormat {
   if (timeSpan <= HOURS_UP_TO_MS) return HOUR_FORMAT
-  return timeSpan <= DAYS_UP_TO_MS ? DAY_FORMAT : MONTH_FORMAT
+  return timeSpan <= DAYS_UP_TO_MS ? DAY_FORMAT : DAY_AND_YEAR_FORMAT
 }

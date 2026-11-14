@@ -507,7 +507,7 @@ function IndicatorTile({ indicator, onOpen, children }: IndicatorTileProps) {
             {value?.amount}
             {value?.unit !== '' && <span className="tile-unit"> {value?.unit}</span>}
           </span>
-          <span className="tile-age">{formatAge(reading.taken_at, TODAY)}</span>
+          <span className="tile-age">Measured {formatAge(reading.taken_at, TODAY).toLowerCase()}</span>
         </>
       )}
       {children}

@@ -1,9 +1,9 @@
 import { Icon } from '../../components/Icon.tsx'
 import { useState } from 'react'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
-import type { CrewMember, Rule } from '../../lib/api.ts'
+import type { CrewMember, HistoryReading, Rule } from '../../lib/api.ts'
 import { HISTORY_DAYS, TODAY } from '../../lib/config.ts'
-import { addDays, formatAge, formatTakenAt, formatValue } from '../../lib/format.ts'
+import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue } from '../../lib/format.ts'
 import { getGroupOf } from '../../lib/groups.ts'
 import { HistoryChart } from './HistoryChart.tsx'
 import { useApi } from '../../hooks/useApi.ts'
@@ -41,6 +41,8 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
   const days = chosenDays ?? startDays
   const readings = getReadingsOf(days)
   const origin = getGroupOf(indicatorId).origin
+  const previous = allReadings[allReadings.length - 2]
+  const brokenRule = detail?.rules.find((rule) => rule.id === latest?.broken_rule_id)
 
   return (
     <main className="screen">
@@ -66,10 +68,18 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
                   {formatValue(latest.value, detail.indicator.unit)}
                 </p>
                 <p className="muted">
-                  {formatAge(latest.taken_at, TODAY)}, {formatTakenAt(latest.taken_at)}
+                  Measured {formatAge(latest.taken_at, TODAY).toLowerCase()}, {formatTakenAt(latest.taken_at)}
                 </p>
+                <p className="detail-reading">{describeReading(latest, previous, detail.rules, detail.indicator.unit)}</p>
+                {brokenRule !== undefined && (
+                  <div className="alert-action">
+                    <strong>What to do</strong>
+                    {brokenRule.action}
+                  </div>
+                )}
               </>
             )}
+            <p className="detail-what">{detail.indicator.why_it_matters}</p>
           </section>
 
           <section className="card">
@@ -101,19 +111,18 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
 
           <section className="card prose">
             <div>
-              <h3>Why it matters</h3>
-              <p>{detail.indicator.why_it_matters}</p>
-            </div>
-            <div>
               <h3>How it is measured</h3>
               <p>{detail.indicator.how_to_measure}</p>
             </div>
           </section>
 
-          <section className="card">
-            <div className="card-heading">
-              <h2>When it alerts</h2>
-            </div>
+          <details className="card group">
+            <summary className="card-heading">
+              <h2>Limits and sources</h2>
+              <span className="group-chevron">
+                <Icon name="back" size={18} />
+              </span>
+            </summary>
             {detail.rules.length === 0 && <p className="muted">This indicator has no alert rule yet.</p>}
             {detail.rules.map((rule) => (
               <div key={rule.id} className="rule">
@@ -126,10 +135,7 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
                 <p className="muted">Where the limit comes from: {rule.threshold_source}</p>
               </div>
             ))}
-          </section>
-
-          <section className="card prose">
-            <div>
+            <div className="rule">
               <h3>Where this data comes from</h3>
               <p>
                 <strong>{detail.indicator.source.name}</strong>
@@ -139,11 +145,39 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
                 {detail.indicator.source.url}
               </a>
             </div>
-          </section>
+          </details>
         </>
       )}
     </main>
   )
+}
+
+// One plain sentence about the latest reading: against its limit, and against the reading before it
+function describeReading(
+  latest: HistoryReading,
+  previous: HistoryReading | undefined,
+  rules: Rule[],
+  unit: string | null,
+): string {
+  const brokenRule = rules.find((rule) => rule.id === latest.broken_rule_id)
+  const fixedRule = rules.find((rule) => rule.baseline_direction === null)
+  const sentences = []
+  if (brokenRule !== undefined) sentences.push(brokenRule.explanation)
+  else if (fixedRule !== undefined) sentences.push(`This is inside the normal range (${describeNormalRange(fixedRule, unit)}).`)
+  else if (rules.length > 0) sentences.push('No alert: it is not far from your own usual value.')
+  else sentences.push('There is no normal range for this value. Compare it with your own earlier readings.')
+
+  if (previous !== undefined) {
+    const days = countDaysSince(previous.taken_at, latest.taken_at.slice(0, 10))
+    const when = days === 0 ? 'earlier the same day' : days === 1 ? 'the day before' : `${days} days before`
+    sentences.push(`The reading ${when} was ${formatValue(previous.value, unit)}.`)
+  }
+  return sentences.join(' ')
+}
+
+function describeNormalRange(rule: Rule, unit: string | null): string {
+  if (rule.low !== null && rule.high !== null) return `${formatValue(rule.low, null)} to ${formatValue(rule.high, unit)}`
+  return rule.low !== null ? `${formatValue(rule.low, unit)} or more` : `${formatValue(rule.high ?? 0, unit)} or less`
 }
 
 function describeLimits(rule: Rule, unit: string | null): string {

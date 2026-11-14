@@ -213,6 +213,7 @@ button {
 
 .group-chevron {
   display: grid;
+  flex: none !important;
   color: var(--mute);
   transform: rotate(-90deg);
   transition: transform 0.2s ease;
@@ -820,6 +821,24 @@ button {
 
 .detail-value.is-alert {
   color: var(--alert);
+}
+
+.detail-reading {
+  max-width: 65ch;
+  margin-top: 14px;
+  font-size: 1.0625rem;
+}
+
+.detail-reading + .alert-action {
+  margin-top: 14px;
+}
+
+.detail-what {
+  max-width: 65ch;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--mute);
 }
 
 .prose {
