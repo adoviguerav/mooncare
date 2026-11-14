@@ -293,8 +293,8 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 #bsPage[hidden]{display:none}
 .glassx{max-height:calc(100dvh - 32px);overflow-y:auto;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.04) 45%,rgba(255,255,255,.1)),rgba(10,28,52,.62)!important;-webkit-backdrop-filter:blur(30px) saturate(190%)!important;backdrop-filter:blur(30px) saturate(190%)!important;border-color:rgba(255,255,255,.28)!important}
 #bsPage:not([hidden]) .glassx{animation:slideup .28s ease-out}
-.bpart [data-s],.bhit{cursor:pointer}.bpart [data-s]:hover{fill:rgba(47,216,255,.16)}
-.bhit:hover{fill:rgba(47,216,255,.18)}
+.bhit,.bhr{cursor:pointer;fill:transparent}.bhr{pointer-events:all}.bhit:hover,.bhr:hover{fill:rgba(47,216,255,.14)}
+.bhr[d]{fill:none;stroke:transparent;pointer-events:stroke;stroke-linecap:round}.bhr[d]:hover{stroke:rgba(47,216,255,.14)}
 </style>
 </head>
 <body>
@@ -516,6 +516,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <section id="bodyPage" hidden>
   <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M6 10.5l6-2 6 2M9 21l3-6 3 6"/></svg></span>Your body</h2>
   <p class="note" id="bSum" style="margin-top:-6px"></p>
+  <div class="chips" id="bProf" aria-label="Profile" style="margin-top:-2px"></div>
   <h3 class="sec">Where are you?</h3>
   <div class="chips" id="envChips" role="group" aria-label="Where are you"></div>
   <div class="chips" id="bTabs" role="group" aria-label="View" style="margin-top:6px"></div>
@@ -674,9 +675,9 @@ const ico=(k,s)=>`<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fi
 const st={};const inc={ack:false,done:[true,false,false,false]};
 let ME=0;
 const PD=[
- {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,bps:118,bpd:76,rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
+ {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,bps:118,bpd:76,sex:"F",age:38,ht:168,wt:61,mm:[[2.4,2.5],[2.3,2.4],[21.0,21.6],[7.6,7.9],[7.4,7.8]],rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
   bs:{"Heart rate":[66,72,4],"Sleep duration":[7.3,8.25,.6],"Body temperature":[36.6,36.6,.12],"Exercise":[44,18,12],"Blood glucose":[94,94,8],"Blood pressure":[118,118,5]}},
- {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
+ {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,sex:"M",age:42,ht:178,wt:76,mm:[[3.6,3.7],[3.4,3.5],[27.5,27.9],[9.6,9.8],[9.4,9.6]],rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
   bs:{"Heart rate":[62,62,3],"Sleep duration":[7.5,7.6,.5],"Body temperature":[36.5,36.5,.1],"Exercise":[50,52,8],"Blood glucose":[90,90,6],"Blood pressure":[114,114,4]},
   ex:{'Heart rate':[['Resting HR','62 bpm'],['HRV (RMSSD)','56 ms'],['Recovery, 1 min','28 bpm drop'],['SpO2','99%'],['Breathing rate','13 /min'],['Baseline','62 bpm']],'Sleep duration':[['Efficiency','91%'],['Deep','18%'],['REM','22%'],['Awake','9%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.5 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','7,880'],['Very active','52 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','90 mg/dL'],['Target','70–140'],['Last reading','06:35']]}}
 ];
@@ -1044,21 +1045,60 @@ const SYS=[
   why:"With less load on the body in low gravity, bones and muscles weaken unless you exercise. Resistance training is the main protection.",
   call:"Tell the flight surgeon about new bone or joint pain, or if you keep missing the exercise programme.",
   act:["Complete your resistance session","Log the session on the tablet","Warm up and stretch"],
-  btn:[{l:"Activity history",di:4}]}
+  btn:[{l:"Activity history",di:4}],
+  ex:()=>{const n=["Right arm","Left arm","Trunk","Right leg","Left leg"];return`<h3 class="sec" style="margin-top:14px">Muscle mass by body part (demo)</h3>${PD[ME].mm.map((m,i)=>{const d=(m[0]-m[1])/m[1]*100;return`<div class="irow"><span>${n[i]}</span><span><b>${m[0].toFixed(1)} kg</b> <span class="note" style="margin:0">${d<0?"▼":"▲"} ${Math.abs(d).toFixed(1)}% vs start of mission</span></span></div>`}).join("")}<p class="note" style="margin:6px 0 0">Change is against your own start-of-mission baseline. Demo values.</p>`}}
 ];
 const sysAlert=s=>s.ind().some(i=>i[2]);
 let bsel=null,bview="sys";
 function drawEnv(){const e=ENV[ENVK];$("envLine").textContent="Sol 248 · "+e.n+" · Online";
   $("envChips").innerHTML=Object.keys(ENV).map(k=>`<button type="button" aria-pressed="${k===ENVK}" data-k="${k}">${ENV[k].t}</button>`).join("")}
-function figure(){const a=Object.fromEntries(SYS.map(s=>[s.id,sysAlert(s)]));
-  const L=SYS.map(s=>{const x2=s.side==="l"?122:238,c=a[s.id]?"#ffb84a":"#2fd8ff";return`<path d="M${x2} ${s.y}L${s.dot[0]} ${s.dot[1]}" stroke="${c}" stroke-opacity=".5" stroke-dasharray="3 3" fill="none"/><circle class="bdot" cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}"/><circle cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}" stroke="#fff" stroke-opacity=".6"/><circle class="bhit" data-s="${s.id}" cx="${s.dot[0]}" cy="${s.dot[1]}" r="17" fill="transparent"/>`}).join("");
-  return`<svg viewBox="0 0 360 400" aria-hidden="true"><defs><radialGradient id="bgl" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".22"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient></defs>
-  <ellipse cx="180" cy="200" rx="110" ry="190" fill="url(#bgl)"/>
-  <g class="bpart"><ellipse data-s="brain" cx="180" cy="48" rx="21" ry="26"/><rect x="173" y="72" width="14" height="14" rx="5"/><path data-s="heart" d="M152 90Q180 82 208 90Q214 96 212 110L208 188Q180 200 152 188L148 110Q146 96 152 90Z"/><rect data-s="bones" x="134" y="92" width="15" height="104" rx="7.5" transform="rotate(5 141 92)"/><rect data-s="bones" x="211" y="92" width="15" height="104" rx="7.5" transform="rotate(-5 219 92)"/><ellipse data-s="metab" cx="180" cy="200" rx="30" ry="14"/><rect data-s="bones" x="152" y="205" width="27" height="150" rx="13.5"/><rect data-s="bones" x="181" y="205" width="27" height="150" rx="13.5"/><ellipse cx="166" cy="362" rx="17" ry="7"/><ellipse cx="194" cy="362" rx="17" ry="7"/></g>${L}</svg>`}
+function smoothPath(pts){const n=pts.length;let d="M"+pts[0][0].toFixed(1)+" "+pts[0][1].toFixed(1);
+  for(let i=0;i<n;i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+   const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+   d+="C"+c1[0].toFixed(1)+" "+c1[1].toFixed(1)+" "+c2[0].toFixed(1)+" "+c2[1].toFixed(1)+" "+p2[0].toFixed(1)+" "+p2[1].toFixed(1)}
+  return d+"Z"}
+const BODY={
+ M:{r:[[7,80],[22,86],[40,92],[46,104],[42,124],[36,146],[30,166],[28,184],[33,200],[35,226],[33,262],[29,296],[27,330],[24,360],[27,374],[16,378],[11,362],[11,330],[10,296],[10,262],[8,232],[3,214]],arm:[[41,100],[50,150],[56,198]],aw:[15,12],hd:18},
+ F:{r:[[6,80],[18,86],[34,92],[39,104],[38,124],[33,142],[26,160],[22,176],[26,194],[35,212],[35,236],[32,266],[27,298],[24,330],[22,360],[25,374],[15,378],[10,362],[10,330],[9,298],[9,266],[8,238],[3,218]],arm:[[36,100],[44,150],[49,196]],aw:[13,10],hd:17}};
+function figure(){const sx=PD[ME].sex==="F"?"F":"M",B=BODY[sx],cx=180;
+  const al=Object.fromEntries(SYS.map(s=>[s.id,sysAlert(s)]));
+  const right=B.r.map(q=>[cx+q[0],q[1]]),left=B.r.slice().reverse().map(q=>[cx-q[0],q[1]]);
+  const body=smoothPath(right.concat(left));
+  const armP=sg=>{const a=B.arm.map(q=>[cx+sg*q[0],q[1]]);return{u:`M${a[0][0]} ${a[0][1]}L${a[1][0]} ${a[1][1]}`,f:`M${a[1][0]} ${a[1][1]}L${a[2][0]} ${a[2][1]}`,h:a[2]}};
+  const A=[armP(1),armP(-1)],col=id=>al[id]?"255,184,74":"47,216,255";
+  const glow=(id,x,y,rx,ry,o)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#g_${al[id]?"w":"c"})" opacity="${o}"/>`;
+  const boneTint=al.bones?"rgba(255,184,74,.28)":"rgba(47,216,255,.0)";
+  const L=SYS.map(s=>{const x2=s.side==="l"?122:238,c=al[s.id]?"#ffb84a":"#2fd8ff";return`<path d="M${x2} ${s.y}L${s.dot[0]} ${s.dot[1]}" stroke="${c}" stroke-opacity=".5" stroke-dasharray="3 3" fill="none"/><circle class="bdot" cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}"/><circle cx="${s.dot[0]}" cy="${s.dot[1]}" r="5" fill="${c}" stroke="#fff" stroke-opacity=".7"/><circle class="bhit" data-s="${s.id}" cx="${s.dot[0]}" cy="${s.dot[1]}" r="17"/>`}).join("");
+  const ribs=[0,1,2,3,4].map(i=>{const y=100+i*9,w=22-i*2;return`<path d="M${cx} ${y}Q${cx+w} ${y+2} ${cx+w-2} ${y+12}M${cx} ${y}Q${cx-w} ${y+2} ${cx-w+2} ${y+12}"/>`}).join("");
+  const arms=A.map(a=>`<g stroke-linecap="round" fill="none"><path d="${a.u}" stroke="rgba(120,225,255,.75)" stroke-width="${B.aw[0]+2}"/><path d="${a.f}" stroke="rgba(120,225,255,.75)" stroke-width="${B.aw[1]+2}"/><path d="${a.u}" stroke="url(#bGr)" stroke-width="${B.aw[0]}"/><path d="${a.f}" stroke="url(#bGr)" stroke-width="${B.aw[1]}"/><path d="${a.u+a.f.replace("M","L")}" stroke="${boneTint}" stroke-width="${B.aw[1]}"/></g><circle cx="${a.h[0]}" cy="${a.h[1]+5}" r="${B.aw[1]/2+1}" fill="url(#bGr)" stroke="rgba(120,225,255,.75)"/>`).join("");
+  const arms2=A.map(a=>`<path class="bhr" data-s="bones" d="${a.u}${a.f.replace("M","L")}" stroke-width="20"/>`).join("");
+  return`<svg viewBox="0 0 360 400" aria-hidden="true"><defs>
+   <linearGradient id="bGr" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="380"><stop offset="0" stop-color="#3fe0ff" stop-opacity=".62"/><stop offset=".55" stop-color="#1e8fd0" stop-opacity=".42"/><stop offset="1" stop-color="#0b3a78" stop-opacity=".3"/></linearGradient>
+   <radialGradient id="g_c"><stop offset="0" stop-color="#7ff0ff" stop-opacity=".75"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+   <radialGradient id="g_w"><stop offset="0" stop-color="#ffd27a" stop-opacity=".95"/><stop offset="1" stop-color="#ffb84a" stop-opacity="0"/></radialGradient>
+   <radialGradient id="aura" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".3"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+   <filter id="rimBlur" x="-20%" y="-10%" width="140%" height="120%"><feGaussianBlur stdDeviation="3"/></filter></defs>
+   <ellipse cx="180" cy="210" rx="120" ry="195" fill="url(#aura)"/>
+   <path d="${body}" fill="none" stroke="#2fd8ff" stroke-width="5" opacity=".55" filter="url(#rimBlur)"/>
+   ${arms}
+   <path d="${body}" fill="url(#bGr)" stroke="rgba(150,235,255,.85)" stroke-width="1.3"/>
+   <rect x="${cx-8}" y="70" width="16" height="16" rx="6" fill="url(#bGr)"/>
+   <ellipse cx="${cx}" cy="46" rx="${B.hd}" ry="24" fill="url(#bGr)" stroke="rgba(150,235,255,.85)" stroke-width="1.3"/>
+   <g fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1.2" stroke-linecap="round"><path d="M${cx} 84V204" stroke-dasharray="1 4"/>${ribs}<path d="M${cx-26} 204Q${cx} 222 ${cx+26} 204"/><path d="M${cx-16} 214V300M${cx+16} 214V300" stroke-dasharray="1 5"/></g>
+   ${glow("brain",cx,46,17,19,.9)}${glow("heart",cx+8,122,17,17,.9)}${glow("metab",cx,174,24,19,.8)}${glow("immune",cx-18,152,10,10,.55)}${glow("rad",cx+30,98,10,10,.5)}
+   <path d="M${cx-30} 232L${cx-24} 332M${cx+30} 232L${cx+24} 332" stroke="${boneTint}" stroke-width="16" stroke-linecap="round" fill="none"/>
+   <g fill="transparent" stroke="transparent">
+    <ellipse class="bhr" data-s="brain" cx="${cx}" cy="46" rx="${B.hd+4}" ry="28"/>
+    <ellipse class="bhr" data-s="heart" cx="${cx}" cy="120" rx="30" ry="24"/>
+    <ellipse class="bhr" data-s="metab" cx="${cx}" cy="172" rx="26" ry="20"/>
+    ${arms2}
+    <rect class="bhr" data-s="bones" x="${cx-36}" y="212" width="32" height="165" rx="14"/><rect class="bhr" data-s="bones" x="${cx+4}" y="212" width="32" height="165" rx="14"/></g>
+   ${L}</svg>`}
 function drawBody(){
   const al=SYS.filter(sysAlert);
   $("bSum").textContent=al.length?al.length+" of "+SYS.length+" body systems need your attention: "+al.map(s=>s.n.toLowerCase()).join(", ")+".":"All "+SYS.length+" body systems look good. Tap a system to see what it means.";
   drawEnv();
+  {const d=PD[ME];$("bProf").innerHTML=[d.sex==="F"?"Female":"Male",d.age+" yrs",d.ht+" cm",d.wt+" kg"].map(x=>`<span class="lchip n">${x}</span>`).join("")+'<span class="note" style="align-self:center;margin:0">Demo profile</span>'}
   $("bTabs").innerHTML=[["sys","By body system"],["haz","By hazard"]].map(x=>`<button type="button" aria-pressed="${bview===x[0]}" data-v="${x[0]}">${x[1]}</button>`).join("");
   $("bSys").hidden=bview!=="sys";$("bHaz").hidden=bview!=="haz";
   if(bview==="sys"){
@@ -1079,7 +1119,7 @@ function openSys(id){bsel=id;const s=SYS.find(x=>x.id===id),a=sysAlert(s);
   $("bsBody").innerHTML=`<h2 class="h2i"><span class="pic">${ico(s.ic)}</span>${s.n}</h2>
      <div class="chips" style="margin:2px 0 8px">${s.haz.map(z=>`<span class="lchip n">${ico("info",14)}${z}</span>`).join("")}</div>
      <div>${s.ind().map(i=>`<div class="irow"><span>${i[0]}</span><span><b>${i[1]}</b> ${i[2]?'<span class="tag warn">Check</span>':'<span class="tag ok">OK</span>'}</span></div>`).join("")}</div>
-     <h3 class="sec" style="margin-top:14px">Why it matters in space</h3><p style="margin:0">${s.why}</p>
+     ${s.ex?s.ex():""}<h3 class="sec" style="margin-top:14px">Why it matters in space</h3><p style="margin:0">${s.why}</p>
      <h3 class="sec">What you can do</h3><ul class="alist">${s.act.map(x=>`<li>${x}</li>`).join("")}</ul>
      <div class="callbox"><span class="pic">${ico("alert",20)}</span><span><b>When to call the flight surgeon</b><br>${s.call}</span></div>
      <div class="acts" style="margin-top:12px">${s.btn.map(b=>`<button type="button" ${b.ms?`data-ms="${b.ms}"`:b.go?`data-go="${b.go}"`:`data-di="${b.di}"`}>${b.l}</button>`).join("")}</div>`;
