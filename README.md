@@ -20,7 +20,7 @@ services/
     download_data.py  tests/
 database/
   sqlite/     schema.sql, and the SQLite file once seeded (not in git)
-  datasets/   The downloaded CSV files (not in git)
+  datasets/   The raw dataset files, 85 MB
 docs/         Design documents
 ```
 
@@ -30,7 +30,6 @@ You need [uv](https://docs.astral.sh/uv/) and Node 22.
 
 ```sh
 cd services/api
-uv run python download_data.py   # downloads the datasets (615 MB zip, keeps 23 MB)
 uv run python seed.py            # builds database/sqlite/real_telemetry.db; replaces it if it exists
 
 cd ../../apps/web
@@ -40,6 +39,8 @@ npm install
 ## Run
 
 Two terminals. Nothing needs the network once the setup is done.
+
+The datasets are in the repo. `uv run python download_data.py` fetches them again from NASA and Zenodo if a file is missing.
 
 ```sh
 cd services/api && uv run uvicorn app.main:app --port 8000
