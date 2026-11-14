@@ -167,10 +167,10 @@ ul.ticks li::before{content:"";width:18px;height:18px;flex:none;margin-top:4px;b
 @media(max-width:600px){.src{flex-wrap:wrap}.src .tag{margin-left:56px}.bigdevice{padding:10px;border-radius:30px}.bigdevice .screen{aspect-ratio:3/4;border-radius:22px}section{padding:90px 0}}
 
 /* earth */
-.earthline{text-align:center;padding:140px 0 calc(22vh + 80px);overflow:hidden}
+.earthline{text-align:center;padding:140px 0 clamp(300px,46vh,500px);overflow:hidden}
 .earthline .wrap{position:relative;z-index:2}
-.earthline .horizon{height:24vh}
-.earthline .earth{top:6vh}
+#earthHz{position:absolute;left:0;right:0;bottom:0;width:100%;height:clamp(300px,46vh,500px);display:block;z-index:1;pointer-events:none}
+.earthline::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(5,13,26,0),rgba(5,13,26,.75) 55%,#050d1a)}
 .earthline h2{max-width:20ch;margin:0 auto}
 .earthline .lead{margin:22px auto 0}
 
@@ -607,7 +607,7 @@ nav.top .lang{margin-left:4px}
     <h2 class="rv" data-t="earth_h2"></h2>
     <p class="lead rv" data-t="earth_lead"></p>
   </div>
-  <div class="horizon" aria-hidden="true"><div class="earth"></div></div>
+  <canvas id="earthHz" aria-hidden="true"></canvas>
 </section>
 
 <!-- TRY -->
@@ -739,6 +739,37 @@ nav.top .lang{margin-left:4px}
       });
     }, {threshold:.3}).observe(document.getElementById("emergency"));
   }
+
+  // Earth rising behind "back on Earth": Alex's procedural Earth, slowly turning
+  (function(){
+    var cv = document.getElementById("earthHz"), E = window.MoonCareEarth;
+    if (!cv || !E) return;
+    var cx = cv.getContext("2d"), w = 0, h = 0, dpr = 1, raf = null, last = 0, t0 = performance.now();
+    function size(){ var r = cv.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 2); w = r.width; h = r.height; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+    function draw(now){
+      var t = (now - t0) / 1000;
+      E.render(t * 0.05 + 2.2, t * 0.065 + 2.2);
+      cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,w,h);
+      var R = Math.max(Math.min(w * 0.34, 430), 150), ex = w / 2, ey = h * 0.16 + R;   // a half-risen globe, kept small enough to stay sharp
+      // outer haze and atmosphere rim
+      var g = cx.createRadialGradient(ex, ey, R * 0.98, ex, ey, R * 1.16);
+      g.addColorStop(0, "rgba(120,200,255,0.55)"); g.addColorStop(0.25, "rgba(70,150,255,0.22)"); g.addColorStop(1, "rgba(47,120,255,0)");
+      cx.fillStyle = g; cx.beginPath(); cx.arc(ex, ey, R * 1.16, 0, 6.2832); cx.fill();
+      cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = "high";
+      cx.drawImage(E.canvas, ex - R, ey - R, R * 2, R * 2);
+      // thin bright limb
+      cx.strokeStyle = "rgba(170,225,255,0.55)"; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(ex, ey, R + 0.5, Math.PI * 1.05, Math.PI * 1.95); cx.stroke();
+    }
+    function loop(now){ raf = requestAnimationFrame(loop); if (now - last < 66) return; last = now; draw(now); }
+    size(); draw(performance.now());
+    addEventListener("resize", function(){ size(); draw(performance.now()); });
+    if (!RM && "IntersectionObserver" in window) {
+      new IntersectionObserver(function(es){ es.forEach(function(e){
+        if (e.isIntersecting && raf === null) raf = requestAnimationFrame(loop);
+        else if (!e.isIntersecting && raf !== null) { cancelAnimationFrame(raf); raf = null; }
+      }); }).observe(cv);
+    }
+  })();
 
   // live demo: load the app only when asked
   document.getElementById("demoStart").addEventListener("click", function(){
