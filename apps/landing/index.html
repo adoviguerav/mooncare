@@ -210,6 +210,13 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .ptab th,.ptab td{border-bottom-color:rgba(255,255,255,.1)}
 @media(prefers-reduced-motion:reduce){body::before,#landing::before{animation:none}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.card,.panel,.cm,.stats div,.rate,.eta,.novabox,#tabs,.inc.card{background:#0b1a2e}}
+#tabs button{display:grid;place-items:center;min-height:58px;position:relative;transition:color .2s,transform .15s}
+#tabs button svg{transition:transform .2s,filter .2s}
+#tabs button:hover svg,#tabs button:focus-visible svg{transform:translateY(-2px) scale(1.1);filter:drop-shadow(0 0 8px rgba(47,216,255,.6))}
+#tabs button[data-t="alerts"]{color:var(--warn)}
+#tabs button:active svg{transform:scale(.92)}
+#tabs button:focus-visible{outline-offset:-4px;border-radius:20px}
+#tabs{background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(8,22,42,.7)}
 </style>
 </head>
 <body>
@@ -448,7 +455,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <p class="note" style="margin-top:12px">Step times and radiation values are demo estimates.</p>
   </div>
 </section>
-<nav id="tabs" aria-label="Sections"><button data-t="today">Today</button><button data-t="vitals">Vitals</button><button data-t="sleep">Sleep</button><button data-t="list">Checklist</button><button data-t="data">Data</button><button data-t="alerts">Alerts</button></nav>
+<nav id="tabs" aria-label="Sections"><button data-t="today" type="button" aria-label="Today" title="Today"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg></button><button data-t="vitals" type="button" aria-label="Vitals" title="Vitals"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></button><button data-t="sleep" type="button" aria-label="Sleep" title="Sleep"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/></svg></button><button data-t="list" type="button" aria-label="Checklist" title="Checklist"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/></svg></button><button data-t="data" type="button" aria-label="Data" title="Data"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/><path d="M3 20h18"/></svg></button><button data-t="alerts" type="button" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg></button></nav>
 <footer>Demo data only. Mood is a confidential self-report and never triggers an automatic diagnosis.</footer>
 </div>
 
