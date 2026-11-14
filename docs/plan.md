@@ -151,6 +151,7 @@ These wait until every task above is ticked. They are the planned parts of the t
 
 - [ ] **Onboard AI.** The emergency assistant, E1 to E6.
 - [ ] **Link to the ground.** The queue of messages to Earth and what the flight surgeon sees.
+- [ ] **Two profile types: commander and crew member.** It adds a `role` to `crew_member` and to `GET /api/crew`, and a commander screen. Decide first what the commander sees (System_design, section 2, Not decided yet).
 - [ ] **Mobile app** (`apps/mobile`).
 - [ ] The other stretch goals, in the order of the System_design, section 2.
 
