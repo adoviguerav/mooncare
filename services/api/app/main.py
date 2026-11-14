@@ -8,6 +8,9 @@ from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session
 
 from app import models
+from app.auth import CurrentUser, require_access_to_crew_member, require_own_crew_member
+from app.auth import router as auth_router
+from app.daily import router as daily_router
 from app.baseline import BASELINE_WINDOW_DAYS, find_baseline_limit
 from app.db import DbSession
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
@@ -130,19 +133,25 @@ def is_due(indicator: models.Indicator, latest_reading: models.Reading | None, d
 
 
 app = FastAPI(title="Real Telemetry API")
+app.include_router(auth_router)  # /api/auth: sign-in. Every other endpoint needs a signed-in user
 app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
+app.include_router(daily_router)  # /api/crew/{id}/tasks: the daily checklist, XP, level and streak
 
 
 @app.get("/api/crew")
-def get_crew(session: DbSession) -> CrewResponse:
+def get_crew(session: DbSession, user: CurrentUser) -> CrewResponse:
     crew = session.scalars(select(models.CrewMember).order_by(models.CrewMember.id))
     return CrewResponse(crew=[CrewMember.model_validate(member, from_attributes=True) for member in crew])
 
 
 @app.get("/api/crew/{crew_member_id}/panel")
 def get_panel(
-    crew_member_id: int, session: DbSession, panel_date: Annotated[date, Query(alias="date")]
+    crew_member_id: int,
+    session: DbSession,
+    user: CurrentUser,
+    panel_date: Annotated[date, Query(alias="date")],
 ) -> PanelResponse:
+    require_access_to_crew_member(user, crew_member_id)
     require_crew_member(session, crew_member_id)
     rules_by_indicator = get_rules_by_indicator(session)
     indicators = session.scalars(select(models.Indicator).order_by(models.Indicator.display_order)).all()
@@ -194,9 +203,11 @@ def get_indicator(
     crew_member_id: int,
     indicator_id: str,
     session: DbSession,
+    user: CurrentUser,
     from_date: Annotated[date, Query(alias="from")],
     to_date: Annotated[date, Query(alias="to")],
 ) -> IndicatorResponse:
+    require_access_to_crew_member(user, crew_member_id)
     require_crew_member(session, crew_member_id)
     indicator = session.get(models.Indicator, indicator_id)
     if indicator is None:
@@ -249,9 +260,10 @@ def get_indicator(
 
 @app.put("/api/crew/{crew_member_id}/checkins/{checkin_date}")
 def save_checkin(
-    crew_member_id: int, checkin_date: date, checkin: Checkin, session: DbSession
+    crew_member_id: int, checkin_date: date, checkin: Checkin, session: DbSession, user: CurrentUser
 ) -> CheckinResponse:
     require_crew_member(session, crew_member_id)
+    require_own_crew_member(user, crew_member_id)
     chosen_moods = [mood_id for mood_id in MOOD_IDS if mood_id in checkin.moods]
     taken_at = start_of(checkin_date)
     save_readings(

@@ -6,6 +6,7 @@ They are created on the server of TEST_DATABASE_URL or, if that is not set, of P
 
 import os
 import uuid
+import warnings
 from collections.abc import Callable, Iterator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
@@ -20,7 +21,10 @@ from app.config import API_DIR, SCHEMA_DIR, Settings
 from app.db import build_engine
 from seed import DAILY_COLUMNS, CrewPairing, DatasetFiles, build_seed_files
 
-SEEDED_TABLES = "dat.reading, dat.crew_member, cfg.rule, cfg.indicator, cfg.source"
+SEEDED_TABLES = (
+    "his.auth_event, dat.session, dat.app_user, dat.task_completion, dat.reading, dat.crew_member, "
+    "cfg.daily_task, cfg.rule, cfg.indicator, cfg.source"
+)
 # The LifeSnaps daily file starts with an unnamed index column
 DAILY_HEADER = "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
 
@@ -57,14 +61,20 @@ def throwaway_database() -> Iterator[str]:
     database_name = f"real_telemetry_test_{uuid.uuid4().hex[:8]}"
     try:
         with psycopg.connect(server_url, autocommit=True) as connection:
-            connection.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(database_name)))
+            # From template0: CREATE DATABASE fails when anything else is connected to template1, its default
+            connection.execute(sql.SQL("CREATE DATABASE {} TEMPLATE template0").format(sql.Identifier(database_name)))
     except psycopg.OperationalError as error:
         pytest.fail(f"Cannot reach the test PostgreSQL server. Start it, or set TEST_DATABASE_URL.\n{error}")
     try:
         yield with_database(server_url, database_name)
     finally:
-        with psycopg.connect(server_url, autocommit=True) as connection:
-            connection.execute(sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(database_name)))
+        try:
+            with psycopg.connect(server_url, autocommit=True) as connection:
+                connection.execute(sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(database_name)))
+        except psycopg.errors.InsufficientPrivilege:
+            # Another user's session is open on it, typically pgAdmin, which connects to every new database.
+            # The tests passed; the database is left behind and named, to drop by hand.
+            warnings.warn(f"Could not drop the test database {database_name}: another user is connected to it", stacklevel=1)
 
 
 @pytest.fixture(scope="session")

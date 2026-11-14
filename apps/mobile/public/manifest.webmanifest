@@ -1,0 +1,15 @@
+{
+  "name": "Mooncare · Crew",
+  "short_name": "Mooncare",
+  "description": "The daily health panel of the lunar crew. Connected to the moon server.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050d1a",
+  "theme_color": "#050d1a",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

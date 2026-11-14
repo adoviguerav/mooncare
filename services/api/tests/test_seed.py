@@ -28,7 +28,7 @@ from seed import (
 )
 from app.config import SEEDS_DIR
 from app.schemas import MoodId
-from seed_content import INDICATORS, MOOD_NAMES, RULES
+from seed_content import BLOOD_SOURCE_IDS, INDICATORS, MOOD_NAMES, RULES
 
 METABOLIC_PANEL_HEADER = (
     "Sample Name,glucose_value_milligram_per_deciliter,"
@@ -244,7 +244,7 @@ def get_latest_values(readings: list[Reading], up_to_day: str) -> dict[str, floa
     return {reading.indicator_id: reading.value for reading in in_time}
 
 
-def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date() -> None:
+def test_the_real_datasets_give_six_crew_members_a_full_panel_on_the_demo_date() -> None:
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
     assert [(pairing.name, pairing.role) for pairing in CREW] == [
@@ -252,12 +252,19 @@ def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date(
         ("Mateo Vargas", "crew_member"),
         ("Amara Okafor", "medical_officer"),
         ("Liam Novak", "crew_member"),
+        ("Sofia Marchetti", "crew_member"),
+        ("Kenji Mori", "crew_member"),
     ]
-    for panel in panels:
-        assert set(panel) == {indicator.id for indicator in INDICATORS}
-    assert [panel["glucose"] for panel in panels] == [36.0, 84.0, 44.0, 43.0]
-    # Only Crew 2 is over the limit of the mood rule, 7 days
-    assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0]
+    every_indicator = {indicator.id for indicator in INDICATORS}
+    blood_indicators = {indicator.id for indicator in INDICATORS if indicator.source_id in BLOOD_SOURCE_IDS}
+    for panel in panels[:4]:
+        assert set(panel) == every_indicator
+    # Inspiration4 had four astronauts: the last two crew members have every indicator but the blood ones
+    for panel in panels[4:]:
+        assert set(panel) == every_indicator - blood_indicators
+    assert [panel["glucose"] for panel in panels[:4]] == [36.0, 84.0, 44.0, 43.0]
+    # Crew 2 and crew 6 are over the limit of the mood rule, 7 days
+    assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0, 2.0, 9.0]
 
 
 def test_the_real_metabolic_panel_gives_crew_1_low_potassium_the_day_after_landing() -> None:
@@ -430,7 +437,7 @@ def test_stores_the_mean_dose_rate_of_the_lidal_detector_for_each_day(tmp_path: 
 def test_the_real_radiation_data_gives_every_crew_member_the_same_dose_rate_of_the_ship() -> None:
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
-    assert [panel["radiation_dose_rate"] for panel in panels] == [6.01, 6.01, 6.01, 6.01]
+    assert [panel["radiation_dose_rate"] for panel in panels] == [6.01] * len(CREW)
 
 
 def test_the_committed_seed_files_are_what_the_seed_script_writes_today() -> None:

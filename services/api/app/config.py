@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     earth_url: str | None = None  # moon only: the base URL of the earth server, e.g. https://earth.example.com
     sync_token: str | None = None  # shared secret between the two servers. Without it, syncing is off
 
+    # The session cookie is sent over HTTPS only. False for http://localhost, true when deployed
+    cookie_secure: bool = False
+
     @model_validator(mode="after")
     def require_the_url_of_the_chosen_provider(self) -> "Settings":
         if self.database_url is None:

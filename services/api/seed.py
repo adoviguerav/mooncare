@@ -29,7 +29,7 @@ from app.config import (
 )
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import CrewRole
-from seed_content import INDICATORS, RULES, SOURCES, get_routine
+from seed_content import DAILY_TASKS, INDICATORS, RULES, SOURCES, get_routine
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
 LAUNCH_DATE = date(2021, 9, 16)
@@ -116,7 +116,7 @@ class CrewPairing:
     """One fictional crew member: the Inspiration4 astronaut and LifeSnaps volunteer behind their data."""
 
     name: str
-    inspiration4_code: str
+    inspiration4_code: str | None  # None: no blood panel. Inspiration4 had 4 astronauts, never shared
     lifesnaps_id: str
     lifesnaps_offset_days: int = 0
     role: CrewRole = "crew_member"
@@ -192,6 +192,21 @@ CREW = [
         inspiration4_code="C004",
         lifesnaps_id="621e337667b776a240ce78ab",
         lifesnaps_offset_days=98,
+    ),
+    # Inspiration4 had only four astronauts, so the last two crew members have no blood panel: sharing one
+    # astronaut's real blood values between two fictional people would mislead. Their wearable and mood data is
+    # complete. Each offset puts the volunteer's best fortnight (14 complete days of 14) on the demo date.
+    CrewPairing(
+        "Sofia Marchetti",
+        inspiration4_code=None,
+        lifesnaps_id="621e33b067b776a240f39e56",
+        lifesnaps_offset_days=100,
+    ),
+    CrewPairing(
+        "Kenji Mori",
+        inspiration4_code=None,
+        lifesnaps_id="621e32af67b776a24045b4cf",
+        lifesnaps_offset_days=99,
     ),
 ]
 
@@ -324,7 +339,7 @@ def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> lis
     blood_readings = [
         reading
         for blood_csv, columns in blood_files
-        if blood_csv is not None
+        if blood_csv is not None and pairing.inspiration4_code is not None
         for reading in read_blood_readings(blood_csv, columns, pairing.inspiration4_code)
     ]
     questionnaire_readings = [
@@ -442,12 +457,19 @@ def build_readings_sql(crew: list[CrewPairing], dataset_files: DatasetFiles) -> 
     return with_header(build_inserts("dat.reading", ("crew_member_id", "indicator_id", "taken_at", "value"), rows))
 
 
+def build_daily_tasks_sql() -> str:
+    columns = ("id", "title", "xp", "completion", "display_order")
+    rows = [(t.id, t.title, t.xp, t.completion, position) for position, t in enumerate(DAILY_TASKS, start=1)]
+    return with_header(build_inserts("cfg.daily_task", columns, rows))
+
+
 def build_seed_files(crew: list[CrewPairing], dataset_files: DatasetFiles) -> dict[str, str]:
     """File name to content, in the order they must be loaded."""
     builders: dict[str, Callable[[], str]] = {
         "10_cfg_sources.sql": build_sources_sql,
         "11_cfg_indicators.sql": build_indicators_sql,
         "12_cfg_rules.sql": build_rules_sql,
+        "13_cfg_daily_tasks.sql": build_daily_tasks_sql,
         "20_dat_crew.sql": lambda: build_crew_sql(crew),
         "21_dat_readings.sql": lambda: build_readings_sql(crew, dataset_files),
     }

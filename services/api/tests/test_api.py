@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app import models
+from app.auth import get_current_user
 from app.db import get_session
 from app.main import app
 from seed import DAILY_COLUMNS, CrewPairing
@@ -65,6 +67,11 @@ def build_client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Itera
         return TestClient(app)
 
     app.dependency_overrides[get_session] = get_test_session
+    # Signed in as Crew 1, the commander: sees every crew member and checks in for themselves.
+    # Sign-in itself and who may see what are tested in test_auth.py
+    app.dependency_overrides[get_current_user] = lambda: models.AppUser(
+        id=1, display_name="Crew 1", role="commander", crew_member_id=1, pin_hash="", is_active=True
+    )
     yield build
     app.dependency_overrides.clear()
 

@@ -13,10 +13,10 @@ on both servers, whether it worked or not. Deleted rows are not synchronised: th
 """
 
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any, Literal, Protocol
 
-from sqlalchemy import DateTime, Table, literal_column, select
+from sqlalchemy import Date, DateTime, Table, literal_column, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -32,9 +32,14 @@ EARTH_TABLES: list[Table] = [
     models.Indicator.__table__,  # type: ignore[list-item]
     models.Rule.__table__,  # type: ignore[list-item]
     models.CrewMember.__table__,  # type: ignore[list-item]
+    models.AppUser.__table__,  # type: ignore[list-item]  # users and PIN hashes: the crew signs in with no link
+    models.DailyTask.__table__,  # type: ignore[list-item]
 ]
 # Written on the moon and sent to earth
-MOON_TABLES: list[Table] = [models.Reading.__table__]  # type: ignore[list-item]
+MOON_TABLES: list[Table] = [
+    models.Reading.__table__,  # type: ignore[list-item]
+    models.TaskCompletion.__table__,  # type: ignore[list-item]
+]
 
 ROWS_PER_PUSH = 5000  # one push request carries at most this many rows; the rest go in the next ones
 ROWS_PER_INSERT = 1000
@@ -57,12 +62,18 @@ def now() -> datetime:
 
 
 def to_json_value(value: Any) -> Any:
-    return value.isoformat() if isinstance(value, datetime) else value
+    # date covers datetime too: both travel as ISO 8601 text
+    return value.isoformat() if isinstance(value, date) else value
 
 
 def from_json_value(table: Table, column: str, value: Any) -> Any:
-    if value is not None and isinstance(table.c[column].type, DateTime):
+    if value is None:
+        return value
+    column_type = table.c[column].type
+    if isinstance(column_type, DateTime):
         return datetime.fromisoformat(value)
+    if isinstance(column_type, Date):
+        return date.fromisoformat(value)
     return value
 
 
