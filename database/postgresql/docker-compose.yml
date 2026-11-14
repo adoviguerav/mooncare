@@ -1,0 +1,24 @@
+# Local PostgreSQL for development, with the same schema and seeds that go to Supabase.
+# On the first start it runs scripts/apply.sh. To rebuild it from the .sql files:
+#   docker compose down -v && docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-real_telemetry}
+      POSTGRESQL_DIR: /database
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./:/database:ro
+      - ./scripts/apply.sh:/docker-entrypoint-initdb.d/apply.sh:ro
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      retries: 30
+
+volumes:
+  db-data:
