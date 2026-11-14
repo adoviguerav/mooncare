@@ -104,7 +104,7 @@ A daily health panel used inside the spacecraft. Why: it is what the brief asks 
 - **R6.** Takes as little time as possible and reduces stress instead of adding it.
 - **R7.** Keeps the history of each indicator to track it over the long term. Why: the biggest concern is how health changes over months.
 - **R8.** New indicators can be added over time. Why: the base can grow with each update.
-- **R9.** Guided CPR flow with fixed steps on screen when a crewmate collapses. Covers the brief's "guidance on what to do in an emergency". It follows the ISS procedure (AED Assisted CPR) with one image per step. The defibrillator already talks, so we guide the steps around it and keep the timers. With a link the flow calls Earth. Without one it keeps going and the commander decides.
+- **R9.** A guided medical procedure with fixed steps on screen and a voice that talks the medical officer through it. Covers the brief's "guidance on what to do in an emergency". The demo case is a possible infection, flagged by a simulated model from seven readings, and it follows NASA's ISS Medical Checklist (Bladder/Kidney Infection, JSC-48522-E4, 2001) word for word. The voice agent records what she reports and the report waits for the link. Without a link the guide keeps going and the medical officer decides. The ISS procedure for a collapse (AED Assisted CPR) is loaded too, out of the demo. Spec: [emergency_guide.md](emergency_guide.md).
 - **R10.** Each indicator warns when a value is out of range, explains it and says what to do.
 - **R11.** Each indicator shows its source and the rule behind it, so anyone can check the science.
 
@@ -114,9 +114,9 @@ Pain points are numbered as in section 1. Why: it shows what each requirement is
 
 | # | Pain point | Covered by | Gap |
 | :-- | :-- | :-- | :-- |
-| 1 | Crew solves problems alone | R4, R10, R11 | The app does not say yet what is due to be measured today (plan, task T1) |
-| 2 | Medical care without Earth (EIMO) | R7, R9, R10. The moon server works on its own and syncs with the earth server when it chooses (section 5). Stretch: emergency assistant (E1 to E6) | Only one guided procedure (CPR). The earth view of the dashboard is not built yet |
-| 3 | Mental health and team | R2, R3, and sleep in R1 | Mood has no rule, so it never warns (MVP architecture, section 5). Nothing covers the team risk (Not decided yet, below) |
+| 1 | Crew solves problems alone | R4, R10, R11. The panel says what is due to be measured today | The questionnaires are loaded as data and cannot be filled in from the app |
+| 2 | Medical care without Earth (EIMO) | R7, R9, R10. The moon server works on its own and syncs with the earth server when it chooses (section 5). A voice agent guides the procedure and writes the report for the ground | One procedure in the demo (infection) and one more loaded (CPR). The detection is simulated. The voice agent is a cloud service, not a model on board. The earth view of the dashboard is not built yet |
+| 3 | Mental health and team | R2, R3, and sleep in R1. Two mood rules warn after more than half of the last 14 days sad or tense | Nothing covers the team risk (Not decided yet, below) |
 | 4 | Nutrition | Glucose in R1 | Diet, hydration and body mass have no data (data document, Table 3) |
 | 5 | Long-term physical damage | Exercise and heart rate in R1, R7 | Eyes, bone and ECG have no data (data document, Table 3) |
 
@@ -124,7 +124,7 @@ Pain points are numbered as in section 1. Why: it shows what each requirement is
 
 In this order:
 
-1. **Emergency assistant:** an AI that guides the crew step by step, by voice, through emergency procedures. It starts from the CPR flow in the MVP and adds other cases, such as severe stress or low glucose. It is the next step once the platform works, because the panel must work first. Covers the brief's "guidance on what to do in an emergency".
+1. **Emergency assistant:** an AI that guides the crew step by step, by voice, through emergency procedures. A first version is built: a voice agent guides the infection procedure of the MVP, moves the screen and writes the report (R9). What is left is to run it on board and to add other cases, such as severe stress or low glucose. It is the next step once the platform works, because the panel must work first. Covers the brief's "guidance on what to do in an emergency".
     - **E1.** Runs on board, without Earth or the cloud.
     - **E2.** Guides each procedure step by step by voice, and explains each alert in short sentences.
     - **E3.** Only advises
@@ -285,7 +285,7 @@ The tasks, the two teams and the dates are in the [plan](plan.md).
 ### Inputs collected so far, from the meeting
 
 - Build: with AI (Claude Code, Adolfo's account), a front end and back end are doable in about 2 days. Build the base platform first, then split into parallel workstreams: gamification, AI, emergency (Adolfo).
-- Demo: a normal scenario, then an emergency simulation, such as a heart attack with CPR guidance (Adolfo, Alex).
+- Demo: a normal scenario, then a simulated possible infection closed on board with the voice guide, and the report sent when the link returns (Adolfo, Alex).
 - Demo. Run the flow live and bring a backup recording.
 - Pitch. Say "Earth Independent Medical Operations (EIMO)": NASA's name for moving medical care from Earth to the crew as missions get farther away (Levin 2023). It is what our panel works towards, and NASA still lists it as open (HRP gap Medical-701).
 - Pitch. We found no open human data for the most severe effects (bone, muscle, eyesight). The panel tracks exercise, the main countermeasure, and their alerts are ready for when data exists.
@@ -301,7 +301,7 @@ In the pitch, name each pain point and answer it, in this order, two lines each:
     - Our answer: the panel is built for a crew with no doctor. Every indicator says how to measure it, why it matters and what to do, and shows its source.
 2. **Medical care without Earth. Say "Earth Independent Medical Operations (EIMO)".**
     - Problem: today monitoring, diagnosis and decisions happen on Earth. From Mars a message takes up to 20 minutes each way and nobody can be evacuated. NASA calls the fix EIMO and still lists it as open.
-    - Our answer: everything runs on board. The panel warns and says what to do, and the CPR flow guides the crew with or without a link.
+    - Our answer: everything runs on board. The panel warns and says what to do. When a model flags a possible infection, a voice guide takes the medical officer through NASA's own checklist with no link, and the report leaves when the link returns.
 3. **Mental health and team.**
     - Problem: months of isolation with the same few people. NASA rates behavioural health and team work red for Mars.
     - Our answer: a daily check-in of mood, next to sleep, kept over months so a slow change shows. How the team works together is what we don't cover yet.
@@ -355,6 +355,7 @@ Medical care on the ISS and far from Earth:
 - Gabel et al., 2022, bone loss in flight, <https://pmc.ncbi.nlm.nih.gov/articles/PMC8862023>
 - Crucian et al., immune changes and virus reactivation, <https://ntrs.nasa.gov/api/citations/20100040666/downloads/20100040666.pdf>
 - Bio-Monitor sensor shirt on the ISS (Hexoskin), <https://www.hexoskin.com/blogs/news/tagged/astronaut-health?page=1>
+- NASA, ISS Integrated Medical Group Medical Checklist, JSC-48522-E4, 2001, <http://web.archive.org/web/20230519222418/https://www.nasa.gov/centers/johnson/pdf/163533main_ISS_Med_CL.pdf>
 - ISS emergency medical procedures, NASA JSC, FOIA 16-JSC-F-00174, 2016, <https://www.governmentattic.org/19docs/NASA-ISSmedicalEmergManual_2016.pdf>
 - NASA HRP, Sudden Cardiac Arrest and related gaps, 2014, <https://humanresearchroadmap.nasa.gov/Evidence/medicalConditions/Sudden_Cardiac_Arrest.pdf>
 - CSA, Bio-Monitor, <https://www.asc-csa.gc.ca/eng/sciences/bio-monitor.asp>
