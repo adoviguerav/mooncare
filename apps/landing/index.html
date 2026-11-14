@@ -295,6 +295,21 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 #bsPage:not([hidden]) .glassx{animation:slideup .28s ease-out}
 .bhit,.bhr{cursor:pointer;fill:transparent}.bhr{pointer-events:all}.bhit:hover,.bhr:hover{fill:rgba(47,216,255,.14)}
 .bhr[d]{fill:none;stroke:transparent;pointer-events:stroke;stroke-linecap:round}.bhr[d]:hover{stroke:rgba(47,216,255,.14)}
+
+/* simplification pass */
+#tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;letter-spacing:.2px}
+#tabs button span{line-height:1}
+.moods{grid-template-columns:repeat(5,1fr)!important;gap:6px}
+.moods button{padding:8px 2px;font-size:12px;border-radius:16px}
+.moods svg{width:36px;height:36px}
+#moodMsg{margin:8px 0 0;font-size:13px;color:var(--mute)}
+.cp .spark{margin-top:6px}
+.cp .val{margin:6px 0 0}
+.cp .pn{white-space:normal}
+#qCard{margin-top:16px}
+.linkbtn{background:none;border:0;color:var(--cy);font:inherit;cursor:pointer;padding:6px 0}
+#grid{grid-template-columns:repeat(2,1fr)!important;gap:10px}@media(min-width:960px){#grid{grid-template-columns:repeat(3,1fr)!important}}
+.cp .top{flex-wrap:wrap;gap:6px}.cp .top .tag{order:3;margin-left:auto}.cp .pn{flex:1 1 60%;font-size:12px}.cp .val{font-size:24px}.cp .val small{font-size:11px;display:block}.cp .spark svg{width:100%;max-width:120px}
 </style>
 </head>
 <body>
@@ -451,44 +466,15 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <p id="novaMsg" style="margin:4px 0 0"></p></div>
 </section>
 
-<h3 class="sec">Morning telemetry</h3>
+<h3 class="sec">Today’s vitals</h3>
 <p class="note" id="sumline"></p>
-<div class="chips" id="chips" role="group" aria-label="Filter by body system"></div>
 <div class="grid" id="grid"></div>
 
-<section class="two">
-  <div class="card">
-    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></span>Heart rate through the sol</h2>
-    <div class="scroll"><svg id="hr" viewBox="0 0 440 150" role="img" aria-label="Hourly heart rate curve"></svg></div>
-    <p class="note" id="hrNote">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
-  </div>
-  <div class="card">
-    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/></svg></span>Sleep architecture</h2>
-    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-      <svg id="donut" viewBox="0 0 120 120" width="140" role="img" aria-label="Sleep stage split"></svg>
-      <ul class="legend" id="legend" style="flex:1;min-width:150px"></ul>
-    </div>
-    <p class="note" id="restNote">Circadian phase: synchronized. Rest score 94.</p>
-  </div>
-</section>
-
-<section class="two">
-  <div class="card">
-    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg></span>Daily checklist</h2>
-    <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
-    <div id="quests"></div>
-  </div>
-  <div class="card">
-    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span>Life support</h2>
-    <p class="note" hidden>Suit #MK-IV-A. Thermal regulators prepped for the 14:00 exterior walk.</p>
-    <div class="eva" hidden>
-      <div><b>4.3 PSI</b><span>Pressure, sealed</span></div>
-      <div><b>98.2%</b><span>O2 tank</span></div>
-      <div><b>21.5 °C</b><span>Thermal, nominal</span></div>
-    </div>
-    <div class="grid" style="margin:12px 0 0;grid-template-columns:1fr 1fr"><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></span><span class="pn">SpO2</span></div><div class="val" style="font-size:26px">99<small> %</small></div><p class="note">Crisp lunar O2</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span class="pn">Breathing rate</span></div><div class="val" style="font-size:26px">14<small> /min asleep</small></div><p class="note">No limit set yet.</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span class="pn">Radiation today</span></div><div class="val" style="font-size:26px">0.14<small> mSv</small></div><p class="note">Nominal shielding</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span class="pn">Total radiation dose</span></div><div class="val" style="font-size:26px">18.4<small> mSv</small></div><p class="note">Since arrival. No limit set yet.</p></div></div>
-    </div>
-  </div>
+<section class="card" id="qCard">
+  <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg></span>Next up</h2>
+  <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
+  <div id="quests"></div>
+  <button type="button" class="linkbtn" id="qAll" style="margin-top:8px"></button>
 </section>
 
 </main>
@@ -509,6 +495,22 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <p class="note" id="pSum" style="margin-top:-6px"></p>
   <h3 class="sec">Today</h3>
   <div class="ptiles" id="ptiles"></div>
+  <h3 class="sec">Trends</h3>
+  <section class="two">
+  <div class="card">
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></span>Heart rate through the sol</h2>
+    <div class="scroll"><svg id="hr" viewBox="0 0 440 150" role="img" aria-label="Hourly heart rate curve"></svg></div>
+    <p class="note" id="hrNote">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
+  </div>
+  <div class="card">
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/></svg></span>Sleep architecture</h2>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <svg id="donut" viewBox="0 0 120 120" width="140" role="img" aria-label="Sleep stage split"></svg>
+      <ul class="legend" id="legend" style="flex:1;min-width:150px"></ul>
+    </div>
+    <p class="note" id="restNote">Circadian phase: synchronized. Rest score 94.</p>
+  </div>
+</section>
   <h3 class="sec">Periodic checks</h3>
   <div class="card" id="plabs"></div>
   <p class="note">Readings are demo values. Tap a tile with a chart icon to see its history.</p>
@@ -589,12 +591,12 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <div id="crewList"></div>
     <div class="rate"><div><span class="note">Radiation at your position (demo)</span><div><b id="rate">0.14</b> <small>mSv/h</small></div><div class="note" id="rateWhere"></div></div><svg id="rateSp" viewBox="0 0 120 40" width="120" height="40" aria-hidden="true"></svg></div>
     
-    <div class="stats"><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg></span><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span>Shock speed</span><b>1,240 km/s</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span>Bunker shield</span><b>99.45%</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span>Outside dose rate</span><b id="telRate">0.14 mSv/h</b></div></div>
+    <div class="stats"><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg></span><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span>Shock speed</span><b>1,240 km/s</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span>Shelter shield</span><b>99.45%</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span>Outside dose rate</span><b id="telRate">0.14 mSv/h</b></div></div>
     <div class="novabox"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg></span><span><b>Dr. Nova AI:</b> <span id="novaLine"></span></span></div>
     <p class="note" style="margin-top:12px">Step times and radiation values are demo estimates. Distance is the closing speed multiplied by the time left.</p>
   </div>
 </section>
-<nav id="tabs" aria-label="Sections"><button data-t="today" type="button" aria-label="Today" title="Today"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg></button><button data-t="vitals" type="button" aria-label="Vitals" title="Vitals"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></button><button data-t="body" type="button" aria-label="Body" title="Body"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M6 10.5l6-2 6 2M9 21l3-6 3 6"/></svg></button><button data-t="sleep" type="button" aria-label="Sleep" title="Sleep"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/></svg></button><button data-t="list" type="button" aria-label="Checklist" title="Checklist"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/></svg></button><button data-t="data" type="button" aria-label="Data" title="Data"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg></button><button data-t="alerts" type="button" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg></button></nav>
+<nav id="tabs" aria-label="Sections"><button data-t="today" type="button" aria-label="Today" title="Today"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg><span>Today</span></button><button data-t="body" type="button" aria-label="Body" title="Body"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M6 10.5l6-2 6 2M9 21l3-6 3 6"/></svg><span>Body</span></button><button data-t="list" type="button" aria-label="Checklist" title="Checklist"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/></svg><span>Tasks</span></button><button data-t="data" type="button" aria-label="Data" title="Data"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg><span>Data</span></button><button data-t="alerts" type="button" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg><span>Alerts</span></button></nav>
 <footer>Demo data only. Mood is a confidential self-report and never triggers an automatic diagnosis.</footer>
 </div>
 
@@ -677,7 +679,7 @@ let ME=0;
 const PD=[
  {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,bps:118,bpd:76,sex:"F",age:38,ht:168,wt:61,mm:[[2.4,2.5],[2.3,2.4],[21.0,21.6],[7.6,7.9],[7.4,7.8]],rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
   bs:{"Heart rate":[66,72,4],"Sleep duration":[7.3,8.25,.6],"Body temperature":[36.6,36.6,.12],"Exercise":[44,18,12],"Blood glucose":[94,94,8],"Blood pressure":[118,118,5]}},
- {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,sex:"M",age:42,ht:178,wt:76,mm:[[3.6,3.7],[3.4,3.5],[27.5,27.9],[9.6,9.8],[9.4,9.6]],rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
+ {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,sex:"M",age:42,ht:178,wt:76,mm:[[3.6,3.7],[3.4,3.5],[27.5,27.9],[9.6,9.8],[9.4,9.6]],rm:2,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
   bs:{"Heart rate":[62,62,3],"Sleep duration":[7.5,7.6,.5],"Body temperature":[36.5,36.5,.1],"Exercise":[50,52,8],"Blood glucose":[90,90,6],"Blood pressure":[114,114,4]},
   ex:{'Heart rate':[['Resting HR','62 bpm'],['HRV (RMSSD)','56 ms'],['Recovery, 1 min','28 bpm drop'],['SpO2','99%'],['Breathing rate','13 /min'],['Baseline','62 bpm']],'Sleep duration':[['Efficiency','91%'],['Deep','18%'],['REM','22%'],['Awake','9%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.5 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','7,880'],['Very active','52 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','90 mg/dL'],['Target','70–140'],['Last reading','06:35']]}}
 ];
@@ -688,28 +690,24 @@ let EX={'Heart rate':[['Resting HR','72 bpm'],['HRV (RMSSD)','48 ms'],['Recovery
 function meas(m){if(!BS[m.name])return'';const t=SER(m.name,'5D'),d=m.name==='Body temperature'?2:1,a=t.reduce((x,y)=>x+y)/t.length;return `<div class="note">5D avg ${a.toFixed(d)} · low ${Math.min(...t).toFixed(d)} · high ${Math.max(...t).toFixed(d)}</div>`+(m.name==='Heart rate'?`<div class="note">${EX[m.name].slice(0,3).map(x=>x[0]+' '+x[1]).join(' · ')}</div>`:'')}
 function HRS(t){const a=t.reduce((x,y)=>x+y)/t.length;$('hrStats').innerHTML=[['Now',t[t.length-1].toFixed(0)+' bpm'],['Average',a.toFixed(0)+' bpm'],['Low',Math.min(...t).toFixed(0)+' bpm'],['High',Math.max(...t).toFixed(0)+' bpm'],['Resting','72 bpm'],['HRV','48 ms']].map(s=>`<div><span>${s[0]}</span><b style="font-size:16px">${s[1]}</b></div>`).join('')}
 const TR={"Heart rate":[64,66,65,67,66,68,72],"Sleep duration":[7.1,6.8,7.4,7.9,7.2,7.6,8.25],"Body temperature":[36.5,36.6,36.5,36.7,36.6,36.5,36.6],"Exercise":[40,52,35,48,44,50,18],"Blood glucose":[91,97,88,102,95,93,94]};
-function spark(m){const t=SER(m.name,'5D');if(!t)return"";const mn=Math.min(...t),r=Math.max(...t)-mn||1,pts=t.map((v,i)=>i*118/(t.length-1)+","+(22-(v-mn)/r*20)).join(" "),d=t[t.length-1]-t.slice(0,-1).reduce((a,b)=>a+b)/(t.length-1);return `<div class="spark"><svg viewBox="0 0 120 24" width="120" height="24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg><span>${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(1)} vs 5D avg</span></div>`}
+function spark(m,tiny){const t=SER(m.name,'5D');if(!t)return"";const mn=Math.min(...t),r=Math.max(...t)-mn||1,pts=t.map((v,i)=>i*118/(t.length-1)+","+(22-(v-mn)/r*20)).join(" "),d=t[t.length-1]-t.slice(0,-1).reduce((a,b)=>a+b)/(t.length-1);return `<div class="spark"><svg viewBox="0 0 120 24" width="120" height="24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg>${tiny?"":`<span>${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(1)} vs 5D avg</span>`}</div>`}
 const LIVE='<div class="live"><svg class="ecg" viewBox="0 0 120 28" width="120" height="28" aria-hidden="true"><path class="trk" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/><path pathLength="1" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/></svg><span><b id="liveHR">72</b> bpm live</span></div>';
 let filter="All";const MI={"Blood pressure":"bp","Heart rate":"heart","Sleep duration":"moon","Mood":"smile","Body temperature":"temp","Exercise":"bolt","Blood glucose":"drop"},FR={"Blood pressure":"Measured this morning","Sleep duration":"Last night","Mood":"Self-report today","Body temperature":"Overnight","Exercise":"Today","Blood glucose":"Last reading 06:40"};
 function render(){
   const alerts=M.filter(m=>m.test(m)&&!st[m.name]);
-  const MT=M.filter(m=>m.name!=="Mood"),bad=MT.filter(m=>m.test(m)).length;$("sumline").textContent=(MT.length-bad)+" of "+MT.length+" nominal, worst first. Tap a card to see its history.";
+  const MT=M.filter(m=>m.name!=="Mood"),bad=MT.filter(m=>m.test(m)).length;$("sumline").textContent=(MT.length-bad)+" of "+MT.length+" nominal. Tap a card for its history.";
   const b=$("banner");
   b.className="banner"+(inc.ack?" ok":"");
   b.textContent=inc.ack?"Sealed":"Alert";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
   $("novaMsg").textContent=PD[ME].surgeon?surgeonMsg():alerts.length
     ?"Your sleep was strong, but active minutes are below the prescribed programme. Let’s fit the flywheel workout in before "+ENV[ENVK].ev+"."
     :"All readings look good. Let’s keep your routine steady before "+ENV[ENVK].ev+".";
-  $("grid").innerHTML=M.filter(m=>m.name!=="Mood"&&(filter==="All"||m.mod===filter)).sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
+  $("grid").innerHTML=M.filter(m=>m.name!=="Mood").sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
     const a=m.test(m);
-    return `<article class="card m ptile${a?" w":""}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
+    return `<article class="card m ptile cp${a?" w":""}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
-    ${m.bar?`<div class="bar ${a?"warn":""}"><i style="width:${Math.min(100,Math.max(4,m.bar(m.val)*100))}%"></i></div>`:""}
-    <p class="note">${m.msg}</p>${spark(m)}${m.name==="Heart rate"?LIVE:`<div class="fresh">${FR[m.name]}${BS[m.name]?'<span class="chv">'+ico("chart",16)+"</span>":""}</div>`}
+    ${m.name==="Heart rate"?LIVE:spark(m,true)}${a?`<p class="note">${m.msg}</p>`:""}
     </article>`}).join("");
-  const mods=["All",...new Set(M.map(m=>m.mod))];
-  $("chips").innerHTML=mods.map(x=>`<button aria-pressed="${x===filter}" data-f="${x}">${x==="All"?"All systems":x}</button>`).join("");
-  document.querySelectorAll("#chips button").forEach(el=>el.onclick=()=>{filter=el.dataset.f;render()});
 }
 render();
 
@@ -730,8 +728,8 @@ const moods=[
 function face(i){const f=moods[i];return `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="fg${i}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${f[2]}"/><stop offset="1" stop-color="${f[3]}"/></radialGradient></defs><circle cx="32" cy="32" r="29" fill="url(#fg${i})"/><ellipse cx="24" cy="15" rx="13" ry="6" fill="#fff" opacity=".3"/><g fill="none" stroke="#2b1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${f[4]}</g></svg>`}
 let mood=0;
 function drawMoods(){
-  $("moods").innerHTML=moods.map((x,i)=>`<button aria-pressed="${i===mood}" data-i="${i}">${face(i)}${x[0]}</button>`).join("");
-  $("moodMsg").textContent="Logged: "+moods[mood][0]+" (+15 XP). Recorded as "+moods[mood][1].toLowerCase()+". Your answer stays private.";
+  $("moods").innerHTML=[0,2,3,6,5].map(i=>`<button aria-pressed="${i===mood}" data-i="${i}">${face(i)}${moods[i][0]}</button>`).join("");
+  $("moodMsg").textContent="Logged "+moods[mood][0]+" (+15 XP). Private to you.";
   document.querySelectorAll("#moods button").forEach(el=>el.onclick=()=>{
     mood=+el.dataset.i;drawMoods();
     M[2].val=moods[mood][0];Q[1][3]=true;drawQ();save();
@@ -767,24 +765,30 @@ drawDonut(PD[0]);
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
 const QM={2:"temp",3:"glu"};
 const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
-let xpLast=null;PD[0].ex=EX;
+let qAll=false,qKeep=-1,xpLast=null;PD[0].ex=EX;
 function xpTo(cur){const el=$("xpNow");if(xpLast===null||RM||$("crewApp").hidden){xpLast=cur;el.textContent=cur.toLocaleString("en-US")+" XP";return}const from=xpLast;xpLast=cur;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/500);el.textContent=Math.round(from+(cur-from)*k).toLocaleString("en-US")+" XP";if(k<1)requestAnimationFrame(s)})(t0)}
 function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=al?"var(--warn)":(n===Q.length?"var(--ok)":"var(--cy)");$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent=al?al+" to review":"All clear";$("glance").setAttribute("aria-label","Today at a glance: "+n+" of "+Q.length+" tasks done, "+(al?al+" readings need attention":"nothing needs attention"))}
 function drawQ(){
   const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),d0=PD[ME],cur=d0.xp0+xp-d0.q.reduce((s,v,i)=>s+(v?Q[i][4]:0),0);xpTo(cur);$("xpLeft").textContent=Math.max(0,d0.nxt-cur)+" XP to Level "+(d0.lvl+1);$("xpBar").style.width=Math.min(100,cur/d0.nxt*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
   $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
-  $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}<span class="tag">${q[2]}</span></label>`).join("");
-  document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
+  const vis=(()=>{const u=[];Q.forEach((q,i)=>{if(!q[3])u.push(i)});const v=qAll?Q.map((_,i)=>i):u.slice(0,3);if(!qAll&&qKeep>=0&&Q[qKeep][3]&&!v.includes(qKeep))v.push(qKeep);return v.sort((a,b)=>a-b)})();
+  $("qAll").textContent=qAll?"Show fewer":"Show all "+Q.length;
+  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
+  document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;qKeep=el.checked?i:-1;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
   drawGlance();
 }
 drawQ();
+$("qAll").onclick=()=>{qAll=!qAll;drawQ()};
 function others(){return CREW.map((c,i)=>[crow(c,i),i]).filter(([c,i])=>i!==ME)}
 function surgeonMsg(){const q=others().filter(([c])=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b[0])-sev(a[0]));
   if(!q.length)return"Your readings are steady and no crew flags are open. Keep an eye on the flare updates.";
   const t=q[0][0];return"Your readings are steady. "+q.length+" crew flag"+(q.length>1?"s":"")+" open. Top of the list: "+t.n+". "+reason(t)+" Open Mission control to review."}
 // incident page
-const STEPS=[["Immediate EVA recall","Abort lunar surface operations and return to airlock"],["Airlock seal and magnetic deflector","Lock primary habitat hatch and charge coil array"],["Move to regolith storm shelter","Crew report to Sub-Surface Bunker Level 3"],["Biometric sync and dosimeter calibration","Telemetry streaming to Alpha Station AI"]];
-const DUR=[4,2,5,1],WHY=["Every minute outside adds to your dose, and the flux is still climbing.","Seals the hatch and charges the magnetic deflector against charged particles.","The bunker’s regolith cover gives the most shielding on the base.","Lets Dr. Nova and the ground team follow your dose while you shelter."];
+const SETS={moon:{noun:"habitat",s:[["Immediate EVA recall","Abort lunar surface operations and return to airlock"],["Airlock seal and magnetic deflector","Lock primary habitat hatch and charge coil array"],["Move to regolith storm shelter","Crew report to Sub-Surface Bunker Level 3"],["Biometric sync and dosimeter calibration","Telemetry streaming to Alpha Station AI"]],w:["Every minute outside adds to your dose, and the flux is still climbing.","Seals the hatch and charges the magnetic deflector against charged particles.","The bunker’s regolith cover gives the most shielding on the base.","Lets Dr. Nova and the ground team follow your dose while you shelter."]},
+rover:{noun:"rover",s:[["Stop and park the rover","Halt on level ground and set the brake"],["Seal the cabin and charge the deflector","Close every hatch and switch on the cabin deflector"],["Move to the shielded centre","Sit beside the water and supply stores in the middle of the cabin"],["Biometric sync and dosimeter check","Telemetry streaming to Alpha Station through the rover relay"]],w:["Driving adds risk, and every minute outside the shield adds dose.","Seals the cabin against charged particles.","Water and supplies soak up more particles than the thin outer walls.","Lets Dr. Nova and the ground team follow your dose while you shelter."]},
+transit:{noun:"spacecraft",s:[["Stop outside tasks","Return to the main cabin and secure loose items"],["Seal the module and shield the windows","Close the hatch to the service module and cover the windows"],["Build the storm shelter","Move to the lower bay and stack stowage and water bags around you"],["Biometric sync and dosimeter check","Telemetry streaming to Mission Control on the transit link"]],w:["Loose items and outside work slow you down when minutes count.","Closing off the module keeps the cabin sealed and the windows covered.","Stowage and water bags around you block more particles than the cabin wall alone.","Lets Dr. Nova and the ground team follow your dose while you shelter."]}};
+const SX=()=>SETS[ENVK]||SETS.moon,cap=t=>t[0].toUpperCase()+t.slice(1);
+const DUR=[4,2,5,1];
 let hist=[],mEta=200;
 // Single source for the flare being tracked: replace with a real feed later.
 const FLARE={speed:1240,t0:600};
@@ -796,9 +800,9 @@ function drawAlerts(){
   const k=inc.done.findIndex(d=>!d);
   $("stepper").innerHTML=inc.done.map((d,i)=>`<i class="${d?"d":i===k?"c":""}"></i>`).join("");
   const nx=$("next");nx.className="next"+(k<0?" ok":"");
-  nx.innerHTML=k<0?(inc.ack?`<span class="tag ok">Sealed</span><h3>Habitat sealed</h3><p class="note">Stay in the shelter until the all-clear.</p>`:`<span class="tag ok">All steps done</span><h3>Ready to seal the habitat</h3><p class="note">Confirm below, then stay in the shelter until the all-clear.</p>`):`<span class="tag warn">Step ${k+1} of 4 · about ${DUR[k]} min</span><h3>${STEPS[k][0]}</h3><p>${STEPS[k][1]}</p><p class="note">${WHY[k]}</p><button class="primary" id="nextDone" type="button" style="margin-top:10px">Mark step done</button>`;
-  $("steps").innerHTML=STEPS.map((s,i)=>`<label class="${inc.done[i]?"done":""}"><input type="checkbox" data-i="${i}" ${inc.done[i]?"checked":""}><span><b>${s[0]}</b><span class="note">${s[1]}</span></span></label>`).join("");
-  const sb=$("seal");sb.disabled=inc.ack;sb.textContent=inc.ack?"Habitat sealed and incident acknowledged":"Acknowledge and seal habitat";
+  nx.innerHTML=k<0?(inc.ack?`<span class="tag ok">Sealed</span><h3>${cap(SX().noun)} sealed</h3><p class="note">Stay in the shelter until the all-clear.</p>`:`<span class="tag ok">All steps done</span><h3>Ready to seal the ${SX().noun}</h3><p class="note">Confirm below, then stay in the shelter until the all-clear.</p>`):`<span class="tag warn">Step ${k+1} of 4 · about ${DUR[k]} min</span><h3>${SX().s[k][0]}</h3><p>${SX().s[k][1]}</p><p class="note">${SX().w[k]}</p><button class="primary" id="nextDone" type="button" style="margin-top:10px">Mark step done</button>`;
+  $("steps").innerHTML=SX().s.map((s,i)=>`<label class="${inc.done[i]?"done":""}"><input type="checkbox" data-i="${i}" ${inc.done[i]?"checked":""}><span><b>${s[0]}</b><span class="note">${s[1]}</span></span></label>`).join("");
+  const sb=$("seal");sb.disabled=inc.ack;sb.textContent=inc.ack?cap(SX().noun)+" sealed and incident acknowledged":"Acknowledge and seal the "+SX().noun;
   drawLive();
 }
 function drawLive(){
@@ -907,15 +911,15 @@ function closeDet(){$("detPage").hidden=true;if($("alertsPage").hidden)document.
 $("detR").onclick=e=>{const b=e.target.closest("button");if(b){rg=b.dataset.r;drawDet()}};$("detX").onclick=closeDet;$("detPage").onclick=e=>{if(e.target.id==="detPage")closeDet()};
 $("grid").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dataset.i)};$("grid").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDet()});
 $("etaBar").onclick=()=>{location.hash="alerts"};
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.dataset.t;if(k==="alerts"){location.hash="alerts";return}if(k==="data"){location.hash="parameters";return}if(k==="body"){location.hash="body";return}if(location.hash==="#parameters"||location.hash==="#body"){location.hash="dashboard";setTimeout(()=>b.click(),60);return}({today:$("home"),vitals:$("chips"),sleep:$("donut").closest(".card"),list:$("quests").closest(".card")})[k].scrollIntoView({behavior:"smooth",block:"start"})});
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.dataset.t;if(k==="alerts"){location.hash="alerts";return}if(k==="data"){location.hash="parameters";return}if(k==="body"){location.hash="body";return}if(location.hash==="#parameters"||location.hash==="#body"){location.hash="dashboard";setTimeout(()=>b.click(),60);return}({today:$("home"),list:$("qCard")})[k].scrollIntoView({behavior:"smooth",block:"start"})});
 // motion helpers
 function countUp(el){const n=el.firstChild;if(!n||n.nodeType!==3)return;const m=n.nodeValue.match(/^([^\d]*)(\d[\d,]*\.?\d*)([\s\S]*)$/);if(!m)return;const raw=m[2],dec=(raw.split(".")[1]||"").length,comma=raw.includes(","),to=parseFloat(raw.replace(/,/g,"")),t0=performance.now();
   const f=v=>comma?v.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec}):v.toFixed(dec);
   (function s(t){if(!el.isConnected)return;const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);n.nodeValue=m[1]+f(to*e)+m[3];if(k<1)requestAnimationFrame(s)})(t0)}
 function countAll(){if(RM)return;document.querySelectorAll("#crewApp .val, #xpNow").forEach(countUp)}
 function glanceIn(){const r=$("gRing");r.style.transition="none";r.style.strokeDashoffset=100;void r.getBoundingClientRect();r.style.transition="";drawGlance()}
-function fx(i){if(RM)return;const L=document.querySelectorAll("#quests .q")[i];if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="+"+Q[i][4]+" XP";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
-function party(){if(RM)return;const host=$("quests").closest(".card");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
+function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".q");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="+"+Q[i][4]+" XP";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
+function party(){if(RM)return;const host=$("qCard");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
 setInterval(()=>{const e=document.getElementById("liveHR");if(e&&!RM&&!$("crewApp").hidden)e.textContent=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2)},3000);
 // landing and role switching
 $("goAdmin").onclick=()=>{location.hash="admin"};
