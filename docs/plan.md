@@ -103,9 +103,10 @@ Done when: on the Vercel link, one tap opens the guide and it can be followed to
 
 ## Milestone 4 · The landing page
 
-Our letter of introduction to the NASA experts. It is the first page of the same Vercel project: the landing at `/` and the app at `/app`.
+Our letter of introduction to the NASA experts. Decided on 14 Nov: two deploys. The app stays on Vercel, from `apps/web`. The landing goes on Netlify, from `apps/landing`, with a button that opens the app.
 
-- [ ] **L1. One deploy, two pages.** The landing at `/` with a button that opens the app at `/app`.
+- [ ] **L1. The landing on Netlify.** A site from the repo with `apps/landing` as its folder and no build step. Its main button opens https://mooncare-ten.vercel.app.
+    - Done when: the Netlify link shows the landing and its button opens the app.
 - [ ] **L2. Content**, starting from Becky's landing:
     - Problem and solution.
     - What the app does.
