@@ -51,10 +51,10 @@ Reorganised on 14 Nov. Two decisions behind it:
 One link opens the real app. It is the link we give the jury (How to win, section 1).
 
 - [x] **D3a. Backend and Postgres on Render**, at https://mooncare-73hi.onrender.com. The data is loaded and `/api/crew` answers. The free service sleeps after 15 minutes without use, so the first visit takes about a minute.
-- [ ] **D4. Frontend on Vercel.** One project from the repo with `apps/web` as its folder. `apps/web/vercel.json` already sends `/api` to Render. Adolfo creates the project.
+- [x] **D4. Frontend on Vercel**, at https://mooncare-ten.vercel.app. One project from the repo with `apps/web` as its folder. `apps/web/vercel.json` sends `/api` to Render.
     - Done when: the Vercel link shows the panel of Crew 1 with its glucose alert.
-- [ ] **D3b. A check-in survives.** Save a check-in from the Vercel link, restart the backend on Render and see it is still there. Then load the data again to leave the demo clean.
-- [ ] **D5. The app link** goes first in the README and on the project page, before the repo link.
+- [x] **D3b. A check-in is stored.** A check-in saved from the Vercel link was read back from the Render database, and then deleted to leave the demo clean. The restart of the backend was not tried: the data lives in the database, not in the backend.
+- [ ] **D5. The app link** goes first in the README (done) and on the project page (P14), before the repo link.
     - Done when: someone outside the team opens it on a phone in a private window and reaches the panel.
 
 Done when: the link works from a phone outside our network.

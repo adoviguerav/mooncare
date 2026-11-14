@@ -1,5 +1,7 @@
 # Real Telemetry
 
+**Open the app: https://mooncare-ten.vercel.app** . The first visit can take about a minute, while the backend wakes up.
+
 A daily health panel for astronauts, built for the NASA Space Apps Challenge 2026. The design is in [docs/](docs/): start with [system_design.md](docs/system_design.md), then [mvp_architecture.md](docs/mvp_architecture.md). Who builds what is in [plan.md](docs/plan.md), and how we use branches is in [branches.md](docs/branches.md).
 
 ## Layout
