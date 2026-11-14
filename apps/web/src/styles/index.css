@@ -164,6 +164,14 @@ button {
   min-width: 0;
 }
 
+.card-heading > h2:first-child {
+  flex: 1;
+}
+
+.card-heading > .ranges {
+  flex: none;
+}
+
 .card-heading + * {
   margin-top: 16px;
 }
@@ -809,11 +817,53 @@ button {
 
 /* --- History chart --- */
 
+.chart-box {
+  width: 100%;
+  min-width: 0;
+}
+
 .chart {
   display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 4px;
+}
+
+.chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart-unit {
+  font-weight: 700;
+}
+
+.chart-limit-label {
+  fill: var(--ok);
+}
+
+/* --- Time range of the chart --- */
+
+.ranges {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.ranges button {
+  min-width: 48px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--mute);
+  font-size: 0.8125rem;
+}
+
+.ranges button[aria-pressed='true'] {
+  background: rgb(47 216 255 / 0.14);
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .chart-band {

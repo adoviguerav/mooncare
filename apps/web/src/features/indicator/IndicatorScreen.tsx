@@ -1,4 +1,5 @@
 import { Icon } from '../../components/Icon.tsx'
+import { useState } from 'react'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember, Rule } from '../../lib/api.ts'
 import { HISTORY_DAYS, TODAY } from '../../lib/config.ts'
@@ -9,12 +10,36 @@ import { useApi } from '../../hooks/useApi.ts'
 
 type Props = { crewMember: CrewMember; indicatorId: string; onBack: () => void }
 
+// How far back the history chart looks. The first one with enough readings is the one shown at the start.
+const RANGES = [
+  { label: '24 h', days: 1 },
+  { label: '7 d', days: 7 },
+  { label: '30 d', days: 30 },
+  { label: '90 d', days: 90 },
+  { label: '1 y', days: HISTORY_DAYS },
+]
+const MIN_READINGS_TO_START = 5
+const MS_PER_DAY = 86_400_000
+
 export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
   const { data: detail, error } = useApi(() =>
     fetchIndicatorDetail(crewMember.id, indicatorId, addDays(TODAY, -HISTORY_DAYS), TODAY),
   )
 
-  const latest = detail?.readings[detail.readings.length - 1]
+  const [chosenDays, setChosenDays] = useState<number | null>(null)
+  const allReadings = detail?.readings ?? []
+  const latest = allReadings[allReadings.length - 1]
+  // Counted back from the latest reading, so "24 h" is the last 24 hours that have data
+  const getReadingsOf = (days: number) => {
+    if (latest === undefined) return []
+    const from = Date.parse(`${latest.taken_at}Z`) - days * MS_PER_DAY
+    return allReadings.filter((reading) => Date.parse(`${reading.taken_at}Z`) >= from)
+  }
+  const usefulRanges = RANGES.filter((range) => getReadingsOf(range.days).length >= 2)
+  const startDays =
+    usefulRanges.find((range) => getReadingsOf(range.days).length >= MIN_READINGS_TO_START)?.days ?? HISTORY_DAYS
+  const days = chosenDays ?? startDays
+  const readings = getReadingsOf(days)
   const origin = getGroupOf(indicatorId).origin
 
   return (
@@ -48,20 +73,29 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
           </section>
 
           <section className="card">
-            <h2>History</h2>
-            {detail.readings.length === 0 ? (
-              <p className="muted">No readings yet.</p>
+            <div className="card-heading">
+              <h2>History</h2>
+              <div className="ranges" role="group" aria-label="Time shown in the chart">
+                {usefulRanges.map((range) => (
+                  <button key={range.days} aria-pressed={range.days === days} onClick={() => setChosenDays(range.days)}>
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {readings.length === 0 ? (
+              <p className="muted">No readings in this time.</p>
             ) : (
               <HistoryChart
                 name={detail.indicator.name}
                 unit={detail.indicator.unit}
-                readings={detail.readings}
+                readings={readings}
                 rules={detail.rules}
               />
             )}
             <OutOfRangeList
               unit={detail.indicator.unit}
-              readings={detail.readings.filter((reading) => reading.broken_rule_id !== null)}
+              readings={readings.filter((reading) => reading.broken_rule_id !== null)}
             />
           </section>
 
