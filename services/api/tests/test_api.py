@@ -96,6 +96,9 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
         "name": "Blood glucose",
         "unit": "mg/dL",
         "reading": {"taken_at": "2021-11-02T00:00", "value": 36.0},
+        "measured_by": "astronaut",
+        "cadence_days": 30,
+        "due": False,
         "broken_rule": {
             "id": 1,
             "title": glucose["broken_rule"]["title"],
@@ -109,8 +112,39 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
         "name": "Heart rate",
         "unit": "bpm",
         "reading": {"taken_at": "2021-11-02T23:00", "value": 64.25},
+        "measured_by": "sensor",
+        "cadence_days": 1,
+        "due": False,
         "broken_rule": None,
     }
+
+
+def test_a_blood_test_is_due_30_days_after_the_last_draw_and_not_the_day_before(client: TestClient) -> None:
+    # The draw before these dates is the one of 2021-11-02
+    day_29 = get_panel_indicator(client, "2021-12-01", "glucose")
+    day_30 = get_panel_indicator(client, "2021-12-02", "glucose")
+
+    assert (day_29["due"], day_30["due"]) == (False, True)
+
+
+def test_the_checkin_is_due_until_it_is_saved_and_due_again_the_next_day(client: TestClient) -> None:
+    before = get_panel_indicator(client, "2021-11-05", "mood_happy")
+    client.put("/api/crew/1/checkins/2021-11-05", json={"moods": ["mood_happy"]})
+    after = get_panel_indicator(client, "2021-11-05", "mood_happy")
+    next_day = get_panel_indicator(client, "2021-11-06", "mood_happy")
+
+    assert (before["measured_by"], before["cadence_days"]) == ("astronaut", 1)
+    assert (before["due"], after["due"], next_day["due"]) == (True, False, True)
+
+
+def test_a_sensor_is_due_only_after_a_whole_day_with_no_data_and_a_computed_value_never(
+    client: TestClient,
+) -> None:
+    # The last heart rate reading is of 2021-11-03
+    assert get_panel_indicator(client, "2021-11-04", "heart_rate")["due"] is False
+    assert get_panel_indicator(client, "2021-11-05", "heart_rate")["due"] is True
+    count = get_panel_indicator(client, "2021-11-20", "mood_sad_days_14")
+    assert (count["measured_by"], count["cadence_days"], count["due"]) == ("computed", None, False)
 
 
 def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) -> None:

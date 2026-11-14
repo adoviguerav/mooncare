@@ -13,6 +13,10 @@ export type PanelIndicator = {
   name: string
   unit: string | null
   reading: Reading | null
+  measured_by: 'sensor' | 'astronaut' | 'computed'
+  cadence_days: number | null
+  // A new reading is expected by the day of the panel and has not arrived
+  due: boolean
   broken_rule: BrokenRule | null
 }
 

@@ -29,11 +29,17 @@ class BrokenRule(BaseModel):
     action: str
 
 
+MeasuredBy = Literal["sensor", "astronaut", "computed"]
+
+
 class PanelIndicator(BaseModel):
     id: str
     name: str
     unit: str | None
     reading: PanelReading | None
+    measured_by: MeasuredBy
+    cadence_days: int | None
+    due: bool  # a new reading is expected by the day of the panel and has not arrived
     broken_rule: BrokenRule | None
 
 

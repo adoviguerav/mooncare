@@ -38,9 +38,13 @@ export function addDays(date: string, days: number): string {
   return shifted.toISOString().slice(0, 10)
 }
 
+export function countDaysSince(takenAt: string, today: string): number {
+  return Math.round((Date.parse(`${today}T00:00Z`) - Date.parse(`${takenAt.slice(0, 10)}T00:00Z`)) / MS_PER_DAY)
+}
+
 // How old a reading is on the given day: a blood draw of six weeks ago must not read as today's
 export function formatAge(takenAt: string, today: string): string {
-  const days = Math.round((Date.parse(`${today}T00:00Z`) - Date.parse(`${takenAt.slice(0, 10)}T00:00Z`)) / MS_PER_DAY)
+  const days = countDaysSince(takenAt, today)
   if (days <= 0) return 'Today'
   return days === 1 ? 'Yesterday' : `${days} days ago`
 }

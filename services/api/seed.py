@@ -29,7 +29,7 @@ from app.config import (
 )
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import CrewRole
-from seed_content import INDICATORS, RULES, SOURCES
+from seed_content import INDICATORS, RULES, SOURCES, get_routine
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
 LAUNCH_DATE = date(2021, 9, 16)
@@ -394,10 +394,16 @@ def build_sources_sql() -> str:
 
 
 def build_indicators_sql() -> str:
-    columns = ("id", "name", "unit", "how_to_measure", "why_it_matters", "source_id", "display_order")
+    columns = (
+        "id", "name", "unit", "how_to_measure", "why_it_matters", "source_id", "measured_by", "cadence_days",
+        "display_order",
+    )  # fmt: skip
     # The panel lists the indicators in the order INDICATORS defines them
     rows = [
-        (i.id, i.name, i.unit, i.how_to_measure, i.why_it_matters, i.source_id, position)
+        (
+            i.id, i.name, i.unit, i.how_to_measure, i.why_it_matters, i.source_id,
+            get_routine(i).measured_by, get_routine(i).cadence_days, position,
+        )  # fmt: skip
         for position, i in enumerate(INDICATORS, start=1)
     ]
     return with_header(build_inserts("cfg.indicator", columns, rows))

@@ -34,6 +34,8 @@ class Indicator(Base):
     how_to_measure: Mapped[str]
     why_it_matters: Mapped[str]
     source_id: Mapped[str] = mapped_column(ForeignKey("cfg.source.id"))
+    measured_by: Mapped[str]
+    cadence_days: Mapped[int | None]
     display_order: Mapped[int]
 
     source: Mapped[Source] = relationship(lazy="joined")

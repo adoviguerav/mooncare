@@ -55,6 +55,8 @@ One thing we measure (R4, R8). A new indicator is a new row, not a new column.
 | `how_to_measure` | `TEXT` | The brief asks for it per measurement |
 | `why_it_matters` | `TEXT` | The short explanation for R4 |
 | `source_id` | `TEXT` FK → `cfg.source` | |
+| `measured_by` | `TEXT` | `sensor`, `astronaut` or `computed`: who takes the measurement |
+| `cadence_days` | `INTEGER` NULL | A new reading is expected every this many days. `NULL` when computed |
 | `display_order` | `INTEGER` UNIQUE | Order of the panel. New: SQLite used `rowid`, PostgreSQL has none |
 
 ### `cfg.rule`

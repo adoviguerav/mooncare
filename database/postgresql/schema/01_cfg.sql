@@ -14,6 +14,9 @@ CREATE TABLE cfg.indicator (
   how_to_measure TEXT NOT NULL,      -- the brief asks for it per measurement
   why_it_matters TEXT NOT NULL,      -- the short explanation for R4
   source_id      TEXT NOT NULL REFERENCES cfg.source (id),
+  -- Who takes the measurement: a sensor on its own, the astronaut by hand, or the system from other readings
+  measured_by    TEXT NOT NULL CHECK (measured_by IN ('sensor', 'astronaut', 'computed')),
+  cadence_days   INTEGER CHECK (cadence_days > 0),   -- a new reading is expected every this many days. NULL when computed
   display_order  INTEGER NOT NULL UNIQUE   -- order of the panel. SQLite used rowid; PostgreSQL has none
 );
 

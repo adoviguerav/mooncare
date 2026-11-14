@@ -8,7 +8,7 @@ import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
-import { addDays, formatAge, formatTakenAt, formatValue, formatValueParts } from '../../lib/format.ts'
+import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue, formatValueParts } from '../../lib/format.ts'
 import {
   DAILY_VITAL_IDS,
   GROUPS,
@@ -16,10 +16,11 @@ import {
   MOOD_ORDER,
   MOOD_PREFIX,
   OTHER_GROUP,
+  ROUTINE_TASKS,
   SPARKLINE_DAYS,
   getIconOf,
 } from '../../lib/groups.ts'
-import type { Group } from '../../lib/groups.ts'
+import type { Group, RoutineTask } from '../../lib/groups.ts'
 import { useApi } from '../../hooks/useApi.ts'
 
 const MOOD_CHOSEN = 1
@@ -69,6 +70,12 @@ function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinS
     window.scrollTo(0, 0)
   }
 
+  // The next profile starts on Today, not on the tab this one left open
+  function switchProfile() {
+    sessionStorage.removeItem(TAB_STORAGE_KEY)
+    onSwitchProfile()
+  }
+
   const indicators = panel?.indicators ?? []
   const isMoodDayCount = (indicator: PanelIndicator) => MOOD_DAY_COUNT_IDS.includes(indicator.id)
   const isMood = (indicator: PanelIndicator) => indicator.id.startsWith(MOOD_PREFIX) && !isMoodDayCount(indicator)
@@ -87,7 +94,7 @@ function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinS
             <h1>{crewMember.name}</h1>
             <p className="muted">{formatTakenAt(`${TODAY}T00:00`)}</p>
           </div>
-          <button className="ghost" onClick={onSwitchProfile}>
+          <button className="ghost" onClick={switchProfile}>
             Switch profile
           </button>
         </header>
@@ -97,10 +104,12 @@ function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinS
         {panel !== null && tab === 'today' && (
           <TodayTab
             crewMemberId={crewMember.id}
+            indicators={indicators}
             moods={moods}
             moodDayCounts={moodDayCounts}
             measurements={measurements}
-            alerts={alerts}
+            // The mood alert is already inside the mood card, right above
+            alerts={alerts.filter((alert) => !isMoodDayCount(alert))}
             onOpenIndicator={onOpenIndicator}
             onOpenAlerts={() => openTab('alerts')}
             onCheckinSaved={onCheckinSaved}
@@ -146,6 +155,7 @@ function PanelSkeleton() {
 
 type TodayTabProps = {
   crewMemberId: number
+  indicators: PanelIndicator[]
   moods: PanelIndicator[]
   moodDayCounts: PanelIndicator[]
   measurements: PanelIndicator[]
@@ -157,6 +167,7 @@ type TodayTabProps = {
 
 function TodayTab({
   crewMemberId,
+  indicators,
   moods,
   moodDayCounts,
   measurements,
@@ -222,7 +233,7 @@ function TodayTab({
         <section className="card status status-ok">
           <Icon name="ok" size={28} />
           <div>
-            <h2>All values in range</h2>
+            <h2>All measurements in range</h2>
             <p className="muted">Nothing needs your attention today.</p>
           </div>
         </section>
@@ -239,6 +250,8 @@ function TodayTab({
         </button>
       )}
 
+      <Routines indicators={indicators} />
+
       <section>
         <h2 className="section-title">Your vitals</h2>
         <div className="tiles tiles-vitals">
@@ -254,6 +267,71 @@ function TodayTab({
       </section>
     </>
   )
+}
+
+// What the astronaut has to measure by hand, and the sensors that stopped sending data
+function Routines({ indicators }: { indicators: PanelIndicator[] }) {
+  const tasks = ROUTINE_TASKS.map((task) => getTaskStatus(task, indicators)).filter((task) => task !== null)
+  const silentSensors = indicators.filter((indicator) => indicator.measured_by === 'sensor' && indicator.due)
+  const dueCount = tasks.filter((task) => task.due).length
+
+  return (
+    <section className="card">
+      <div className="card-heading">
+        <span className="icon-badge">
+          <Icon name="list" />
+        </span>
+        <div>
+          <h2>Your routines</h2>
+          <p className="origin">A task is done when its reading arrives.</p>
+        </div>
+        {dueCount === 0 ? (
+          <span className="chip chip-ok">Up to date</span>
+        ) : (
+          <span className="chip chip-due">{dueCount} due today</span>
+        )}
+      </div>
+      <ul className="routines">
+        {tasks.map((task) => (
+          <li key={task.title} className={task.due ? 'routine routine-due' : 'routine'}>
+            <span className="routine-icon">
+              <Icon name={task.due ? task.icon : 'ok'} size={18} />
+            </span>
+            <span className="routine-text">
+              <strong>{task.title}</strong>
+              <span className="muted">{task.detail}</span>
+            </span>
+            <span className={task.due ? 'chip chip-due' : 'chip chip-quiet'}>{task.status}</span>
+          </li>
+        ))}
+      </ul>
+      {silentSensors.length > 0 && (
+        <p className="routine-warning">
+          <Icon name="alert" size={18} />
+          No new data from a sensor: {silentSensors.map((indicator) => indicator.name).join(', ')}.
+        </p>
+      )}
+    </section>
+  )
+}
+
+type TaskStatus = { title: string; icon: IconName; due: boolean; detail: string; status: string }
+
+function getTaskStatus(task: RoutineTask, indicators: PanelIndicator[]): TaskStatus | null {
+  const measured = indicators.filter((indicator) => task.indicatorIds.includes(indicator.id))
+  const cadenceDays = measured[0]?.cadence_days
+  if (cadenceDays === undefined || cadenceDays === null) return null
+
+  const due = measured.some((indicator) => indicator.due)
+  const readingDays = measured.flatMap((indicator) => (indicator.reading === null ? [] : [indicator.reading.taken_at]))
+  const lastReading = readingDays.toSorted().at(-1)
+  const every = cadenceDays === 1 ? 'Every day' : `Every ${cadenceDays} days`
+  const detail = lastReading === undefined ? `${every}. Never done` : `${every}. Last: ${formatAge(lastReading, TODAY).toLowerCase()}`
+  const daysLeft = lastReading === undefined ? 0 : cadenceDays - countDaysSince(lastReading, TODAY)
+
+  let status = 'Due today'
+  if (!due) status = lastReading?.startsWith(TODAY) ? 'Done today' : `In ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`
+  return { title: task.title, icon: task.icon, due, detail, status }
 }
 
 function CheckinStreak({ crewMemberId, checkedInToday }: { crewMemberId: number; checkedInToday: boolean }) {

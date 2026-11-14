@@ -27,6 +27,14 @@ class Indicator:
 
 
 @dataclass(frozen=True)
+class Routine:
+    """Who takes a measurement and every how many days a new reading is expected."""
+
+    measured_by: str  # sensor, astronaut or computed
+    cadence_days: int | None
+
+
+@dataclass(frozen=True)
 class Rule:
     indicator_id: str
     title: str
@@ -708,3 +716,28 @@ RULES = [
         ),
     ),
 ]
+
+
+# --- Measurement routines (docs/parameters_and_datasets.md, "How often each parameter is measured") ---
+
+QUESTIONNAIRE_IDS = {"anxiety_score", "positive_affect", "negative_affect"}
+BLOOD_SOURCE_IDS = {"inspiration4_metabolic_panel", "inspiration4_blood_count"}
+DAILY = 1
+# ASTRA-HEALTH says "weekly or periodically". In LifeSnaps the answers come every 7 to 14 days.
+QUESTIONNAIRE_CADENCE_DAYS = 14
+# ASTRA-HEALTH says "periodically" and gives no interval. This is the cadence of the periodic health exam of
+# the ISS (NASA, 2006, https://ntrs.nasa.gov/api/citations/20060051792/downloads/20060051792.pdf).
+BLOOD_TEST_CADENCE_DAYS = 30
+
+
+def get_routine(indicator: Indicator) -> Routine:
+    if indicator.id in MOOD_DAY_COUNT_IDS.values():
+        return Routine("computed", None)
+    if indicator.id in MOOD_NAMES:
+        return Routine("astronaut", DAILY)
+    if indicator.id in QUESTIONNAIRE_IDS:
+        return Routine("astronaut", QUESTIONNAIRE_CADENCE_DAYS)
+    if indicator.source_id in BLOOD_SOURCE_IDS:
+        return Routine("astronaut", BLOOD_TEST_CADENCE_DAYS)
+    # The wearable and the detectors of the ship measure on their own, at least once a day
+    return Routine("sensor", DAILY)

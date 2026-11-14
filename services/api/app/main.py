@@ -83,6 +83,19 @@ def save_readings(
     )
 
 
+def is_due(indicator: models.Indicator, latest_reading: models.Reading | None, day: date) -> bool:
+    """Whether a new reading is expected by this day and has not arrived."""
+    if indicator.cadence_days is None:
+        return False
+    if latest_reading is None:
+        return True
+    days_since_reading = (day - latest_reading.taken_at.date()).days
+    if indicator.measured_by == "astronaut":
+        return days_since_reading >= indicator.cadence_days
+    # A sensor reports during the day, so it is late only after a whole interval with nothing
+    return days_since_reading > indicator.cadence_days
+
+
 app = FastAPI(title="Real Telemetry API")
 app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
 
@@ -128,6 +141,9 @@ def get_panel(
                 name=indicator.name,
                 unit=indicator.unit,
                 reading=panel_reading,
+                measured_by=indicator.measured_by,  # type: ignore[arg-type]
+                cadence_days=indicator.cadence_days,
+                due=is_due(indicator, reading, panel_date),
                 broken_rule=broken_rule,
             )
         )

@@ -41,6 +41,8 @@ CREATE TABLE cfg.indicator (
   how_to_measure TEXT NOT NULL,      -- the brief asks for it per measurement
   why_it_matters TEXT NOT NULL,      -- the short explanation for R4
   source_id      TEXT NOT NULL REFERENCES cfg.source (id),
+  measured_by    TEXT NOT NULL,      -- sensor, astronaut or computed
+  cadence_days   INTEGER,            -- a new reading is expected every this many days. NULL when computed
   display_order  INTEGER NOT NULL UNIQUE   -- order of the panel
 );
 
@@ -136,6 +138,7 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
 
 - Dates are YYYY-MM-DD. taken_at is YYYY-MM-DDTHH:MM.
 - The panel returns one entry per indicator. A missing reading or rule is null, never an absent key.
+- `measured_by`, `cadence_days` and `due` were added on 14 Nov for the measurement routines. `due` is true when a new reading is expected by the day of the panel and has not arrived: for what the astronaut measures, when the last reading is `cadence_days` old or more; for a sensor, when it is older than that; never for a computed value. An indicator with no reading at all is due.
 - Readings come ordered by taken_at, oldest first.
 - An unknown crew member or indicator returns 404 with {"detail": "..."}.
 - `date`, `from` and `to` are required. A missing or malformed one returns 422.
@@ -164,6 +167,9 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
       "name": "Blood glucose",
       "unit": "mg/dL",
       "reading": { "taken_at": "2021-11-02T00:00", "value": 36.0 },
+      "measured_by": "astronaut",
+      "cadence_days": 30,
+      "due": false,
       "broken_rule": { "id": 1, "title": "...", "explanation": "...", "action": "..." }
     },
     {
