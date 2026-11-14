@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.db import DbSession
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
+from app.sync_routes import router as sync_router
 from app.schemas import (
     BrokenRule,
     Checkin,
@@ -83,6 +84,7 @@ def save_readings(
 
 
 app = FastAPI(title="Real Telemetry API")
+app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
 
 
 @app.get("/api/crew")

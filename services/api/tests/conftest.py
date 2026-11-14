@@ -7,7 +7,7 @@ They are created on the server of TEST_DATABASE_URL or, if that is not set, of P
 import os
 import uuid
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 
 import psycopg
@@ -16,7 +16,7 @@ from psycopg import sql
 from pydantic import ValidationError
 from sqlalchemy import Engine, make_url
 
-from app.config import SCHEMA_DIR, Settings
+from app.config import API_DIR, SCHEMA_DIR, Settings
 from app.db import build_engine
 from seed import DAILY_COLUMNS, CrewPairing, DatasetFiles, build_seed_files
 
@@ -31,7 +31,8 @@ def get_server_url() -> str:
     server_url = os.environ.get("TEST_DATABASE_URL")
     if not server_url:
         try:
-            server_url = Settings(database_provider="postgresql").postgresql_url
+            env_file = API_DIR / os.environ.get("ENV_FILE", ".env")
+            server_url = Settings(_env_file=env_file, database_provider="postgresql").postgresql_url  # type: ignore[call-arg]
         except ValidationError:
             server_url = None
     if not server_url:
@@ -73,6 +74,20 @@ def database_url() -> Iterator[str]:
         for schema_file in sorted(SCHEMA_DIR.glob("*.sql")):
             run_sql(url, schema_file.read_text(encoding="utf-8"))
         yield url
+
+
+@pytest.fixture
+def new_database() -> Iterator[Callable[[], str]]:
+    """Creates databases with the tables of database/postgresql/schema, as many as a test needs."""
+    with ExitStack() as databases:
+
+        def create() -> str:
+            url = databases.enter_context(throwaway_database())
+            for schema_file in sorted(SCHEMA_DIR.glob("*.sql")):
+                run_sql(url, schema_file.read_text(encoding="utf-8"))
+            return url
+
+        yield create
 
 
 @pytest.fixture
