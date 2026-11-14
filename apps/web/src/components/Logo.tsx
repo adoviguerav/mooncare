@@ -14,22 +14,22 @@ export function Logo({ height = 56 }: { height?: number }): ReactElement {
       <defs>
         <linearGradient id={ink} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#e6f1fb" />
-          <stop offset="1" stopColor="#2fd8ff" />
+          <stop offset="1" stopColor="currentColor" />
         </linearGradient>
         <radialGradient id={moon} cx=".35" cy=".3" r=".9">
           <stop offset="0" stopColor="#fff" />
           <stop offset="1" stopColor="#9fe9ff" />
         </radialGradient>
         <radialGradient id={glow} cx=".5" cy=".5" r=".5">
-          <stop offset="0" stopColor="#2fd8ff" stopOpacity=".45" />
-          <stop offset="1" stopColor="#2fd8ff" stopOpacity="0" />
+          <stop offset="0" stopColor="currentColor" stopOpacity=".45" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
       </defs>
       <circle cx="480" cy="150" r="150" fill={`url(#${glow})`} />
       <g fill="none" stroke={`url(#${ink})`} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M70 220V90L130 175L190 90V220" />
         <ellipse cx="310" cy="150" rx="55" ry="68" />
-        <circle cx="480" cy="150" r="62" stroke="#2fd8ff" strokeWidth="3" />
+        <circle cx="480" cy="150" r="62" stroke="currentColor" strokeWidth="3" />
         <path d="M610 220V90L690 220V90" />
         <path d="M168 338A60 68 0 1 0 168 402" />
         <path d="M250 440L295 305L340 440M265 402H325" />
@@ -47,7 +47,7 @@ export function Logo({ height = 56 }: { height?: number }): ReactElement {
       <path
         d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535"
         fill="none"
-        stroke="#2fd8ff"
+        stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"

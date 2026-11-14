@@ -12,6 +12,7 @@
   --alert: #ffb84a;
   --alert-ink: #ffd9a0;
   --line: rgb(255 255 255 / 0.2);
+  --line-faint: rgb(255 255 255 / 0.14);
   --glass: linear-gradient(135deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04) 42%, rgb(255 255 255 / 0.09)),
     rgb(12 32 58 / 0.34);
   --glass-edge:
@@ -23,8 +24,8 @@
   --button: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05));
   --button-edge: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px rgb(0 0 0 / 0.25);
   --button-edge-hover: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 6px 20px rgb(47 216 255 / 0.25);
-  --badge-edge: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 16px rgb(47 216 255 / 0.15);
-  --badge-edge-alert: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 16px rgb(255 184 74 / 0.3);
+  --badge-glow: rgb(47 216 255 / 0.15);
+  --badge-glow-alert: rgb(255 184 74 / 0.3);
   --radius-card: 24px;
   --radius-tile: 18px;
   --radius-pill: 999px;
@@ -36,46 +37,50 @@
   box-sizing: border-box;
 }
 
-/* The Earth is wider than the screen */
-html {
-  overflow-x: clip;
-}
-
 body {
   margin: 0;
   min-height: 100dvh;
-  background:
-    radial-gradient(1.5px 1.5px at 20px 30px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
-    radial-gradient(1px 1px at 90px 120px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
-    radial-gradient(1.5px 1.5px at 160px 60px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
-    radial-gradient(1px 1px at 60px 180px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
-    radial-gradient(1px 1px at 140px 150px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
-    radial-gradient(ellipse at 50% -8%, var(--bg-glow), var(--bg) 62%) fixed,
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font: 400 16px/1.5 'Space Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* The aurora behind everything. Fixed and inert, so scrolling never repaints it. */
+/* The sky: the stars, the aurora and the Earth. Three fixed, inert layers, so scrolling never repaints them. */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1.5px 1.5px at 20px 30px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px,
+    radial-gradient(1px 1px at 90px 120px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px,
+    radial-gradient(1.5px 1.5px at 160px 60px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px,
+    radial-gradient(1px 1px at 60px 180px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px,
+    radial-gradient(1px 1px at 140px 150px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px,
+    radial-gradient(ellipse at 50% -8%, var(--bg-glow), transparent 62%);
+}
+
 body::before {
   content: '';
   position: fixed;
   inset: -10%;
   z-index: -1;
   pointer-events: none;
+  will-change: transform;
   background:
     radial-gradient(38vmax 38vmax at 18% 22%, rgb(47 216 255 / 0.24), transparent 62%),
     radial-gradient(34vmax 34vmax at 82% 30%, rgb(124 92 255 / 0.2), transparent 62%),
     radial-gradient(40vmax 40vmax at 55% 88%, rgb(47 216 160 / 0.14), transparent 62%);
 }
 
-/* The Earth on the horizon */
 body::after {
   content: '';
   position: fixed;
   left: 50%;
-  bottom: -78vw;
+  /* Follows the width, which stops growing at 1400px */
+  bottom: max(-78vw, -728px);
   z-index: -1;
   width: 150vw;
   max-width: 1400px;
@@ -88,8 +93,10 @@ body::after {
   box-shadow: 0 -10px 60px rgb(47 216 255 / 0.35);
 }
 
+/* The aurora drifts only behind the profile picker: under the many glass cards of the other screens, each
+   frame of it would blur them all again */
 @media (prefers-reduced-motion: no-preference) {
-  body::before {
+  body:has(.picker)::before {
     animation: drift 26s ease-in-out infinite alternate;
   }
 }
@@ -185,11 +192,16 @@ button {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+  text-align: left;
+}
+
+/* What sits on the sky carries the glass. The vitals tiles do: they are not inside a card. */
+.card,
+.tiles-vitals .tile {
   background: var(--glass);
   box-shadow: var(--glass-edge);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
-  text-align: left;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -233,7 +245,8 @@ button {
   margin-top: 16px;
 }
 
-.icon-badge {
+.icon-badge,
+.tile-icon {
   display: grid;
   place-items: center;
   width: 40px;
@@ -242,12 +255,15 @@ button {
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--button);
-  box-shadow: var(--badge-edge);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 0 16px var(--badge-glow);
   color: var(--accent);
 }
 
-.icon-badge-alert {
-  box-shadow: var(--badge-edge-alert);
+.icon-badge-alert,
+.tile-alert .tile-icon {
+  --badge-glow: var(--badge-glow-alert);
   color: var(--alert);
 }
 
@@ -290,7 +306,7 @@ button {
   border-radius: var(--radius-pill);
   font-weight: 500;
   transition:
-    transform 0.15s ease,
+    scale 0.15s ease,
     box-shadow 0.2s ease;
 }
 
@@ -327,8 +343,9 @@ button {
   cursor: default;
 }
 
-button:active {
-  transform: scale(0.97);
+/* scale, not transform: it adds to the lift of a hovered tile instead of replacing it */
+button:active:not(:disabled) {
+  scale: 0.97;
 }
 
 /* --- Chips --- */
@@ -374,6 +391,7 @@ button:active {
 
 .logo {
   max-width: 80vw;
+  color: var(--accent);
   overflow: visible;
 }
 
@@ -412,6 +430,7 @@ button:active {
   text-align: left;
   transition:
     transform 0.2s ease,
+    scale 0.15s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
@@ -424,13 +443,6 @@ button:active {
     0 0 22px rgb(47 216 255 / 0.25);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .picker-card,
-  button.profile {
-    animation: rise 0.6s both;
-  }
-}
-
 @keyframes rise {
   from {
     opacity: 0;
@@ -438,9 +450,14 @@ button:active {
   }
 }
 
-/* The cards of the panel come in one after another */
 @media (prefers-reduced-motion: no-preference) {
   /* backwards, not both: a finished animation that still applies would stop the glass of the tiles inside */
+  .picker-card,
+  button.profile {
+    animation: rise 0.6s backwards;
+  }
+
+  /* The cards of the panel come in one after another */
   .with-tabs > :not(header) {
     animation: rise 0.5s backwards;
   }
@@ -464,9 +481,19 @@ button:active {
     animation: draw-in 1.4s ease-out;
   }
 
-  .tab-count {
+  .tab-count::after {
     animation: alert-pulse 2.2s ease-out infinite;
   }
+}
+
+/* The ring that pulses around the number of alerts. Only its size and opacity move. */
+.tab-count::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--alert);
+  opacity: 0;
 }
 
 @keyframes draw-in {
@@ -477,11 +504,13 @@ button:active {
 
 @keyframes alert-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(255 184 74 / 0.55);
+    opacity: 0.55;
+    transform: scale(1);
   }
   70%,
   100% {
-    box-shadow: 0 0 0 10px transparent;
+    opacity: 0;
+    transform: scale(2.2);
   }
 }
 
@@ -536,7 +565,7 @@ button:active {
   background: var(--tile);
   box-shadow: var(--tile-edge);
   transition:
-    transform 0.15s ease,
+    scale 0.15s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
@@ -716,14 +745,6 @@ button:active {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-/* These tiles sit on the sky, not inside a card, so they carry the glass themselves */
-.tiles-vitals .tile {
-  background: var(--glass);
-  box-shadow: var(--glass-edge);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
-}
-
 .tile {
   display: grid;
   align-content: start;
@@ -738,8 +759,8 @@ button:active {
   text-align: left;
   transition:
     transform 0.15s ease,
-    border-color 0.2s ease,
-    background 0.2s ease;
+    scale 0.15s ease,
+    border-color 0.2s ease;
 }
 
 .tile:hover {
@@ -760,21 +781,8 @@ button:active {
 }
 
 .tile-icon {
-  display: grid;
-  place-items: center;
   width: 32px;
   height: 32px;
-  flex: none;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--button);
-  box-shadow: var(--badge-edge);
-  color: var(--accent);
-}
-
-.tile-alert .tile-icon {
-  box-shadow: var(--badge-edge-alert);
-  color: var(--alert);
 }
 
 .tile-name {
@@ -921,7 +929,7 @@ button:active {
 }
 
 /* The Alerts tab stays amber while something needs a look */
-.tabs button:has(.tab-count):not([aria-current='page']) {
+.tabs button:has(.tab-count) {
   color: var(--alert);
 }
 
@@ -1063,7 +1071,7 @@ button:active {
 }
 
 .chart-grid {
-  stroke: rgb(255 255 255 / 0.14);
+  stroke: var(--line-faint);
   stroke-width: 1;
 }
 
