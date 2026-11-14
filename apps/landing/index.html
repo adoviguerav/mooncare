@@ -111,11 +111,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 .wl{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.wl:first-child{border-top:0}
 .lg{padding:6px 0;border-top:1px solid var(--line);font-size:14px}.lg:first-child{border-top:0}
 #cdPage ul{margin:6px 0 0;padding-left:20px}
-#banner{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:45;width:48px;height:48px;min-height:48px;padding:0;border-radius:50%;font-size:24px;line-height:1;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#banner{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:45;width:64px;height:64px;min-height:64px;padding:0;border-radius:50%;font-size:13px;line-height:1.1;text-align:center;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 #banner:not(.ok){animation:pulse 2.2s ease-out infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--warn) 55%,transparent)}70%,100%{box-shadow:0 0 0 14px transparent}}
 @media(prefers-reduced-motion:reduce){#banner{animation:none!important}}
-#crewApp>header{padding-right:64px}
+#crewApp>header{padding-right:80px}
 </style>
 </head>
 <body>
@@ -195,7 +195,23 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 
 <div class="wrap" id="crewApp" hidden>
 <header>
-  <h1>Mooncare<small>Sol 248 · Lunar Base Alpha · Online</small></h1>
+  <h1 style="display:flex;flex-direction:column;gap:6px">
+    <svg class="mini" viewBox="40 75 690 375" role="img" aria-label="Moon Care" style="width:112px;height:auto;overflow:visible">
+      <defs>
+        <linearGradient id="sgInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
+        <radialGradient id="sgMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+      </defs>
+      <rect x="40" y="75" width="690" height="375" rx="36" fill="#050d1a"/>
+      <g fill="none" stroke="url(#sgInk)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
+        <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="4"/><path d="M610 220V90L690 220V90"/>
+        <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
+        <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
+      </g>
+      <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#sgMoon)"/>
+    </svg>
+    <small>Sol 248 · Lunar Base Alpha · Online</small>
+  </h1>
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
     <button id="homeBtn" class="back" type="button" style="margin:0">Switch role</button>
     <button id="banner" class="banner" type="button"></button>
@@ -351,7 +367,7 @@ function render(){
   const bad=M.filter(m=>m.test(m)).length;$("sumline").textContent=(M.length-bad)+" of "+M.length+" nominal, worst first. Tap a card to see its history.";
   const b=$("banner");
   b.className="banner"+(inc.ack?" ok":"");
-  b.textContent=inc.ack?"✓":"!";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
+  b.textContent=inc.ack?"Sealed":"Alert";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
   $("novaMsg").textContent=alerts.length
     ?"Your sleep was strong, but active minutes are below the prescribed programme. Let’s fit the flywheel workout in before the 14:00 EVA."
     :"All readings look good. Let’s keep your routine steady before the 14:00 EVA.";
