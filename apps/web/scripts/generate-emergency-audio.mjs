@@ -11,6 +11,8 @@ import { PROCEDURE_BY_EVENT, getAudioPath, getNarration } from '../src/lib/proce
 const API = 'https://api.elevenlabs.io/v1'
 const MODEL_ID = 'eleven_multilingual_v2'
 const OUTPUT_FORMAT = 'mp3_44100_128'
+// Faster than normal speech: it is an emergency. 1.2 is the fastest the API allows.
+const SPEED = 1.2
 
 const apiKey = process.env.ELEVENLABS_API_KEY
 if (!apiKey) {
@@ -35,9 +37,9 @@ for (const procedure of Object.values(PROCEDURE_BY_EVENT)) {
     const response = await fetch(`${API}/text-to-speech/${voiceId}?output_format=${OUTPUT_FORMAT}`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ text: getNarration(step), model_id: MODEL_ID }),
+      body: JSON.stringify({ text: getNarration(step), model_id: MODEL_ID, voice_settings: { speed: SPEED } }),
     })
-    if (!response.ok) throw new Error(`${step.id}: text to speech returned ${response.status}`)
+    if (!response.ok) throw new Error(`${step.id}: text to speech returned ${response.status}: ${await response.text()}`)
     const file = `public${getAudioPath(procedure, step)}`
     await writeFile(file, Buffer.from(await response.arrayBuffer()))
     console.log(`Wrote ${file}`)

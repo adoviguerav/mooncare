@@ -9,6 +9,8 @@ import type { Procedure, ProcedureStep } from '../../lib/procedures.ts'
 const PROCEDURE = PROCEDURE_BY_EVENT.cardiac
 // Alerts whose procedure is not in the app yet, so the screen is honest about what it covers
 const NOT_LOADED_PROTOCOLS = ['Low glucose', 'Potassium out of range', 'Radiation storm']
+// The same pace as the recorded audio, which is generated at 1.2 times normal speech
+const FALLBACK_VOICE_RATE = 1.2
 const MS_PER_SECOND = 1000
 const SECONDS_PER_MINUTE = 60
 
@@ -191,7 +193,9 @@ function useNarration(procedure: Procedure, step: ProcedureStep, voiceOn: boolea
     audioRef.current = audio
     const speakInstead = () => {
       window.speechSynthesis?.cancel()
-      window.speechSynthesis?.speak(new SpeechSynthesisUtterance(getNarration(step)))
+      const utterance = new SpeechSynthesisUtterance(getNarration(step))
+      utterance.rate = FALLBACK_VOICE_RATE
+      window.speechSynthesis?.speak(utterance)
     }
     audio.addEventListener('error', speakInstead)
     audio.play().catch(() => {
