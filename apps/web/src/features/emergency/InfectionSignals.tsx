@@ -12,12 +12,15 @@ const USUAL_VALUE_DAYS = 365
 type Signal = { label: string; unit: string | null; usual: number; simulated: number }
 
 async function fetchSignals(patientId: number): Promise<Signal[]> {
-  const details = await Promise.all(
+  // One reading that fails to load must not hide the others
+  const results = await Promise.allSettled(
     INFECTION_SIGNALS.map((signal) =>
       fetchIndicatorDetail(patientId, signal.id, addDays(TODAY, -USUAL_VALUE_DAYS), TODAY),
     ),
   )
-  return details.flatMap((detail, index) => {
+  return results.flatMap((result, index) => {
+    if (result.status === 'rejected') return []
+    const detail = result.value
     const values = detail.readings.map((reading) => reading.value).toSorted((a, b) => a - b)
     if (values.length === 0) return []
     const usual = values[Math.floor(values.length / 2)]

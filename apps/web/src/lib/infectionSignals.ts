@@ -2,7 +2,7 @@
 // `simulatedChange` is the invented part of the demo: how far the reading of the alert is from the
 // crew member's own usual value, in the unit of the indicator. The usual value is real.
 export const INFECTION_SIGNALS = [
-  { id: 'skin_temperature', label: 'Body temperature', simulatedChange: 1.3 },
+  { id: 'skin_temperature', label: 'Skin temperature at night', simulatedChange: 1.3 },
   { id: 'breathing_rate', label: 'Breathing rate', simulatedChange: 5 },
   { id: 'heart_rate_variability', label: 'Heart rate variability', simulatedChange: -18 },
   { id: 'spo2', label: 'Blood oxygen', simulatedChange: -3 },

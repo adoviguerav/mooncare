@@ -6,7 +6,7 @@ import type { CrewMember } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
 import { addDays } from '../../lib/format.ts'
 import { useApi } from '../../hooks/useApi.ts'
-import { endEmergency, goToStep, recordFinding } from '../../lib/emergency.ts'
+import { endEmergency, goBack, goToStep, recordFinding } from '../../lib/emergency.ts'
 import type { Emergency } from '../../lib/emergency.ts'
 import { PROCEDURE_BY_EVENT, getAudioPath } from '../../lib/procedures.ts'
 import type { EventId, Procedure, ProcedureStep } from '../../lib/procedures.ts'
@@ -347,7 +347,7 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
         )}
       </div>
       {previousStepId !== undefined && (
-        <button className="ghost guide-back" onClick={() => goToStep(previousStepId)}>
+        <button className="ghost guide-back" onClick={goBack}>
           Back to the step before
         </button>
       )}

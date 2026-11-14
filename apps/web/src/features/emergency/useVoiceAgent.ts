@@ -1,7 +1,7 @@
 import { useConversation, useConversationClientTool } from '@elevenlabs/react'
 import { useEffect, useRef, useState } from 'react'
 import { createVoiceSession } from '../../lib/api.ts'
-import { goToStep, recordFinding } from '../../lib/emergency.ts'
+import { goBack, goToStep, recordFinding } from '../../lib/emergency.ts'
 import type { Procedure, ProcedureStep } from '../../lib/procedures.ts'
 import {
   GO_TO_STEP_TOOL,
@@ -29,6 +29,8 @@ export function useVoiceAgent(
 ): VoiceAgent {
   const [wanted, setWanted] = useState(available)
   const [failed, setFailed] = useState(false)
+  // Counts the tries, so that trying again after a failure opens a new conversation
+  const [attempt, setAttempt] = useState(0)
   const { status, isSpeaking, startSession, endSession, sendUserMessage } = useConversation()
   const stepRef = useRef(step)
   const previousStepIdRef = useRef(previousStepId)
@@ -54,7 +56,9 @@ export function useVoiceAgent(
       return `The guide did not move: "${requested}" is not an answer of the current step nor the step before.\n${describeStep(current)}`
     }
     stepKnownToAgent.current = next.id
-    goToStep(next.id)
+    const isForward = current.options.some((option) => option.next === next.id)
+    if (isForward) goToStep(next.id)
+    else goBack()
     return `The guide moved.\n${describeStep(next)}`
   })
 
@@ -63,7 +67,11 @@ export function useVoiceAgent(
     const findings = Array.isArray(parameters.findings) ? parameters.findings : []
     const refused: string[] = []
     for (const finding of findings) {
-      const { name, value } = finding as { name?: unknown; value?: unknown }
+      // The model's output is not trusted: an entry may not even be an object
+      const { name, value } = (typeof finding === 'object' && finding !== null ? finding : {}) as {
+        name?: unknown
+        value?: unknown
+      }
       if (typeof name !== 'string' || typeof value !== 'string' || !allowed.includes(name)) {
         refused.push(String(name))
         continue
@@ -80,7 +88,10 @@ export function useVoiceAgent(
     if (!wanted || !available) return
     let cancelled = false
     const giveUp = () => {
-      if (!cancelled) setFailed(true)
+      if (cancelled) return
+      // An error can leave the conversation open: close it, so the screen and the microphone agree
+      session.current.endSession()
+      setFailed(true)
     }
     createVoiceSession()
       .then((signedUrl) => {
@@ -97,7 +108,7 @@ export function useVoiceAgent(
       cancelled = true
       session.current.endSession()
     }
-  }, [wanted, available])
+  }, [wanted, available, attempt])
 
   const isLive = wanted && !failed && status === 'connected'
 
@@ -109,6 +120,7 @@ export function useVoiceAgent(
 
   const state: VoiceAgentState = !available ? 'unavailable' : !wanted ? 'off' : failed ? 'unavailable' : isLive ? 'live' : 'starting'
   const toggle = () => {
+    if (failed) setAttempt(attempt + 1)
     setFailed(false)
     setWanted(!wanted || failed)
   }

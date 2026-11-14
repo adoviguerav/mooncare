@@ -81,16 +81,22 @@ export function startEmergency(event: EventId, patientId: number, patientName: s
 
 export function goToStep(stepId: string): void {
   const emergency = readEmergency()
-  if (emergency === null) return
-  const cameFrom = emergency.path.at(-1)
-  // Going to the step she came from is a step back: it leaves the path instead of joining it
-  const path =
-    stepId === cameFrom
-      ? emergency.path.slice(0, -1)
-      : emergency.stepId === null
-        ? emergency.path
-        : [...emergency.path, emergency.stepId]
+  if (emergency === null || emergency.stepId === stepId) return
+  const path = emergency.stepId === null ? emergency.path : [...emergency.path, emergency.stepId]
   writeEmergency({ ...emergency, stepId, stepStartedAt: new Date().toISOString(), path })
+}
+
+// Returns to the step she came from
+export function goBack(): void {
+  const emergency = readEmergency()
+  const cameFrom = emergency?.path.at(-1)
+  if (emergency === null || cameFrom === undefined) return
+  writeEmergency({
+    ...emergency,
+    stepId: cameFrom,
+    stepStartedAt: new Date().toISOString(),
+    path: emergency.path.slice(0, -1),
+  })
 }
 
 // Writes a finding into the report, or takes it out when the value is null
