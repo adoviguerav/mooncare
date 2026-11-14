@@ -8,6 +8,8 @@ import { useApi } from '../../hooks/useApi.ts'
 
 const MOOD_PREFIX = 'mood_'
 const MOOD_CHOSEN = 1
+// The mood rule arrives as two more indicators: on how many of the last 14 days the mood was chosen
+const MOOD_DAY_COUNT_IDS = ['mood_sad_days_14', 'mood_tense_days_14']
 
 // Which indicators are shown together. An indicator in no group goes under OTHER_GROUP.
 const GROUPS = [
@@ -16,6 +18,8 @@ const GROUPS = [
   { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
   { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency'] },
   { title: 'Temperature', indicatorIds: ['skin_temperature'] },
+  // shortcut: the mood rule is shown as cards of its own; F4 puts it inside the mood card
+  { title: 'Mood over the last 14 days', indicatorIds: MOOD_DAY_COUNT_IDS },
 ]
 const OTHER_GROUP = 'Other'
 
@@ -63,8 +67,10 @@ function PanelContent({ crewMemberId, onOpenIndicator, onCheckinSaved }: PanelCo
   if (error !== null) return <p role="alert">Could not load the panel. {error}</p>
   if (panel === null) return null
 
-  const moods = panel.indicators.filter((indicator) => indicator.id.startsWith(MOOD_PREFIX))
-  const measurements = panel.indicators.filter((indicator) => !indicator.id.startsWith(MOOD_PREFIX))
+  const isMood = (indicator: PanelIndicator) =>
+    indicator.id.startsWith(MOOD_PREFIX) && !MOOD_DAY_COUNT_IDS.includes(indicator.id)
+  const moods = panel.indicators.filter(isMood)
+  const measurements = panel.indicators.filter((indicator) => !isMood(indicator))
   const withAlert = measurements.filter((indicator) => indicator.broken_rule !== null)
   const withoutAlert = measurements.filter((indicator) => indicator.broken_rule === null)
   const todayMoods = moods.filter((mood) => mood.reading?.taken_at.startsWith(TODAY))

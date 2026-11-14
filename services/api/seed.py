@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from app.config import LIFESNAPS_DAILY_CSV, LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SEEDS_DIR
+from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from seed_content import INDICATORS, RULES, SOURCES
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
@@ -82,6 +83,25 @@ CREW = [
         lifesnaps_id="621e2f9167b776a240011ccb",
         lifesnaps_offset_days=-77,
     ),
+    # +132 days puts the last day of this volunteer's tense fortnight (2021-06-23) on the demo date.
+    CrewPairing(
+        "Crew 2",
+        inspiration4_code="C001",
+        lifesnaps_id="621e2fce67b776a240279baa",
+        lifesnaps_offset_days=132,
+    ),
+    CrewPairing(
+        "Crew 3",
+        inspiration4_code="C002",
+        lifesnaps_id="621e366567b776a24076a727",
+        lifesnaps_offset_days=-75,
+    ),
+    CrewPairing(
+        "Crew 4",
+        inspiration4_code="C004",
+        lifesnaps_id="621e337667b776a240ce78ab",
+        lifesnaps_offset_days=98,
+    ),
 ]
 
 
@@ -131,11 +151,36 @@ def read_daily_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) ->
     return readings
 
 
+def build_mood_day_counts(readings: list[Reading]) -> list[Reading]:
+    """For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen.
+
+    A day with no entry counts as not chosen.
+    """
+    counts = []
+    for mood_id, count_id in MOOD_DAY_COUNT_IDS.items():
+        value_by_day = {
+            date.fromisoformat(reading.taken_at[:10]): reading.value
+            for reading in readings
+            if reading.indicator_id == mood_id
+        }
+        for day in sorted(value_by_day):
+            window_start = day - timedelta(days=MOOD_WINDOW_DAYS - 1)
+            chosen_days = sum(
+                value for other_day, value in value_by_day.items() if window_start <= other_day <= day
+            )
+            counts.append(Reading(count_id, f"{day.isoformat()}T00:00", float(chosen_days)))
+    return counts
+
+
 def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> list[Reading]:
+    daily_readings = read_daily_readings(
+        dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days
+    )
     return (
         read_glucose_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
         + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
-        + read_daily_readings(dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+        + daily_readings
+        + build_mood_day_counts(daily_readings)
     )
 
 

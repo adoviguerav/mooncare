@@ -236,7 +236,12 @@ def test_a_reading_exactly_on_a_limit_does_not_break_the_rule(build_client: Load
 
 def get_panel_moods(client: TestClient, date: str) -> dict[str, dict | None]:
     panel = client.get("/api/crew/1/panel", params={"date": date}).json()
-    return {i["id"]: i["reading"] for i in panel["indicators"] if i["id"].startswith("mood_")}
+    return {i["id"]: i["reading"] for i in panel["indicators"] if i["id"] in MOOD_IDS}
+
+
+def get_panel_indicator(client: TestClient, date: str, indicator_id: str) -> dict:
+    panel = client.get("/api/crew/1/panel", params={"date": date}).json()
+    return next(i for i in panel["indicators"] if i["id"] == indicator_id)
 
 
 def test_saving_a_checkin_returns_what_was_saved_and_the_panel_of_that_day_shows_it(
@@ -300,3 +305,46 @@ def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> No
     assert get_panel_moods(client, "2021-11-02") == {
         mood_id: {"taken_at": "2021-11-02T00:00", "value": 0.0} for mood_id in MOOD_IDS
     }
+
+
+def test_panel_alerts_on_a_night_under_seven_hours_and_not_on_a_longer_one(client: TestClient) -> None:
+    short_night = get_panel_indicator(client, "2021-11-02", "sleep_duration")
+    long_night = get_panel_indicator(client, "2021-11-01", "sleep_duration")
+
+    assert short_night["reading"]["value"] == 355.0
+    assert short_night["broken_rule"]["id"] == 3
+    assert short_night["broken_rule"]["action"] != ""
+    assert long_night["reading"]["value"] == 463.0
+    assert long_night["broken_rule"] is None
+
+
+def test_panel_shows_the_seeded_count_of_sad_days(client: TestClient) -> None:
+    sad_days = get_panel_indicator(client, "2021-11-02", "mood_sad_days_14")
+
+    assert sad_days["reading"] == {"taken_at": "2021-11-01T00:00", "value": 1.0}
+    assert sad_days["broken_rule"] is None
+
+
+def test_tense_on_eight_of_the_last_14_days_raises_the_mood_alert(client: TestClient) -> None:
+    for day in range(26, 32):
+        client.put(f"/api/crew/1/checkins/2021-10-{day}", json={"moods": ["mood_tense"]})
+    client.put("/api/crew/1/checkins/2021-11-01", json={"moods": ["mood_tense"]})
+
+    seven_days = get_panel_indicator(client, "2021-11-01", "mood_tense_days_14")
+    client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_tense", "mood_alert"]})
+    eight_days = get_panel_indicator(client, "2021-11-02", "mood_tense_days_14")
+
+    assert seven_days["reading"] == {"taken_at": "2021-11-01T00:00", "value": 7.0}
+    assert seven_days["broken_rule"] is None
+    assert eight_days["reading"] == {"taken_at": "2021-11-02T00:00", "value": 8.0}
+    assert eight_days["broken_rule"]["id"] == 5
+
+
+def test_a_tense_day_more_than_14_days_back_does_not_count(client: TestClient) -> None:
+    client.put("/api/crew/1/checkins/2021-10-19", json={"moods": ["mood_tense"]})
+    client.put("/api/crew/1/checkins/2021-10-20", json={"moods": ["mood_tense"]})
+
+    client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_tense"]})
+
+    tense_days = get_panel_indicator(client, "2021-11-02", "mood_tense_days_14")
+    assert tense_days["reading"] == {"taken_at": "2021-11-02T00:00", "value": 2.0}

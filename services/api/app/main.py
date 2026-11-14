@@ -2,12 +2,13 @@ from datetime import date, datetime, time, timedelta
 from typing import Annotated, get_args
 
 from fastapi import FastAPI, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session
 
 from app import models
 from app.db import DbSession
+from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import (
     BrokenRule,
     Checkin,
@@ -61,6 +62,24 @@ def find_broken_rule(rules: list[Rule], value: float) -> Rule | None:
         if below_low or above_high:
             return rule
     return None
+
+
+def save_readings(
+    session: Session, crew_member_id: int, taken_at: datetime, value_by_indicator: dict[str, float]
+) -> None:
+    """Inserts the readings, or replaces the value of the ones that already exist at that moment."""
+    save = insert(models.Reading).values(
+        [
+            {"crew_member_id": crew_member_id, "indicator_id": indicator_id, "taken_at": taken_at, "value": value}
+            for indicator_id, value in value_by_indicator.items()
+        ]
+    )
+    session.execute(
+        save.on_conflict_do_update(
+            index_elements=["crew_member_id", "indicator_id", "taken_at"],
+            set_={"value": save.excluded.value},
+        )
+    )
 
 
 app = FastAPI(title="Real Telemetry API")
@@ -168,22 +187,25 @@ def save_checkin(
 ) -> CheckinResponse:
     require_crew_member(session, crew_member_id)
     chosen_moods = [mood_id for mood_id in MOOD_IDS if mood_id in checkin.moods]
-    save_moods = insert(models.Reading).values(
-        [
-            {
-                "crew_member_id": crew_member_id,
-                "indicator_id": mood_id,
-                "taken_at": start_of(checkin_date),
-                "value": float(mood_id in chosen_moods),
-            }
-            for mood_id in MOOD_IDS
-        ]
+    taken_at = start_of(checkin_date)
+    save_readings(
+        session, crew_member_id, taken_at, {mood_id: float(mood_id in chosen_moods) for mood_id in MOOD_IDS}
     )
-    session.execute(
-        save_moods.on_conflict_do_update(
-            index_elements=["crew_member_id", "indicator_id", "taken_at"],
-            set_={"value": save_moods.excluded.value},
+    # shortcut: changing a past day leaves the counts of the 13 days after it stale, compute them on read to fix it
+    window_start = start_of(checkin_date - timedelta(days=MOOD_WINDOW_DAYS - 1))
+    day_counts = {
+        count_id: float(
+            session.scalar(
+                select(func.count()).where(
+                    models.Reading.crew_member_id == crew_member_id,
+                    models.Reading.indicator_id == mood_id,
+                    models.Reading.taken_at.between(window_start, taken_at),
+                    models.Reading.value == 1,
+                )
+            )
         )
-    )
+        for mood_id, count_id in MOOD_DAY_COUNT_IDS.items()
+    }
+    save_readings(session, crew_member_id, taken_at, day_counts)
     session.commit()
     return CheckinResponse(date=checkin_date, moods=chosen_moods)

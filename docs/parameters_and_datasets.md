@@ -171,6 +171,38 @@ Five datasets from three sources. Four are NASA data.
 - **RadLab.** NASA Open Science Data Repository, RadLab portal and data API. https://visualization.osdr.nasa.gov/radlab/ . The documentation gives no official citation.
 - **LifeSnaps.** Yfantidou et al., "LifeSnaps, a 4-month multi-modal dataset capturing unobtrusive snapshots of our lives in the wild", Scientific Data, 2022. https://doi.org/10.1038/s41597-022-01764-x . Data at https://doi.org/10.5281/zenodo.7229547 , licence CC BY 4.0.
 
+## Reference values from NASA
+
+On 14 Nov 2026 the team compiled the reference values of NASA's medical standards: OCHMO-STD-100.1A Rev. A (2024) and NASA-STD-3001 Volume 1 Rev. C and Volume 2 Rev. F. This is what that compilation gives for our parameters. A value goes into a rule only if it is final and fits data we have.
+
+MVP parameters (Table 1):
+
+| Parameter | What the NASA standards give | What we do |
+| :-- | :-- | :-- |
+| Blood glucose | Tested before, during and after flight. No numeric range | Keep the 65 to 99 mg/dL range of the Inspiration4 file |
+| Heart rate | Monitored. No numeric range. The compilation adds 60 to 100 bpm as a general adult reference, with no source | Keep the rule above 100 bpm (American Heart Association). No low limit: a fit person rests below 60, and Crew 3 rests at 50 bpm |
+| Sleep duration | Monitored continuously in flight. "No defined universal hourly range" | Keep the rule below 7 hours (AASM and SRS, 2015) |
+| Mood | Psychological interviews every 14 days in flight. No numeric range | Supports the 14-day window of the mood rule and its action, to bring it up in the next conference |
+| Body temperature | Monitored. No numeric range | No rule |
+| Exercise | No limit on daily activity. The limits are on fitness: see below | No rule |
+
+Values that are final in NASA-STD-3001 Volume 1 and fit parameters of Tables 2 and 3:
+
+| Parameter | NASA limit | Can we use it |
+| :-- | :-- | :-- |
+| Cardiovascular fitness | In-mission VO2 max at or above 32.9 mL/kg/min for missions with microgravity EVA [V1 4001], 36.5 for surface EVA [V1 4002], and at or above 80% of the pre-mission value [V1 4003] | Yes, with `filteredDemographicVO2Max` of LifeSnaps (an estimate by the watch). It would be our first rule with a NASA limit. Not built |
+| Bone density | Hip and spine at or above 95% of the pre-flight baseline, femoral neck at or above 90% | No open data |
+| Muscle strength | At or above 80% of the baseline during the mission | No open data |
+| Vitamin D | Target of 35 to 90 ng/mL | No open data |
+
+Left out on purpose:
+
+- The cardiovascular, vision and hearing thresholds (for example resting tachycardia above 130 bpm for more than 1 hour, or QT above 470 ms). They come from a draft of the medical selection criteria, and they decide who can be an astronaut, not a daily alert.
+- The radiation limits per organ. They come from draft material and are in mGy-Eq over 30 days, a year or a career. Our RadLab data is a dose rate in μGy per hour. They are different quantities.
+- The study findings (blood pressure and cardiac output changes on the ISS). They describe what happens in space. They are not limits.
+
+The three VO2 max requirements were checked against NASA's exercise brief (https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-031-exercise-overview.pdf). The other values come from the compilation and nobody has opened the standard to check them.
+
 ## What to say in the pitch
 
 - The blood tests are from real astronauts and the radiation is measured on the ISS. Both come from NASA.

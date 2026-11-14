@@ -93,6 +93,7 @@ How each dataset becomes readings:
 | File | Indicator ids | Note |
 | :-- | :-- | :-- |
 | LifeSnaps daily | `resting_heart_rate`, `sleep_duration`, `sleep_efficiency`, `skin_temperature`, `very_active_minutes`, `steps`, `mood_happy`, `mood_sad`, `mood_tense`, `mood_alert`, `mood_rested`, `mood_neutral` | One reading per person, day and indicator. Each mood column holds 0 or 1 and becomes its own indicator. The frontend shows the six as one card |
+| LifeSnaps daily, computed | `mood_sad_days_14`, `mood_tense_days_14` | For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen (section 5) |
 | LifeSnaps hourly | `heart_rate` | One reading per person and hour |
 | Inspiration4 metabolic panel | `glucose` | 7 readings per crew member |
 
@@ -242,9 +243,11 @@ Three ways to decide an alert. We build them in this order.
 | `sleep_duration` | Sleep deprivation. Duration below the personal target | Below 420 minutes (7 hours) | AASM and SRS consensus for adults, 2015 (doi 10.5664/jcsm.4758). General adult reference, not a spaceflight limit |
 | `skin_temperature` | Possible infection. Raised temperature plus symptoms | No rule yet | Needs a source |
 | Exercise | Insufficient exercise | No rule yet | Needs a source |
-| The six mood indicators | Behavioural changes. Deviations in self-report | No rule yet | Needs a definition |
+| `mood_sad_days_14`, `mood_tense_days_14` | Behavioural changes. Deviations in self-report | Above 7 of the last 14 days, for Sad and for Tense or anxious | PHQ-2 and GAD-2: "more than half the days" over the last 2 weeks. An adaptation, to confirm with Àngels ([plan](plan.md), Mood rule) |
 
-The MVP starts with these three rules. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. The other three indicators are shown with no rule until someone brings a limit and a source. The mood rule is the first one to define. Why: mood is our only MVP indicator for mental health, which NASA rates red for Mars (System_design, section 1).
+The MVP has these five rules: glucose, resting heart rate, sleep and the two mood ones. The sleep and heart rate limits are general adult references on Earth, used as a starting point, not spaceflight limits. NASA's medical standards give no numeric range for them (data document, Reference values from NASA). Temperature and exercise are shown with no rule until someone brings a limit and a source.
+
+The mood rule needs no change to the data model. Each of the two `_days_14` indicators holds on how many of the 14 days ending on that day the mood was chosen. A day with no check-in counts as not chosen. The seed script computes them for every day with a mood entry, and the check-in recomputes the two of its own day. They are in the panel like any other indicator, and the frontend shows them with the mood card.
 
 ## 6. Build order
 
@@ -260,8 +263,15 @@ Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an
 
 ## Starting decisions
 
-- Rules. Three fixed-range rules to start with: glucose, sleep and resting heart rate (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
+- Rules. Five fixed-range rules: glucose, sleep, resting heart rate and the two mood ones (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
 - Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add an entry to the rules in `seed_content.py`.
 - Temperature. No rule for now, because no dataset has symptoms. The panel shows `skin_temperature`.
-- Dates. The Inspiration4 readings keep their real dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 is shifted by -77 days, so the last day with a mood entry (2022-01-17) falls on 2021-11-01, the day before the demo date. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. To line up the other three crew members, change their offset.
+- Dates. The Inspiration4 readings keep their real dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 is shifted by -77 days, so the last day with a mood entry (2022-01-17) falls on 2021-11-01, the day before the demo date. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. The other three are paired the same way:
+
+    | Crew | Inspiration4 | LifeSnaps volunteer | Shift in days | On the demo date |
+    | :-- | :-- | :-- | :-- | :-- |
+    | Crew 1 | C003 | 621e2f9167b776a240011ccb | -77 | Glucose 36 mg/dL and a 367-minute night. Check-in pending |
+    | Crew 2 | C001 | 621e2fce67b776a240279baa | +132 | Tense on 13 of the last 14 days. Glucose in range |
+    | Crew 3 | C002 | 621e366567b776a24076a727 | -75 | Glucose 44 mg/dL and a 372-minute night |
+    | Crew 4 | C004 | 621e337667b776a240ce78ab | +98 | Glucose 43 mg/dL. Check-in pending |
 - Gamification. Streaks only, computed from the mood readings. Anything else waits for the design owner.

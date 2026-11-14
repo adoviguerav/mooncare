@@ -5,6 +5,8 @@ Edit this file to change a text, add an indicator or add a rule. Never write a l
 
 from dataclasses import dataclass
 
+from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
+
 
 @dataclass(frozen=True)
 class Source:
@@ -186,7 +188,27 @@ INDICATORS = [
         )
         for mood_id, mood_name in MOOD_NAMES.items()
     ],
+    *[
+        Indicator(
+            id=count_id,
+            name=f"{MOOD_NAMES[mood_id]} days in the last {MOOD_WINDOW_DAYS}",
+            unit="days",
+            how_to_measure="Counted from your daily check-ins. A day with no check-in counts as not chosen.",
+            why_it_matters=(
+                "A mood that stays for most of two weeks is worth a conversation. This is a count of your "
+                "own check-ins, not a questionnaire and not a diagnosis."
+            ),
+            source_id="lifesnaps",
+        )
+        for mood_id, count_id in MOOD_DAY_COUNT_IDS.items()
+    ],
 ]
+
+MOOD_RULE_ACTION = "Bring it up in your next private psychological conference."
+MOOD_RULE_LIMITS = (
+    "This is an adaptation, not a validated screening: each questionnaire has two questions and the "
+    "check-in covers one. To confirm with the medical reviewer."
+)
 
 # REVIEW: title, explanation and action are drafts built from docs/parameters_and_datasets.md.
 RULES = [
@@ -202,6 +224,65 @@ RULES = [
         action="Ask for a metabolic assessment.",
         threshold_source=(
             "Normal range given for glucose in the Inspiration4 metabolic panel file (NASA OSDR, OSD-575)."
+        ),
+    ),
+    Rule(
+        indicator_id="resting_heart_rate",
+        high=100.0,
+        title="Resting heart rate high",
+        explanation=(
+            "Your resting heart rate is above 100 bpm. At rest, this can point to dehydration, infection, "
+            "stress or a cardiovascular problem."
+        ),
+        action="Check your hydration and how you feel, and ask for a cardiovascular assessment.",
+        threshold_source=(
+            "American Heart Association definition of tachycardia: a resting heart rate above 100 bpm. "
+            "General adult reference on Earth, not a spaceflight limit."
+        ),
+    ),
+    Rule(
+        indicator_id="sleep_duration",
+        low=420.0,
+        title="Short night",
+        explanation=(
+            "You slept less than 7 hours (420 minutes). Too little sleep, night after night, lowers "
+            "attention and mood."
+        ),
+        action="Adjust your schedule to protect tonight's sleep and review what kept you awake.",
+        threshold_source=(
+            "American Academy of Sleep Medicine and Sleep Research Society consensus for adults, 2015: "
+            "7 or more hours per night. https://doi.org/10.5664/jcsm.4758. General adult reference on "
+            "Earth, not a spaceflight limit."
+        ),
+    ),
+    Rule(
+        indicator_id="mood_sad_days_14",
+        high=7.0,
+        title="Sad on most of the last 14 days",
+        explanation=(
+            "You chose Sad on more than half of the last 14 days. It is not a diagnosis. It is a reason "
+            "to talk about it."
+        ),
+        action=MOOD_RULE_ACTION,
+        threshold_source=(
+            'PHQ-2 depression screening (Kroenke, Spitzer and Williams, Medical Care, 2003) asks about the '
+            'last 2 weeks, and "more than half the days" is the answer that starts to count. '
+            + MOOD_RULE_LIMITS
+        ),
+    ),
+    Rule(
+        indicator_id="mood_tense_days_14",
+        high=7.0,
+        title="Tense or anxious on most of the last 14 days",
+        explanation=(
+            "You chose Tense or anxious on more than half of the last 14 days. It is not a diagnosis. "
+            "It is a reason to talk about it."
+        ),
+        action=MOOD_RULE_ACTION,
+        threshold_source=(
+            'GAD-2 anxiety screening (Kroenke et al., Annals of Internal Medicine, 2007) asks about the '
+            'last 2 weeks, and "more than half the days" is the answer that starts to count. '
+            + MOOD_RULE_LIMITS
         ),
     ),
 ]

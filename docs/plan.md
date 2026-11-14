@@ -82,11 +82,11 @@ Backend:
 
 - [x] **B3. The other MVP indicators** (R1): resting heart rate, sleep duration, sleep efficiency, skin temperature, very active minutes, steps.
     - Done when: the panel returns all of them for Crew 1 on the demo date.
-- [ ] **B5. The other three crew members.** Each one's dates are shifted so their data lands on the demo date, 2021-11-02.
+- [x] **B5. The other three crew members.** Each one's dates are shifted so their data lands on the demo date, 2021-11-02.
     - Done when: the profile picker shows four crew members and each has a full panel on the demo date.
-- [ ] **B4. Sleep and resting heart rate rules** (R10). The limits are already decided (MVP architecture, section 5).
+- [x] **B4. Sleep and resting heart rate rules** (R10). The limits are already decided (MVP architecture, section 5).
     - Done when: a night under 7 hours shows the alert with its explanation and what to do.
-- [ ] **B2. Mood rule** (R10). The rule at the end of this document.
+- [x] **B2. Mood rule** (R10). The rule at the end of this document.
     - Done when: the crew member with the tense fortnight shows the alert on the demo date, and Crew 1 does not.
 - [ ] **B6. Panel order** by the priority rule (System_design, section 7): mood, glucose, heart rate, exercise, sleep, temperature.
     - Done when: the panel returns them in that order.
@@ -155,12 +155,13 @@ These wait until every task above is ticked. They are the planned parts of the t
 - [ ] **Mobile app** (`apps/mobile`).
 - [ ] The other stretch goals, in the order of the System_design, section 2.
 
-## Mood rule (proposed)
+## Mood rule (built, to confirm with Àngels)
 
-To confirm with Àngels.
+Built in B2 as proposed here. Àngels still has to confirm the rule and its texts.
 
 - **The rule.** Warn when "Sad" was chosen on more than half of the last 14 days, that is, 8 or more. The same for "Tense or anxious". They are two separate rules.
 - **Where it comes from.** PHQ-2 (depression) and GAD-2 (anxiety) are the standard short screening questionnaires. Both ask how often something happened over the last 2 weeks, and "more than half the days" is the answer that starts to count towards a positive result. ASTRA-HEALTH already names their long versions, PHQ-9 and GAD-7.
+- **Why 14 days also fits NASA.** NASA schedules a private psychological conference every 14 days in flight (data document, Reference values from NASA), so the count covers the time since the last one.
 - **Its limit.** Each questionnaire has two questions and our moods cover one of each. So this is an adaptation, not a validated screening. It asks for a conversation and never gives a diagnosis.
 - **What it tells the astronaut to do.** Bring it up in the next private psychological conference, which NASA already provides in flight (OCHMO-TB-016). This matches the ASTRA-HEALTH response: confidential assessment, no automatic diagnosis.
 - **Checked against our data** (the four suggested crew members in LifeSnaps):

@@ -5,9 +5,13 @@ from pathlib import Path
 import pytest
 
 from seed import (
+    CREW,
     DAILY_COLUMNS,
+    DATASET_FILES,
     CrewPairing,
     Reading,
+    build_mood_day_counts,
+    read_crew_readings,
     read_daily_readings,
     read_glucose_readings,
     read_heart_rate_readings,
@@ -22,7 +26,8 @@ METABOLIC_PANEL_HEADER = (
 HOURLY_HEADER = "id,date,hour,bpm\n"
 VOLUNTEER = "621e2f9167b776a240011ccb"
 OTHER_VOLUNTEER = "621e2fce67b776a240279baa"
-CREW = [CrewPairing("Crew 1", "C003", VOLUNTEER)]
+DEMO_DATE = "2021-11-02"
+ONE_CREW_MEMBER = [CrewPairing("Crew 1", "C003", VOLUNTEER)]
 
 LoadSeeds = Callable[[list[CrewPairing], Path, Path], None]
 FetchAll = Callable[[str], list[tuple]]
@@ -50,7 +55,7 @@ def test_stores_each_glucose_draw_on_its_calendar_date(
     )
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    load_seeds(CREW, metabolic_panel, hourly)
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
 
     assert fetch_all(
         "SELECT taken_at, value FROM dat.reading WHERE indicator_id = 'glucose' ORDER BY taken_at"
@@ -87,9 +92,62 @@ def test_loads_the_glucose_rule_with_the_limits_of_the_nasa_file(
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    load_seeds(CREW, metabolic_panel, hourly)
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
 
-    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule") == [(1, "glucose", 65.0, 99.0)]
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE indicator_id = 'glucose'") == [
+        (1, "glucose", 65.0, 99.0)
+    ]
+
+
+def test_loads_the_resting_heart_rate_sleep_and_mood_rules_with_their_sourced_limits(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id > 1 ORDER BY id") == [
+        (2, "resting_heart_rate", None, 100.0),
+        (3, "sleep_duration", 420.0, None),
+        (4, "mood_sad_days_14", None, 7.0),
+        (5, "mood_tense_days_14", None, 7.0),
+    ]
+
+
+def get_latest_values(readings: list[Reading], up_to_day: str) -> dict[str, float]:
+    """The latest value of each indicator up to the end of a day, as the panel shows it."""
+    in_time = sorted((r for r in readings if r.taken_at[:10] <= up_to_day), key=lambda r: r.taken_at)
+    return {reading.indicator_id: reading.value for reading in in_time}
+
+
+def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date() -> None:
+    panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
+
+    assert [pairing.name for pairing in CREW] == ["Crew 1", "Crew 2", "Crew 3", "Crew 4"]
+    for panel in panels:
+        assert set(panel) == {indicator.id for indicator in INDICATORS}
+    assert [panel["glucose"] for panel in panels] == [36.0, 84.0, 44.0, 43.0]
+    # Only Crew 2 is over the limit of the mood rule, 7 days
+    assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0]
+
+
+def test_counts_for_each_mood_entry_the_days_with_that_mood_in_the_14_days_ending_on_it() -> None:
+    tense_days = ["2021-10-01", "2021-10-02", "2021-10-14", "2021-10-15"]
+    readings = [Reading("mood_tense", f"{day}T00:00", 1.0) for day in tense_days] + [
+        Reading("mood_tense", "2021-10-16T00:00", 0.0),
+        Reading("mood_sad", "2021-10-16T00:00", 1.0),
+    ]
+
+    assert build_mood_day_counts(readings) == [
+        Reading("mood_sad_days_14", "2021-10-16T00:00", 1.0),
+        Reading("mood_tense_days_14", "2021-10-01T00:00", 1.0),
+        Reading("mood_tense_days_14", "2021-10-02T00:00", 2.0),
+        Reading("mood_tense_days_14", "2021-10-14T00:00", 3.0),
+        # 2021-10-01 is 15 days back, so it no longer counts
+        Reading("mood_tense_days_14", "2021-10-15T00:00", 3.0),
+        Reading("mood_tense_days_14", "2021-10-16T00:00", 2.0),
+    ]
 
 
 def test_a_new_row_gets_the_next_id_after_the_seeded_ones(
@@ -97,7 +155,7 @@ def test_a_new_row_gets_the_next_id_after_the_seeded_ones(
 ) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
-    load_seeds(CREW, metabolic_panel, hourly)
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
 
     new_ids = fetch_all(
         "INSERT INTO cfg.rule (indicator_id, high, title, explanation, action, threshold_source) "
