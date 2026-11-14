@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mooncare</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f8;--card:#fff;--line:#cfdbe8;--ink:#0d2238;--mute:#52667c;--cy:#0a7ea4;--ok:#0f8a5f;--warn:#b45f06;--bad:#c0322b;--warnbg:#fff2dd;--okbg:#e2f5ec;--badbg:#fde7e5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050d1a;--card:#0b1a2e;--line:#1b3550;--ink:#e6f1fb;--mute:#8aa3bb;--cy:#2fd8ff;--ok:#3be0a0;--warn:#ffb84a;--bad:#ff7b72;--warnbg:#3a2a0a;--okbg:#0b2f27;--badbg:#3b1514;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#050d1a;--card:#0b1a2e;--line:#1b3550;--ink:#e6f1fb;--mute:#8aa3bb;--cy:#2fd8ff;--ok:#3be0a0;--warn:#ffb84a;--bad:#ff7b72;--warnbg:#3a2a0a;--okbg:#0b2f27;--badbg:#3b1514;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Space Grotesk",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 96px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
+h1{font-size:22px;margin:0}h1 small{display:block;font-size:13px;font-weight:400;color:var(--mute)}
+h2{font-size:17px;margin:0 0 12px}
+.banner{padding:8px 14px;border-radius:999px;background:var(--warnbg);color:var(--warn);font-weight:700;font-size:13px;border:1px solid var(--warn)}
+.banner.ok{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.hero{display:grid;gap:16px;grid-template-columns:1.4fr 1fr;margin-bottom:16px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.xp{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin:10px 0 4px}.xp i{display:block;height:100%;width:87%;background:var(--cy)}
+.row{display:flex;justify-content:space-between;gap:8px;color:var(--mute);font-size:13px}
+.moods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.moods button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:12px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.moods svg{width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+.moods button[aria-pressed="true"]{border-color:var(--cy);background:var(--okbg)}
+button:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+#moodMsg{font-size:13px;color:var(--mute);margin:10px 0 0;min-height:20px}
+.nova{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.nova b{color:var(--cy)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.chips button{font:inherit;font-size:13px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--cy);color:#04121f;border-color:var(--cy);font-weight:700}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-bottom:16px}
+.m .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mute)}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;font-weight:700}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.warn{background:var(--warnbg);color:var(--warn)}.tag.bad{background:var(--badbg);color:var(--bad)}
+.val{font-size:32px;font-weight:700;margin:6px 0 2px}.val small{font-size:14px;font-weight:400;color:var(--mute)}
+.bar{height:6px;border-radius:6px;background:var(--line);margin:8px 0;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:6px;background:var(--cy)}
+.bar.warn i{background:var(--warn)}
+.note{font-size:13px;color:var(--mute);margin:4px 0}
+details{margin-top:8px;border-top:1px solid var(--line);padding-top:8px;font-size:13px}
+summary{cursor:pointer;color:var(--cy)}
+details p{margin:6px 0;color:var(--mute)}details p b{color:var(--ink);font-weight:500}
+.two{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-bottom:16px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.scroll{overflow-x:auto}
+svg{max-width:100%;height:auto}
+.legend{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.legend li{display:flex;justify-content:space-between;gap:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.q{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0}
+.q button{font:inherit;font-size:13px;border:1px solid var(--cy);background:transparent;color:var(--cy);border-radius:8px;padding:5px 10px;cursor:pointer}
+.q.done .t{text-decoration:line-through;color:var(--mute)}
+.q{cursor:pointer;justify-content:flex-start}.q .t{flex:1}.q input{width:20px;height:20px;accent-color:var(--cy);flex:none}.q .tag{background:var(--line);color:var(--mute)}
+.eva{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.eva div{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}.eva b{display:block;font-size:18px}.eva span{font-size:12px;color:var(--mute)}
+footer{font-size:12px;color:var(--mute);margin-top:20px}
+[hidden]{display:none!important}.banner{cursor:pointer;font-family:inherit}
+#alertsPage,#detPage{position:fixed;inset:0;z-index:50;background:rgba(2,8,18,.72);backdrop-filter:blur(3px);overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start}
+.inc{position:relative;width:100%;border-color:var(--warn);max-width:560px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}.inc .x{position:absolute;top:10px;right:10px;margin:0;width:32px;height:32px;padding:0;font-size:18px;line-height:1;border-radius:50%}.inc h2{margin:6px 0 0;font-size:20px}
+.eta{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0}.eta b{font-size:26px;color:var(--warn);font-variant-numeric:tabular-nums}
+.radar{background:#08162a;border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:12px;color:#cfe3f5;font-size:12px}.radar .rt{display:flex;justify-content:space-between;padding:2px 6px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.stats div{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}.stats b{display:block;font-size:20px}.stats span{font-size:12px;color:var(--mute)}
+.steps label{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}.steps label.done{border-color:var(--warn)}.steps input{width:20px;height:20px;accent-color:var(--warn);margin-top:2px;flex:none}.steps b{display:block}
+.novabox{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.primary{width:100%;font:inherit;font-weight:700;padding:12px;border:0;border-radius:10px;background:#f5a524;color:#1a0f00;cursor:pointer;margin-top:12px}.primary:disabled{background:var(--okbg);color:var(--ok);cursor:default}
+.linkbtn{width:100%;font:inherit;font-size:13px;padding:10px;margin-top:8px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer}
+.telem{margin-top:8px;font-size:13px}.telem div{display:flex;justify-content:space-between;padding:6px 2px;border-top:1px solid var(--line)}
+.chips button,.acts button,.back,.linkbtn,.primary,.moods button,.q{min-height:44px}.note,.row{font-size:14px}.inc .x{width:44px;height:44px}
+.etabar{display:block;width:100%;font:inherit;font-size:14px;font-weight:700;min-height:44px;margin:0 0 16px;border-radius:10px;border:1px solid var(--warn);background:var(--warnbg);color:var(--warn);cursor:pointer}
+.spark{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}#tabs button{flex:1;min-height:56px;font:inherit;font-size:13px;background:none;border:0;color:var(--mute);cursor:pointer}#tabs button:hover{color:var(--cy)}
+.ptab{width:100%;border-collapse:collapse;font-size:14px}.ptab th,.ptab td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}.ptab th{color:var(--mute);font-weight:500}
+.m h3{margin:4px 0;font-size:18px}.pd{margin:8px 0 0;font-size:14px}.pd dt{color:var(--mute);font-size:13px;margin-top:10px}.pd dd{margin:2px 0 0}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--cy) 38%,transparent),transparent 42%),radial-gradient(circle at 88% 28%,color-mix(in srgb,var(--warn) 26%,transparent),transparent 40%),radial-gradient(circle at 35% 92%,color-mix(in srgb,#7c4dff 32%,transparent),transparent 46%)}
+.card{background:color-mix(in srgb,var(--card) 52%,transparent);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 28%,transparent),0 8px 32px rgba(0,0,0,.18)}
+.inc.card{background:color-mix(in srgb,var(--card) 90%,transparent);border-color:var(--warn);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#tabs{background:color-mix(in srgb,var(--card) 58%,transparent);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.acts button,.back{font:inherit;font-size:13px;border:1px solid var(--cy);background:transparent;color:var(--cy);border-radius:8px;padding:6px 12px;cursor:pointer}.back{margin-bottom:14px}
+/* landing */
+#landing{--card:#0b1a2e;--line:#1b3550;--ink:#e6f1fb;--mute:#8aa3bb;--cy:#2fd8ff;position:fixed;inset:0;z-index:100;overflow-y:auto;color:var(--ink);color-scheme:dark;background:radial-gradient(ellipse at 50% 0%,#0d2745,#050d1a 70%)}
+#landing .in{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:calc(24px + env(safe-area-inset-top,0px)) 20px 140px;text-align:center}
+#landing .logo{width:min(560px,90vw);height:auto;overflow:visible}
+#landing .tag2{margin:0;font-size:15px;letter-spacing:.22em;color:var(--mute);max-width:30ch}
+.stars{position:absolute;inset:0;z-index:0;opacity:.75;background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#cfe9ff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),radial-gradient(1px 1px at 60px 180px,#fff,transparent),radial-gradient(1px 1px at 140px 150px,#cfe9ff,transparent);background-size:200px 200px}
+.horizon{position:fixed;left:0;right:0;bottom:0;height:24vh;overflow:hidden;z-index:1;pointer-events:none}
+.earth{position:absolute;left:50%;top:5vh;transform:translateX(-50%);width:min(150vw,1300px);aspect-ratio:1;border-radius:50%;background:radial-gradient(ellipse at 28% 6%,#3f9d5e 0 9%,transparent 20%),radial-gradient(ellipse at 60% 8%,#3f9d5e 0 7%,transparent 17%),radial-gradient(circle at 50% 0%,#58b7f2,#1f66b8 28%,#0a2a5e 60%,#050d1a 100%);box-shadow:0 -12px 50px 4px rgba(47,216,255,.5),inset 0 16px 50px rgba(160,220,255,.4)}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(560px,100%);margin-top:6px}
+@media(max-width:520px){.roles{grid-template-columns:1fr}}
+.role{display:flex;flex-direction:column;gap:4px;text-align:left;min-height:92px;padding:18px 22px;border-radius:16px;border:1px solid rgba(230,241,251,.24);background:rgba(11,26,46,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--ink);font:inherit;cursor:pointer;width:100%}
+.role b{font-size:22px}.role span{font-size:14px;color:var(--mute)}
+.role:hover{border-color:var(--cy)}.role.crew{border-color:var(--cy);box-shadow:0 0 24px rgba(47,216,255,.25)}
+.role:focus-visible{outline:2px solid var(--cy);outline-offset:3px}
+/* admin */
+.adm{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+.adm header{margin-bottom:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.tiles b{display:block;font-size:28px}.tiles span{font-size:13px;color:var(--mute)}
+.ptab td.f{color:var(--warn);font-weight:700}
+.ptab tr.cr{cursor:pointer}.ptab tr.cr:hover td{background:color-mix(in srgb,var(--cy) 10%,transparent)}.ptab tr.cr:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
+#cdPage,#gsPage{position:fixed;inset:0;z-index:60;background:rgba(2,8,18,.72);backdrop-filter:blur(3px);overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 16px;display:flex;justify-content:center;align-items:flex-start}
+#cdPage .inc,#gsPage .inc{max-width:640px;border-color:var(--line)}
+.qi{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.qi:first-child{border-top:0}
+.wl{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.wl:first-child{border-top:0}
+.lg{padding:6px 0;border-top:1px solid var(--line);font-size:14px}.lg:first-child{border-top:0}
+#cdPage ul{margin:6px 0 0;padding-left:20px}
+#banner{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:45;width:64px;height:64px;min-height:64px;padding:0;border-radius:50%;font-size:13px;line-height:1.1;text-align:center;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#banner:not(.ok){animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--warn) 55%,transparent)}70%,100%{box-shadow:0 0 0 14px transparent}}
+@media(prefers-reduced-motion:reduce){#banner{animation:none!important}}
+#crewApp>header{padding-right:80px}
+</style>
+</head>
+<body>
+<section id="landing" aria-label="Mooncare home">
+  <div class="stars" aria-hidden="true"></div>
+  <div class="horizon" aria-hidden="true"><div class="earth"></div></div>
+  <div class="in">
+    <svg class="logo" viewBox="30 55 690 465" role="img" aria-label="Moon Care">
+      <defs>
+        <linearGradient id="lgInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
+        <radialGradient id="lgMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+        <radialGradient id="lgGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".45"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle cx="480" cy="150" r="150" fill="url(#lgGlow)"/>
+      <g fill="none" stroke="url(#lgInk)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
+        <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="3"/><path d="M610 220V90L690 220V90"/>
+        <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
+        <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
+      </g>
+      <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#lgMoon)"/>
+      <g fill="#0d2745"><circle cx="437" cy="125" r="6"/><circle cx="447" cy="106" r="3"/><circle cx="438" cy="172" r="5"/><circle cx="448" cy="196" r="3"/><circle cx="433" cy="150" r="3"/></g>
+      <path d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535" fill="none" stroke="#2fd8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p class="tag2">A daily health panel for life beyond Earth</p>
+    <div class="roles">
+      <button class="role crew" id="goCrew" type="button"><b>Crew</b><span>Your daily check-in, vitals and checklist</span></button>
+      <button class="role" id="goAdmin" type="button"><b>Admin</b><span>Mission control: every crew member’s data</span></button>
+    </div>
+  </div>
+</section>
+
+<div class="adm" id="adminApp" hidden>
+  <header>
+    <h1>Mission control<small>Admin · Lunar Base Alpha · Sol 248</small></h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="back" id="gsOpen" type="button" style="margin:0">Summary for ground team</button>
+      <button class="back" id="admHome" type="button" style="margin:0">Switch role</button>
+    </div>
+  </header>
+  <div class="tiles" id="aTiles"></div>
+  <section class="card" style="margin-bottom:16px">
+    <h2>Needs you</h2>
+    <div id="aQueue"></div>
+  </section>
+  <section class="two">
+    <div class="card"><h2>Crew-wide check</h2><div id="aWide"></div></div>
+    <div class="card"><h2>Review log</h2><div id="aLog"></div></div>
+  </section>
+  <h2>All crew</h2>
+  <div class="chips" id="aChips" role="group" aria-label="Filter crew"></div>
+  <div class="card scroll" style="padding:6px"><table class="ptab" id="aTable"></table></div>
+  <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Eva’s row is live from the crew dashboard; the other crew are demo data.</p>
+</div>
+<section id="cdPage" role="dialog" aria-modal="true" aria-label="Crew member detail" hidden>
+  <div class="inc card">
+    <button class="back x" id="cdX" type="button" aria-label="Close detail">×</button>
+    <span class="tag" id="cdTag"></span>
+    <h2 id="cdName"></h2>
+    <p class="note" id="cdRole"></p>
+    <p id="cdWhy" style="margin:8px 0"></p>
+    <div class="grid" id="cdGrid" style="grid-template-columns:1fr 1fr;margin:12px 0"></div>
+    <p class="note" id="cdSeal"></p>
+    <div class="acts" id="cdAct"></div>
+  </div>
+</section>
+<section id="gsPage" role="dialog" aria-modal="true" aria-label="Summary for the ground team" hidden>
+  <div class="inc card">
+    <button class="back x" id="gsX" type="button" aria-label="Close summary">×</button>
+    <h2>Summary for the ground team</h2>
+    <p class="note">Plain text, ready to send when contact is available.</p>
+    <textarea id="gsText" readonly rows="14" aria-label="Summary text" style="width:100%;font:inherit;font-size:14px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px"></textarea>
+    <div class="acts"><button type="button" id="gsCopy">Copy text</button></div>
+    <p class="note" id="gsMsg"></p>
+  </div>
+</section>
+
+<div class="wrap" id="crewApp" hidden>
+<header>
+  <h1 style="display:flex;flex-direction:column;gap:6px">
+    <svg class="mini" viewBox="40 75 690 375" role="img" aria-label="Moon Care" style="width:112px;height:auto;overflow:visible">
+      <defs>
+        <linearGradient id="sgInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient>
+        <radialGradient id="sgMoon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+      </defs>
+      <rect x="40" y="75" width="690" height="375" rx="36" fill="#050d1a"/>
+      <g fill="none" stroke="url(#sgInk)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
+        <circle cx="480" cy="150" r="62" stroke="#2fd8ff" stroke-width="4"/><path d="M610 220V90L690 220V90"/>
+        <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
+        <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
+      </g>
+      <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#sgMoon)"/>
+    </svg>
+    <small>Sol 248 · Lunar Base Alpha · Online</small>
+  </h1>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <button id="homeBtn" class="back" type="button" style="margin:0">Switch role</button>
+    <button id="banner" class="banner" type="button"></button>
+  </div>
+</header>
+
+<button id="etaBar" class="etabar" type="button" hidden></button>
+<main id="home">
+<section class="hero">
+  <div class="card">
+    <h2>Good morning, Cmdr. Eva</h2>
+    <p class="note" style="margin-top:-6px">Lunar dawn cycle initialized. Sol 248 mission readiness starting.</p>
+    <div class="row"><span>14-sol streak</span><span>Level 8 astronaut</span></div>
+    <div class="xp"><i id="xpBar"></i></div>
+    <div class="row"><span id="xpNow">2,450 XP</span><span id="xpLeft">350 XP to Level 9</span></div>
+  </div>
+  <div class="card">
+    <h2>How are you feeling today?</h2>
+    <div class="moods" id="moods"></div>
+    <p id="moodMsg"></p>
+  </div>
+</section>
+
+<section class="card nova">
+  <div style="font-size:28px" aria-hidden="true">🤖</div>
+  <div><b>Dr. Nova AI</b> <span class="note">· Flight Surgeon · just now</span>
+  <p id="novaMsg" style="margin:4px 0 0"></p></div>
+</section>
+
+<h2>Morning telemetry</h2>
+<p class="note" id="sumline"></p>
+<div class="chips" id="chips" role="group" aria-label="Filter by body system"></div>
+<div class="grid" id="grid"></div>
+
+<section class="two">
+  <div class="card">
+    <h2>Heart rate through the sol</h2>
+    <div class="scroll"><svg id="hr" viewBox="0 0 440 150" role="img" aria-label="Hourly heart rate curve"></svg></div>
+    <p class="note">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
+  </div>
+  <div class="card">
+    <h2>Sleep architecture</h2>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <svg id="donut" viewBox="0 0 120 120" width="140" role="img" aria-label="Sleep stage split"></svg>
+      <ul class="legend" id="legend" style="flex:1;min-width:150px"></ul>
+    </div>
+    <p class="note">Circadian phase: synchronized. Rest score 94.</p>
+  </div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>Daily checklist</h2>
+    <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
+    <div id="quests"></div>
+  </div>
+  <div class="card">
+    <h2>Life support</h2>
+    <p class="note" hidden>Suit #MK-IV-A. Thermal regulators prepped for the 14:00 exterior walk.</p>
+    <div class="eva" hidden>
+      <div><b>4.3 PSI</b><span>Pressure, sealed</span></div>
+      <div><b>98.2%</b><span>O2 tank</span></div>
+      <div><b>21.5 °C</b><span>Thermal, nominal</span></div>
+    </div>
+    <div class="grid" style="margin:12px 0 0;grid-template-columns:1fr 1fr">
+      <div class="card m"><div class="top">SpO2</div><div class="val">99<small>%</small></div><p class="note">Crisp lunar O2</p></div>
+      <div class="card m"><div class="top">Radiation</div><div class="val">0.14<small> mSv</small></div><p class="note">Nominal shielding</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<section id="detPage" role="dialog" aria-modal="true" aria-label="Parameter history" hidden>
+  <div class="inc card" style="border-color:var(--line)">
+    <button class="back x" id="detX" type="button" aria-label="Close history">×</button>
+    <span class="tag" id="detMod" style="background:var(--line);color:var(--mute)"></span>
+    <h2 id="detName"></h2>
+    <div class="val" id="detVal"></div>
+    <div class="chips" id="detR" role="group" aria-label="Time range" style="margin:12px 0"></div>
+    <svg id="detSvg" viewBox="0 0 440 180" width="100%" role="img" aria-label="History chart"></svg>
+    <div class="stats" id="detStats" style="grid-template-columns:1fr 1fr 1fr;margin:12px 0"></div>
+    <p class="note">Demo history. The dashed line is the average for the selected range.</p>
+  </div>
+</section>
+<section id="paramPage" hidden>
+  <h2>Health parameters</h2>
+  <p class="note" style="margin-top:-6px">Monitored parameters with their current readings and status. Priority runs from L1 (severe) to L4. Readings are demo values.</p>
+  <div class="chips" id="pchips"></div>
+  <div class="card scroll" style="margin-bottom:16px;padding:6px"><table class="ptab" id="ptable"></table></div>
+  <div class="grid" id="pcards"></div>
+</section>
+<section id="alertsPage" role="dialog" aria-modal="true" aria-label="Potential incident warning" hidden>
+  <div class="inc card">
+    <button class="back x" id="back" type="button" aria-label="Close warning">×</button>
+    <span class="tag warn">Class X-2.4 solar flare</span>
+    <h2>Potential incident warning</h2>
+    <p class="note">Coronal mass ejection (CME) inbound</p>
+    <div class="eta"><span>ETA impact window</span><b id="eta" role="timer">00:18:42</b></div>
+    <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span>Tracking</span></div>
+    <svg viewBox="0 0 340 110" width="100%" role="img" aria-label="Solar shock wave moving toward the lunar base"><defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient></defs><g fill="none" stroke="#ff9a3c" stroke-opacity=".6"><path d="M85 25q22 30 0 60"/><path d="M105 18q30 37 0 74"/><path d="M125 11q38 44 0 88"/></g><circle cx="45" cy="55" r="30" fill="url(#sunG)"/><line x1="80" y1="55" x2="280" y2="55" stroke="#ffb84a" stroke-dasharray="4 4"/><rect x="150" y="45" width="70" height="20" rx="6" fill="#3a2a0a" stroke="#ffb84a"/><text x="185" y="59" text-anchor="middle" font-size="11" fill="#ffd27a">1,240 km/s</text><circle cx="300" cy="55" r="15" fill="#2fa8d8"/><circle cx="300" cy="55" r="22" fill="none" stroke="#2fd8ff" stroke-opacity=".5"/></svg></div>
+    <div class="stats"><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Deep bunker shield</span><b>99.45% eff.</b></div></div>
+    <div class="row" style="margin-bottom:8px"><b style="color:var(--ink)">Incident action protocol</b><span id="stepCount"></span></div>
+    <div class="steps" id="steps"></div>
+    <div class="novabox"><span aria-hidden="true">🤖</span><span><b>Dr. Nova AI:</b> “Eva, solar magnetic flux is spiking rapidly. Safe shelter window is 18 minutes. Take your rad-mitigation pack and proceed to shelter.”</span></div>
+    <button class="primary" id="seal" type="button"></button>
+    <button class="linkbtn" id="tele" type="button" aria-expanded="false">View solar radiation telemetry</button>
+    <div class="telem" id="telem" hidden><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Shock speed</span><b>1,240 km/s</b></div><div><span>Bunker shield efficiency</span><b>99.45%</b></div><div><span>Surface dose rate now</span><b>0.14 mSv, rising</b></div></div>
+  </div>
+</section>
+<nav id="tabs" aria-label="Sections"><button data-t="today">Today</button><button data-t="vitals">Vitals</button><button data-t="sleep">Sleep</button><button data-t="list">Checklist</button><button data-t="data">Data</button><button data-t="alerts">Alerts</button></nav>
+<footer>Demo data only. Mood is a confidential self-report and never triggers an automatic diagnosis.</footer>
+</div>
+
+<script>
+const M=[
+ {mod:"CARDIO",name:"Heart rate",val:72,unit:"bpm resting",base:66,tol:8,pri:"L3",
+  rule:"Tachycardia: resting HR stays above the personal baseline. Assess hydration, infection, stress and cardiovascular status.",
+  src:"Wearable ECG or smartwatch, continuous. On the ISS: Bio-Monitor shirt (CSA).",ds:"5 daily resting_hr for the alert; 5 hourly bpm for the curve. Real, Earth.",
+  test:m=>m.val>m.base+m.tol,msg:"Baseline "+66+" bpm",bar:v=>v/120},
+ {mod:"MIND",name:"Sleep duration",val:8.25,unit:"h (efficiency 94%)",base:7,pri:"L3",
+  rule:"Sleep deprivation: duration below the personal target. Adjust schedule and review factors.",
+  src:"Actigraphy and diary, wrist tracker, every night. On the ISS: Actiwatch (NASA).",ds:"5 daily minutesAsleep, sleep_efficiency. Real, Earth.",
+  test:m=>m.val<m.base,msg:"Target 7 h",bar:v=>v/10},
+ {mod:"MIND",name:"Mood",val:"Awesome",unit:"self-report today",pri:"L4",
+  rule:"Behavioural changes: deviations in self-report, sleep or activity. Confidential assessment, no automatic diagnosis.",
+  src:"Self-assessment on the tablet, daily.",ds:"5 categories: happy, sad, tense/anxious, alert, rested/relaxed, neutral. Real, Earth.",
+  test:()=>false,msg:"No deviation from your pattern"},
+ {mod:"IMMUNE",name:"Body temperature",val:36.6,unit:"°C skin, overnight",base:37.3,pri:"L2",
+  rule:"Possible infection: raised temperature plus symptoms. Start the infection assessment protocol.",
+  src:"Thermometer or wearable, daily. Bio-Monitor measures skin temperature.",ds:"5 daily nightly_temperature (skin, not core). Real, Earth.",
+  test:m=>m.val>=m.base,msg:"Alert above 37.3 °C",bar:v=>(v-34)/5},
+ {mod:"BONE",name:"Exercise",val:18,unit:"very active min",base:45,pri:"L3",
+  rule:"Insufficient exercise: resistance exercise below the prescribed programme. Notify the astronaut.",
+  src:"Wearable sensor, continuous, plus an exercise log on the tablet, daily.",ds:"5 daily very_active_minutes, steps. General activity, not resistance exercise, so it covers the alert only in part. Real, Earth.",
+  test:m=>m.val<m.base,msg:"Programme target 45 min",bar:v=>v/60},
+ {mod:"NUTRI",name:"Blood glucose",val:94,unit:"mg/dL",lo:70,hi:140,pri:"L2",
+  rule:"Abnormal glucose regulation: glucose outside the personal target. Metabolic assessment.",
+  src:"Glucometer or continuous monitor. A continuous monitor flew on Ax-4 in 2025.",ds:"1 glucose_value_milligram_per_deciliter. Real, astronauts.",
+  test:m=>m.val<m.lo||m.val>m.hi,msg:"Target 70–140 mg/dL",bar:v=>v/200}
+];
+const $=id=>document.getElementById(id);
+const st={};const inc={ack:false,done:[true,false,false,false]};
+var rg='1D';const HL={'1D':'24 h ago','5D':'5 days ago','1M':'30 days ago','Total':'Sol 1'},RL={'1D':'1D','5D':'5D','1M':'1M','Total':'total'},RN={'1D':24,'5D':20,'1M':30,'Total':40},BS={'Heart rate':[66,72,4],'Sleep duration':[7.3,8.25,.6],'Body temperature':[36.6,36.6,.12],'Exercise':[44,18,12],'Blood glucose':[94,94,8]};
+function SER(nm,r){r=r||rg;const b=BS[nm];if(!b)return null;const n=RN[r],t=[];for(let i=0;i<n;i++){const x=Math.sin((i+1)*12.9898+nm.length*78.233)*43758.5453;t.push(b[0]+((x-Math.floor(x))-.5)*2*b[2]*(r==='Total'?1.4:1))}t[n-1]=b[1];return t}
+const EX={'Heart rate':[['Resting HR','72 bpm'],['HRV (RMSSD)','48 ms'],['Recovery, 1 min','24 bpm drop'],['SpO2','99%'],['Breathing rate','14 /min'],['Baseline','66 bpm']],'Sleep duration':[['Efficiency','94%'],['Deep','17%'],['REM','20%'],['Awake','8%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.6 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','6,420'],['Very active','18 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','94 mg/dL'],['Target','70–140'],['Last reading','06:40']]};
+function meas(m){if(!BS[m.name])return'';const t=SER(m.name,'5D'),d=m.name==='Body temperature'?2:1,a=t.reduce((x,y)=>x+y)/t.length;return `<div class="note">5D avg ${a.toFixed(d)} · low ${Math.min(...t).toFixed(d)} · high ${Math.max(...t).toFixed(d)}</div>`+(m.name==='Heart rate'?`<div class="note">${EX[m.name].slice(0,3).map(x=>x[0]+' '+x[1]).join(' · ')}</div>`:'')}
+function HRS(t){const a=t.reduce((x,y)=>x+y)/t.length;$('hrStats').innerHTML=[['Now',t[t.length-1].toFixed(0)+' bpm'],['Average',a.toFixed(0)+' bpm'],['Low',Math.min(...t).toFixed(0)+' bpm'],['High',Math.max(...t).toFixed(0)+' bpm'],['Resting','72 bpm'],['HRV','48 ms']].map(s=>`<div><span>${s[0]}</span><b style="font-size:16px">${s[1]}</b></div>`).join('')}
+const TR={"Heart rate":[64,66,65,67,66,68,72],"Sleep duration":[7.1,6.8,7.4,7.9,7.2,7.6,8.25],"Body temperature":[36.5,36.6,36.5,36.7,36.6,36.5,36.6],"Exercise":[40,52,35,48,44,50,18],"Blood glucose":[91,97,88,102,95,93,94]};
+function spark(m){const t=SER(m.name,'5D');if(!t)return"";const mn=Math.min(...t),r=Math.max(...t)-mn||1,pts=t.map((v,i)=>i*118/(t.length-1)+","+(22-(v-mn)/r*20)).join(" "),d=t[t.length-1]-t.slice(0,-1).reduce((a,b)=>a+b)/(t.length-1);return `<div class="spark"><svg viewBox="0 0 120 24" width="120" height="24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg><span>${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(1)} vs 5D avg</span></div>`}
+let filter="All";
+function render(){
+  const alerts=M.filter(m=>m.test(m)&&!st[m.name]);
+  const bad=M.filter(m=>m.test(m)).length;$("sumline").textContent=(M.length-bad)+" of "+M.length+" nominal, worst first. Tap a card to see its history.";
+  const b=$("banner");
+  b.className="banner"+(inc.ack?" ok":"");
+  b.textContent=inc.ack?"Sealed":"Alert";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
+  $("novaMsg").textContent=alerts.length
+    ?"Your sleep was strong, but active minutes are below the prescribed programme. Let’s fit the flywheel workout in before the 14:00 EVA."
+    :"All readings look good. Let’s keep your routine steady before the 14:00 EVA.";
+  $("grid").innerHTML=M.filter(m=>filter==="All"||m.mod===filter).sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
+    const a=m.test(m);
+    return `<article class="card m" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span>${m.mod} · ${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
+    <div class="val">${m.val} <small>${m.unit}</small></div>
+    ${m.bar?`<div class="bar ${a?"warn":""}"><i style="width:${Math.min(100,Math.max(4,m.bar(m.val)*100))}%"></i></div>`:""}
+    <p class="note">${m.msg}</p>${spark(m)}
+    </article>`}).join("");
+  const mods=["All",...new Set(M.map(m=>m.mod))];
+  $("chips").innerHTML=mods.map(x=>`<button aria-pressed="${x===filter}" data-f="${x}">${x==="All"?"All systems":x}</button>`).join("");
+  document.querySelectorAll("#chips button").forEach(el=>el.onclick=()=>{filter=el.dataset.f;render()});
+}
+render();
+
+// mood
+const E=`<circle cx="24" cy="29" r="2.6" fill="#2b1408" stroke="none"/><circle cx="40" cy="29" r="2.6" fill="#2b1408" stroke="none"/>`;
+const BL=`<circle cx="17" cy="37" r="4" fill="#ff5d73" opacity=".35" stroke="none"/><circle cx="47" cy="37" r="4" fill="#ff5d73" opacity=".35" stroke="none"/>`;
+const moods=[
+["Awesome","Happy","#ffa24a","#e8501a",`<path d="M19 29q5-6 10 0M35 29q5-6 10 0"/><path d="M21 38q11 11 22 0"/>`+BL],
+["Great","Happy","#ffe35c","#f2b705",E+`<path d="M22 38q10 9 20 0"/>`],
+["Fine","Rested / relaxed","#ffc27a","#f08a3c",E+`<path d="M25 40q7 5 14 0"/>`+BL],
+["Okay","Neutral","#fff1a0","#e9cf4a",`<path d="M19 30q5 4 10 0M35 30q5 4 10 0"/><path d="M26 41h12"/>`],
+["Meh","Neutral","#d9dde3","#8a94a3",`<path d="M19 25l10 4M45 25l-10 4"/>`+E+`<path d="M25 42q7-4 14 0"/>`],
+["Anxious","Tense / anxious","#9ee89b","#3fae5a",`<circle cx="24" cy="28" r="4.5" fill="#fff"/><circle cx="40" cy="28" r="4.5" fill="#fff"/><circle cx="24" cy="28" r="1.6" fill="#2b1408" stroke="none"/><circle cx="40" cy="28" r="1.6" fill="#2b1408" stroke="none"/><rect x="22" y="38" width="20" height="9" rx="3" fill="#fff"/><path d="M27 38v9M32 38v9M37 38v9"/>`],
+["Bad","Sad","#8fd0f5","#3b86c4",`<path d="M19 28l10-4M45 28l-10-4"/>`+E+`<path d="M25 44q7-6 14 0"/><path d="M44 34q3 4 0 6q-3-2 0-6" fill="#d6f0ff" stroke="none"/>`],
+["Terrible","Sad","#c9a6f0","#7d4cc4",`<path d="M19 24l10 5M45 24l-10 5"/>`+E+`<path d="M24 44q8-8 16 0"/>`],
+["Upset","Tense / anxious","#ff7a70","#d02a2a",`<path d="M18 23l11 6M46 23l-11 6" stroke-width="3.4"/>`+E+`<path d="M24 45q8-9 16 0"/>`]
+];
+function face(i){const f=moods[i];return `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="fg${i}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${f[2]}"/><stop offset="1" stop-color="${f[3]}"/></radialGradient></defs><circle cx="32" cy="32" r="29" fill="url(#fg${i})"/><ellipse cx="24" cy="15" rx="13" ry="6" fill="#fff" opacity=".3"/><g fill="none" stroke="#2b1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${f[4]}</g></svg>`}
+let mood=0;
+function drawMoods(){
+  $("moods").innerHTML=moods.map((x,i)=>`<button aria-pressed="${i===mood}" data-i="${i}">${face(i)}${x[0]}</button>`).join("");
+  $("moodMsg").textContent="Logged: "+moods[mood][0]+" (+15 XP). Recorded as "+moods[mood][1].toLowerCase()+". Your answer stays private.";
+  document.querySelectorAll("#moods button").forEach(el=>el.onclick=()=>{
+    mood=+el.dataset.i;drawMoods();
+    M[2].val=moods[mood][0];Q[1][3]=true;drawQ();save();
+    M[2].test=()=>false;render();
+  });
+}
+drawMoods();
+
+// heart rate chart
+const bpm=[58,56,55,54,54,55,58,64,72,70,68,66,69,71,67,66,70,74,68,65,62,60,58,57];
+function drawHR(){
+  const W=440,H=150,p=24,mx=90,mn=50;
+  const x=i=>p+i*(W-2*p)/(bpm2.length-1),y=v=>H-p-(v-mn)/(mx-mn)*(H-2*p);
+  const bpm2=SER("Heart rate","1D"),pts=bpm2.map((v,i)=>x(i)+","+y(v)).join(" ");
+  $("hr").innerHTML=`<rect x="${p}" y="${y(80)}" width="${W-2*p}" height="${y(60)-y(80)}" fill="var(--cy)" opacity=".08"/>${[50,60,70,80,90].map(v=>`<line x1="${p}" x2="${W-p}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p-5}" y="${y(v)+3}" text-anchor="end" font-size="10" fill="var(--mute)">${v}</text>`).join("")}<line x1="${p}" x2="${W-p}" y1="${y(66)}" y2="${y(66)}" stroke="var(--mute)" stroke-dasharray="4 4"/>
+  <polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linejoin="round"/>
+  <text x="${p}" y="${H-6}" font-size="11" fill="var(--mute)">24 h ago</text><text x="${W-p}" y="${H-6}" font-size="11" text-anchor="end" fill="var(--mute)">now</text>
+  <text x="${x(5.75)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">18 h</text><text x="${x(11.5)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">12 h</text><text x="${x(17.25)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">6 h</text>`;
+}drawHR();
+
+// sleep donut
+(function(){
+  const s=[["REM",20,"var(--cy)"],["Deep",17,"#3b82f6"],["Light",55,"#7c9cc4"],["Wake",8,"var(--line)"]];
+  const r=46,c=2*Math.PI*r;let off=0,h="";
+  s.forEach(a=>{const l=c*a[1]/100;h+=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${a[2]}" stroke-width="14" stroke-dasharray="${l} ${c-l}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=l});
+  $("donut").innerHTML=h+`<text x="60" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">8h 15m</text>`;
+  $("legend").innerHTML=s.map(a=>`<li><span><i class="dot" style="background:${a[2]}"></i>${a[0]}</span><b>${a[1]}%</b></li>`).join("");
+})();
+
+// quests
+const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
+function drawQ(){
+  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),cur=2450+xp-55;$("xpNow").textContent=cur.toLocaleString("en-US")+" XP";$("xpLeft").textContent=Math.max(0,2800-cur)+" XP to Level 9";$("xpBar").style.width=Math.min(100,cur/2800*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
+  $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
+  $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div><span class="tag">${q[2]}</span></label>`).join("");
+  document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{Q[+el.dataset.i][3]=el.checked;drawQ();save()});
+}
+drawQ();
+// incident page
+const STEPS=[["Immediate EVA recall","Abort lunar surface operations and return to airlock"],["Airlock seal and magnetic deflector","Lock primary habitat hatch and charge coil array"],["Move to regolith storm shelter","Crew report to Sub-Surface Bunker Level 3"],["Biometric sync and dosimeter calibration","Telemetry streaming to Alpha Station AI"]];
+function drawAlerts(){
+  const n=inc.done.filter(Boolean).length;
+  $("stepCount").textContent=n+" of 4 done";
+  $("steps").innerHTML=STEPS.map((s,i)=>`<label class="${inc.done[i]?"done":""}"><input type="checkbox" data-i="${i}" ${inc.done[i]?"checked":""}><span><b>${s[0]}</b><span class="note">${s[1]}</span></span></label>`).join("");
+  const sb=$("seal");sb.disabled=inc.ack;sb.textContent=inc.ack?"Habitat sealed and incident acknowledged":"Acknowledge and seal habitat";
+}
+$("steps").onchange=e=>{inc.done[+e.target.dataset.i]=e.target.checked;drawAlerts();save()};
+let armed=0;$("seal").onclick=()=>{const b=$("seal");if(!armed){armed=setTimeout(()=>{armed=0;drawAlerts()},4000);b.textContent="Tap again to confirm seal";return}clearTimeout(armed);armed=0;inc.ack=true;inc.done[1]=true;drawAlerts();render();save()};
+$("tele").onclick=e=>{const t=$("telem");t.hidden=!t.hidden;e.currentTarget.setAttribute("aria-expanded",String(!t.hidden))};
+let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true}
+setInterval(()=>{if(eta>0)eta--;tick()},1000);
+var pv='core';
+const P2=[
+['Radiation dose','VITAL','L2','0.14 mSv today','ok','Radiation exposure warning. Cumulative dose near or over mission limits. Radiation protection protocol.','Wearable dosimeter and detectors, continuous. RadLab has readings from dosimeters inside ISS modules.','4 · absorbed_dose_rate (μGy/hour). Real, measured in orbit.'],
+['White cells and lymphocytes','IMMUNE','L2','WBC 6.1, lymphocytes 1.9 (×10⁹/L)','ok','Lymphocyte reduction. Count falls well below baseline. Flag immune suppression and repeat the test.','Portable haematology analyser, finger blood, periodically.','2 · white_blood_cell_count_value, absolute_lymphocytes_value. Real, astronauts.'],
+['Inflammation markers (IL-6, IL-1β, TNF-α, IFN-γ)','IMMUNE','L2','IL-6 2.1 pg/mL','ok','Increased inflammation. Any of them above baseline. Assess infection, inflammation and stress.','Microfluidic analyser, venous blood, periodically.','3 · IL-6 and TNF-α in the Eve file, IL-1β and IFN-γ in the Alamar file. Real, astronauts.'],
+['Electrolytes (sodium, potassium, chloride)','NUTRI','L2','Na 140, K 4.2, Cl 102 mmol/L','ok','Electrolyte imbalance. Outside limits. Repeat the test, clinical review.','Portable chemistry analyser, finger blood, periodically.','1 · sodium_value, potassium_value, chloride_value. Real, astronauts.'],
+['Kidney function (creatinine, urea, eGFR)','VITAL','L2','Creatinine 0.9 mg/dL, eGFR 98','ok','Renal deterioration. Creatinine up or eGFR down against baseline. Renal assessment.','Portable analyser, finger or venous blood, periodically.','1 · creatinine_value, urea_nitrogen_bun_value, egfr_value. Real, astronauts.'],
+['Haemoglobin and albumin','NUTRI','L3','Hb 14.2, albumin 4.3 g/dL','ok','Nutritional deficiency risk. Abnormal values. Targeted nutritional assessment.','Portable haematology and chemistry analysers, periodically.','2 · hemoglobin_value_percent. 1 · albumin_value_gram_per_deciliter. Real, astronauts.'],
+['Blood calcium, CRP, fibrinogen','NUTRI, CARDIO','L3','Calcium 9.4 mg/dL','na','Not in ASTRA-HEALTH as such. Blood calcium relates to its calcium alerts, which use diet and urine. CRP and fibrinogen have no alert in ASTRA-HEALTH, so what they would trigger is still to be defined.','Blood test, periodically.','1 · calcium_value. 3 · crp_concentration, fibrinogen_concentration. Real, astronauts.'],
+['Blood oxygen (SpO2)','CARDIO','L1 if severe, else L2','99%','ok','Reduced SpO2. Below threshold or falling from baseline. Repeat, assess respiratory and cardiovascular status.','Pulse oximeter, daily or continuous. Bio-Monitor.','5 daily · spo2. Real, Earth.'],
+['Breathing rate','VITAL','L2','14 breaths/min asleep','ok','Respiratory dysfunction. Abnormal rate or symptoms. Respiratory assessment.','Wearable sensor, continuous or daily. Bio-Monitor.','5 daily · full_sleep_breathing_rate (during sleep). Real, Earth.'],
+['Heart rate variability','CARDIO, MIND','L3','RMSSD 48 ms','na','No alert of its own. It is the physiological stress signal and it feeds the cross-module sleep alert.','ECG or wearable, continuous or daily trend. Bio-Monitor.','5 daily · rmssd. Real, Earth.'],
+['Stress','MIND','L3','Score 32, steady','ok','Increased stress. Rising from baseline. Stress management and reassess.','PSS questionnaire on the tablet, daily or weekly.','5 daily · stress_score (computed by the watch, not PSS). Real, Earth.'],
+['Fatigue','MIND','L3','Not tired','ok','Increased fatigue. Persistently high scores. Assess sleep, workload, nutrition and physiology.','Questionnaire on the tablet, daily.','5 · TIRED. Real, Earth.'],
+['Sleep stages and awakenings','MIND','L3','REM 20%, deep 17%, wake 8%','ok','Reduced sleep quality. Lower efficiency or frequent awakenings. Assess environment, stress and circadian rhythm.','Actigraphy, wrist tracker, every night.','5 daily · minutesAwake, sleep_deep_ratio, sleep_rem_ratio. Real, Earth.'],
+['Cardiovascular fitness','CARDIO','L3','VO2max 46 (estimated)','ok','Reduced cardiovascular fitness. Review conditioning and tolerance.','Wearable ECG or HR monitor in a standard exercise.','5 daily · filteredDemographicVO2Max (estimated by the watch). ASTRA-HEALTH defines this alert by HR and recovery in a standard exercise, which this estimate does not measure directly. Real, Earth.'],
+['Anxiety and affect questionnaires','MIND','L3','Not due this week','ok','Anxiety symptoms. Rising scores. Confidential psychological support.','GAD-7 and PHQ-9 on the tablet, weekly or periodically.','5 surveys · stai_stress and positive_affect_score, negative_affect_score. Different questionnaires (STAI, PANAS), no depression score. Real, Earth.']];
+function tg(s){return s==='ok'?'<span class="tag ok">Nominal</span>':s==='warn'?'<span class="tag warn">Alert</span>':'<span class="tag" style="background:var(--line);color:var(--mute)">No alert defined</span>'}
+function drawMore(){
+  $('ptable').innerHTML='<tr><th>Parameter</th><th>Module</th><th>Priority</th><th>Reading</th><th>Status</th></tr>'+P2.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${tg(p[4])}</td></tr>`).join('');
+  $('pcards').innerHTML=P2.map(p=>`<article class="card m"><div class="top"><span>${p[1]} · priority ${p[2]}</span>${tg(p[4])}</div><h3>${p[0]}</h3><div class="val" style="font-size:20px">${p[3]}</div></article>`).join('');
+}
+$('pchips').onclick=e=>{const b=e.target.closest('button');if(b){pv=b.dataset.v;drawParams()}};
+function drawParams(){
+  $('pchips').innerHTML=[['core','Core 6'],['more','Labs and advanced (15)']].map(x=>`<button aria-pressed="${pv===x[0]}" data-v="${x[0]}">${x[1]}</button>`).join('');
+  if(pv==='core')drawCore();else drawMore();
+}
+function drawCore(){
+  $("ptable").innerHTML="<tr><th>Parameter</th><th>Module</th><th>Priority</th><th>Reading</th><th>Status</th></tr>"+M.map(m=>{const a=m.test(m);return `<tr><td>${m.name}</td><td>${m.mod}</td><td>${m.pri}</td><td>${m.val} ${m.unit}</td><td><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></td></tr>`}).join("");
+  $("pcards").innerHTML=M.map(m=>{const a=m.test(m);return `<article class="card m"><div class="top"><span>${m.mod} · priority ${m.pri}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div><h3>${m.name}</h3><div class="val">${m.val} <small>${m.unit}</small></div><p class="note">${m.msg}</p></article>`}).join("");
+}
+function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
+function route(){const v=view();$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
+  if(v==="admin")drawAdmin();
+  if(v!=="crew"){$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
+  const a=location.hash==="#alerts",p=location.hash==="#parameters";$("home").hidden=p;$("paramPage").hidden=!p;$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew")location.hash="dashboard"});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
+$("banner").onclick=()=>{location.hash="alerts"};
+$("back").onclick=()=>{location.hash="dashboard"};
+window.addEventListener("hashchange",route);
+var ready=false;function save(){if(!ready)return;try{localStorage.setItem("mooncare-v1",JSON.stringify({mood,ack:inc.ack,done:inc.done,q:Q.map(q=>q[3])}))}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem("mooncare-v1")||"null");if(s){mood=s.mood;inc.ack=s.ack;inc.done=s.done;s.q.forEach((v,i)=>{Q[i][3]=v});M[2].val=moods[mood][0];drawMoods();drawQ();render()}}catch(e){}
+ready=true;
+var di=-1;
+function drawDet(){const m=M[di],t=SER(m.name),mn=Math.min(...t),mx=Math.max(...t),av=t.reduce((a,b)=>a+b)/t.length,W=440,H=180,p=28,y=v=>H-p-(v-mn)/((mx-mn)||1)*(H-2*p),x=i=>p+i*(W-2*p)/(t.length-1),f=v=>v.toFixed(m.name==="Body temperature"?2:1);
+  $("detMod").textContent=m.mod;$("detName").textContent=m.name;$("detVal").innerHTML=m.val+" <small>"+m.unit+"</small>";
+  $("detR").innerHTML=["1D","5D","1M","Total"].map(r=>`<button aria-pressed="${rg===r}" data-r="${r}">${r}</button>`).join("");
+  $("detSvg").innerHTML=`<line x1="${p}" x2="${W-p}" y1="${y(av)}" y2="${y(av)}" stroke="var(--mute)" stroke-dasharray="4 4"/><polyline points="${t.map((v,i)=>x(i)+","+y(v)).join(" ")}" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${x(t.length-1)}" cy="${y(t[t.length-1])}" r="4" fill="var(--cy)"/><text x="${p}" y="${H-6}" font-size="11" fill="var(--mute)">${HL[rg]}</text><text x="${W-p}" y="${H-6}" font-size="11" text-anchor="end" fill="var(--mute)">now</text>`;
+  $("detStats").innerHTML=[["Low",mn],["Average",av],["High",mx]].map(s=>`<div><span>${s[0]}</span><b>${f(s[1])}</b></div>`).join("")}
+function openDet(i){di=i;rg="1D";drawDet();$("detPage").hidden=false;document.body.style.overflow="hidden";$("detX").focus()}
+function closeDet(){$("detPage").hidden=true;if($("alertsPage").hidden)document.body.style.overflow=""}
+$("detR").onclick=e=>{const b=e.target.closest("button");if(b){rg=b.dataset.r;drawDet()}};$("detX").onclick=closeDet;$("detPage").onclick=e=>{if(e.target.id==="detPage")closeDet()};
+$("grid").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dataset.i)};$("grid").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDet()});
+$("etaBar").onclick=()=>{location.hash="alerts"};
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.dataset.t;if(k==="alerts"){location.hash="alerts";return}if(k==="data"){location.hash="parameters";return}if(location.hash==="#parameters"){location.hash="dashboard";setTimeout(()=>b.click(),60);return}({today:$("home"),vitals:$("chips"),sleep:$("donut").closest(".card"),list:$("quests").closest(".card")})[k].scrollIntoView({behavior:"smooth",block:"start"})});
+// landing and role switching
+$("goCrew").onclick=()=>{location.hash="crew"};
+$("goAdmin").onclick=()=>{location.hash="admin"};
+$("homeBtn").onclick=()=>{location.hash="landing"};
+$("admHome").onclick=()=>{location.hash="landing"};
+
+// admin: all crew data
+const CREW=[
+ {n:"Cmdr. Eva",r:"Mission commander",live:true,spo2:99,dose:.14,cum:18.4,sm:0,b:{hr:66,sleep:7.3,temp:36.6,act:44,glu:94}},
+ {n:"Dr. Kenji Mori",r:"Flight surgeon",hr:62,spo2:99,sleep:7.6,temp:36.5,act:52,glu:90,dose:.12,cum:17.9,chk:7,seal:true,sm:1,b:{hr:62,sleep:7.5,temp:36.5,act:50,glu:90}},
+ {n:"Amara Okafor",r:"Geologist",hr:66,spo2:98,sleep:7.2,temp:36.6,act:58,glu:96,dose:.19,cum:19.6,chk:6,seal:true,sm:3,b:{hr:65,sleep:7.3,temp:36.6,act:56,glu:95}},
+ {n:"Mateo Vargas",r:"Systems engineer",hr:78,spo2:96,sleep:6.4,temp:37.5,act:47,glu:101,dose:.16,cum:18.1,chk:3,seal:false,sm:2,b:{hr:64,sleep:7.2,temp:36.6,act:52,glu:98}},
+ {n:"Ingrid Solheim",r:"Biologist",hr:70,spo2:98,sleep:5.9,temp:36.7,act:30,glu:92,dose:.13,cum:17.5,chk:4,seal:true,sm:190,b:{hr:68,sleep:7.4,temp:36.6,act:48,glu:93}},
+ {n:"Priya Nair",r:"Pilot",hr:64,spo2:99,sleep:7.8,temp:36.4,act:61,glu:152,dose:.15,cum:18.8,chk:5,seal:true,sm:4,b:{hr:63,sleep:7.7,temp:36.4,act:58,glu:100}}
+];
+const rvw={},seen={},LOG=[];let cf="All",cdi=-1;
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const nowT=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+function age(m){if(m<1)return"just now";if(m<60)return m+" min ago";const h=Math.floor(m/60),r=m%60;return h+" h"+(r?" "+r+" min":"")+" ago"}
+function crow(c){return c.live?Object.assign({},c,{hr:M[0].val,sleep:M[1].val,temp:M[3].val,act:M[4].val,glu:M[5].val,chk:Q.filter(q=>q[3]).length,seal:inc.ack}):c}
+function flags(c){const f=[];
+  if(c.hr>74)f.push(["hr","Heart rate above the personal baseline",0]);
+  if(c.spo2<95)f.push(["spo2","SpO2 below 95%",1]);
+  if(c.sleep<7)f.push(["sleep","Sleep below the 7 h target",0]);
+  if(c.temp>=37.3)f.push(["temp","Raised skin temperature: start the infection assessment",1]);
+  if(c.act<45)f.push(["act","Exercise below the prescribed programme",0]);
+  if(c.glu<70||c.glu>140)f.push(["glu","Glucose outside 70–140 mg/dL: metabolic assessment",1]);
+  if(c.sm>60)f.push(["sync","No data for "+age(c.sm).replace(" ago","")+": check the wearable",0]);
+  return f}
+const SH={hr:"high resting heart rate",sleep:"short sleep",temp:"raised temperature",act:"low exercise",glu:"glucose out of range",spo2:"low SpO2",sync:"no recent data"};
+function reason(c){const k=flags(c).map(x=>x[0]),L=a=>a.length>1?a.slice(0,-1).join(", ")+" and "+a[a.length-1]:(a[0]||"");
+  if(k.includes("temp")&&(k.includes("hr")||k.includes("sleep")))return"Possible infection pattern: "+L(k.map(x=>SH[x]))+". Start the infection assessment.";
+  const s=L(k.map(x=>SH[x]));return s.charAt(0).toUpperCase()+s.slice(1)+"."}
+function sev(c){const f=flags(c),k=f.map(x=>x[0]);return f.reduce((s,x)=>s+(x[2]?10:2),0)+(k.includes("temp")&&(k.includes("hr")||k.includes("sleep"))?5:0)}
+function cstat(c){const f=flags(c);if(!f.length)return["ok","Nominal"];if(rvw[c.n])return["ok","Reviewed"];return[f.some(x=>x[2])?"bad":"warn","Needs review"]}
+function ser7(c,key){const b=c.b[key],cur=c[key];let h=0;for(const ch of c.n+key)h=(h*31+ch.charCodeAt(0))%9973;const amp=Math.max(Math.abs(cur-b)*.15,key==="temp"?.05:.6);
+  return[0,1,2,3,4,5,6].map(i=>{if(i===6)return cur;h=(h*131+7)%9973;return b+(cur-b)*Math.pow(i/6,1.6)+(h/9973-.5)*2*amp})}
+function sp(v){const mn=Math.min(...v),r=Math.max(...v)-mn||1;return`<svg viewBox="0 0 84 24" width="84" height="24" aria-hidden="true"><polyline points="${v.map((x,i)=>i*14+","+(22-(x-mn)/r*20)).join(" ")}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg>`}
+function drawAdmin(){
+  const rows=CREW.map(crow),n=rows.length;
+  const queue=rows.map((c,i)=>[c,i]).filter(([c])=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b[0])-sev(a[0]));
+  const unseen=queue.filter(([c])=>!seen[c.n]).length,nosync=rows.filter(c=>c.sm>60).length,sealed=rows.filter(c=>c.seal).length;
+  $("aTiles").innerHTML=[["Need you",queue.length,queue.length?"Ranked below":"All clear"],["New since last look",unseen,unseen?"Not opened yet":"All opened"],["Not syncing",nosync,nosync?"Over 1 hour without data":"Everyone is reporting"],["Habitats sealed",sealed+" of "+n,"Solar flare X-2.4"]].map(t=>`<div class="card"><span>${t[0]}</span><b>${t[1]}</b><span>${t[2]}</span></div>`).join("");
+  $("aQueue").innerHTML=queue.length?queue.map(([c,i])=>{const s=cstat(c);return`<div class="qi"><div><b>${c.n}</b> <span class="tag ${s[0]}">${s[1]}</span>${seen[c.n]?"":' <span class="tag" style="background:var(--cy);color:#04121f">New</span>'}<div class="note" style="margin:2px 0 0">${reason(c)}</div></div><span class="acts" style="margin:0"><button type="button" data-i="${i}">Open</button></span></div>`}).join(""):'<p class="note">Nothing needs review. Reviewed items stay in the log.</p>';
+  const cnt=k=>rows.filter(c=>flags(c).some(x=>x[0]===k)).length,avg=k=>rows.reduce((s,c)=>s+c[k],0)/n,cums=rows.map(c=>c.cum);
+  const pat=[["sleep","short sleep"],["temp","raised temperature"],["hr","high heart rate"],["act","low exercise"]].filter(p=>cnt(p[0])>=Math.ceil(n/2)).map(p=>p[1]);
+  $("aWide").innerHTML=[["Sleep below 7 h",cnt("sleep")+" of "+n+" · average "+avg("sleep").toFixed(1)+" h"],["Raised temperature",cnt("temp")+" of "+n],["Heart rate above baseline",cnt("hr")+" of "+n],["Not syncing",cnt("sync")+" of "+n],["Total radiation dose",Math.min(...cums).toFixed(1)+" to "+Math.max(...cums).toFixed(1)+" mSv, no limit set"]].map(r=>`<div class="wl"><span>${r[0]}</span><b>${r[1]}</b></div>`).join("")+`<p class="note">${pat.length?"Crew-wide pattern: "+pat.join(", ")+". Check the environment or the schedule before treating these as individual problems.":"No crew-wide pattern. The flags are individual."}</p>`;
+  $("aLog").innerHTML=LOG.length?LOG.slice(0,8).map(e=>`<div class="lg"><b>${e.t}</b> ${esc(e.a)}${e.note?`<div class="note" style="margin:2px 0 0">${esc(e.note)}</div>`:""}</div>`).join(""):'<p class="note">No reviews yet. Marking a crew member as reviewed is logged here with your note.</p>';
+  $("aChips").innerHTML=["All","Needs review","Nominal"].map(x=>`<button aria-pressed="${cf===x}" data-f="${x}">${x}</button>`).join("");
+  const sh=rows.map((c,i)=>[c,i]).sort((a,b)=>(cstat(b[0])[1]==="Needs review")-(cstat(a[0])[1]==="Needs review")||sev(b[0])-sev(a[0])).filter(([c])=>{const s=cstat(c)[1];return cf==="All"||(cf==="Needs review"?s==="Needs review":s!=="Needs review")});
+  const fc=(c,k,v)=>`<td class="${flags(c).some(x=>x[0]===k)?"f":""}">${v}</td>`;
+  $("aTable").innerHTML="<tr><th>Crew member</th><th>Status</th><th>Heart rate</th><th>SpO2</th><th>Sleep</th><th>Skin temp</th><th>Active min</th><th>Glucose</th><th>Dose today</th><th>Total dose</th><th>Checklist</th><th>Last data</th></tr>"+(sh.length?sh.map(([c,i])=>{const s=cstat(c);return`<tr class="cr" tabindex="0" data-i="${i}"><td><b>${c.n}</b><div class="note" style="margin:0">${c.r}</div></td><td><span class="tag ${s[0]}">${s[1]}</span></td>${fc(c,"hr",c.hr+" bpm")}${fc(c,"spo2",c.spo2+"%")}${fc(c,"sleep",c.sleep+" h")}${fc(c,"temp",c.temp+" °C")}${fc(c,"act",c.act)}${fc(c,"glu",c.glu)}<td>${c.dose} mSv</td><td>${c.cum} mSv</td><td>${c.chk} of ${Q.length}</td>${fc(c,"sync",age(c.sm))}</tr>`}).join(""):'<tr><td colspan="12">No crew match this filter.</td></tr>');
+}
+function drawCD(){
+  const c=crow(CREW[cdi]),f=flags(c),s=cstat(c),fk=new Set(f.map(x=>x[0]));
+  $("cdName").textContent=c.n;$("cdRole").textContent=c.r+" · last data "+age(c.sm);
+  $("cdTag").className="tag "+s[0];$("cdTag").textContent=s[1];
+  $("cdWhy").textContent=f.length?reason(c):"No flags. All readings are in range.";
+  const tr=[["hr","Heart rate","bpm","Flag above 74",0],["sleep","Sleep","h","Target 7 h",1],["temp","Skin temperature","°C","Flag at 37.3 or above",2],["act","Very active","min","Programme 45 min",0],["glu","Blood glucose","mg/dL","Target 70–140",0]];
+  const g=tr.map(t=>{const v=ser7(c,t[0]),d=c[t[0]]-c.b[t[0]],dd=t[0]==="temp"?2:1;return`<div class="card m"><div class="top"><span>${t[1]}</span>${fk.has(t[0])?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${c[t[0]]} <small>${t[2]}</small></div><div class="spark">${sp(v)}<span>7 days</span></div><p class="note">Own baseline ${c.b[t[0]]}, now ${d>=0?"+":""}${d.toFixed(dd)}. ${t[3]}.</p></div>`}).join("");
+  const o=[["SpO2",c.spo2+"%","Flag below 95%",fk.has("spo2")],["Radiation today",c.dose+" mSv","Daily reading",0],["Total radiation dose",c.cum+" mSv","No limit set yet. Add one with its source.",0],["Checklist",c.chk+" of "+Q.length,"Done today",0],["Last data",age(c.sm),"Flag after 1 hour",fk.has("sync")]];
+  $("cdGrid").innerHTML=g+o.map(m=>`<div class="card m"><div class="top"><span>${m[0]}</span>${m[3]?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${m[1]}</div><p class="note">${m[2]}</p></div>`).join("");
+  $("cdSeal").textContent="Habitat sealed for the solar flare: "+(c.seal?"yes":"not yet")+". Mood is private to the crew member.";
+  $("cdAct").innerHTML=f.length?(rvw[c.n]?'<button type="button" data-a="re">Reopen</button>':'<input id="cdNote" type="text" placeholder="Note (optional)" aria-label="Review note" style="font:inherit;min-height:44px;flex:1;min-width:160px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:transparent;color:var(--ink)"><button type="button" data-a="rv">Mark reviewed</button>'):"";
+}
+function openCD(i){cdi=i;seen[CREW[i].n]=true;drawCD();drawAdmin();$("cdPage").hidden=false;document.body.style.overflow="hidden";$("cdX").focus()}
+function closeCD(){$("cdPage").hidden=true;document.body.style.overflow=""}
+function gsText(){
+  const rows=CREW.map(crow),q=rows.filter(c=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b)-sev(a)),d=new Date().toLocaleDateString([],{day:"numeric",month:"short"});
+  let t="Mooncare crew status, Sol 248 ("+d+", "+nowT()+")\nCrew: "+rows.length+". Need review: "+q.length+". Not syncing: "+rows.filter(c=>c.sm>60).length+". Habitats sealed: "+rows.filter(c=>c.seal).length+" of "+rows.length+".\n";
+  t+=q.length?"\nNeeds review:\n"+q.map(c=>"- "+c.n+" ("+c.r+"): "+reason(c)).join("\n"):"\nNo open flags.";
+  const rv=LOG.filter(e=>e.a.startsWith("Reviewed"));
+  if(rv.length)t+="\n\nReviewed today:\n"+rv.map(e=>"- "+e.t+" "+e.a.replace("Reviewed ","")+(e.note?": "+e.note:"")).join("\n");
+  t+="\n\nRadiation: total dose per person is reported, but no mission limit is set yet.\nMood data is private and is not included.";
+  return t}
+$("gsOpen").onclick=()=>{$("gsText").value=gsText();$("gsMsg").textContent="";$("gsPage").hidden=false;document.body.style.overflow="hidden";$("gsX").focus()};
+function closeGS(){$("gsPage").hidden=true;document.body.style.overflow=""}
+$("gsX").onclick=closeGS;$("gsPage").onclick=e=>{if(e.target.id==="gsPage")closeGS()};
+$("gsCopy").onclick=()=>{const t=$("gsText");t.select();let ok=false;try{if(navigator.clipboard){navigator.clipboard.writeText(t.value);ok=true}else ok=document.execCommand("copy")}catch(e){try{ok=document.execCommand("copy")}catch(e2){}}$("gsMsg").textContent=ok?"Copied to the clipboard.":"Could not copy automatically. The text is selected: copy it with your device’s copy command."};
+$("aChips").onclick=e=>{const b=e.target.closest("button");if(b){cf=b.dataset.f;drawAdmin()}};
+$("aQueue").onclick=e=>{const b=e.target.closest("button[data-i]");if(b)openCD(+b.dataset.i)};
+$("aTable").onclick=e=>{const r=e.target.closest("tr[data-i]");if(r)openCD(+r.dataset.i)};
+$("aTable").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const r=e.target.closest("tr[data-i]");if(r){e.preventDefault();openCD(+r.dataset.i)}}};
+$("cdAct").onclick=e=>{const b=e.target.closest("button");if(!b)return;const n=CREW[cdi].n;if(b.dataset.a==="rv"){const nt=$("cdNote").value.trim();rvw[n]=true;LOG.unshift({t:nowT(),a:"Reviewed "+n,note:nt})}else{delete rvw[n];LOG.unshift({t:nowT(),a:"Reopened "+n})}drawCD();drawAdmin()};
+$("cdX").onclick=closeCD;$("cdPage").onclick=e=>{if(e.target.id==="cdPage")closeCD()};
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("gsPage").hidden)closeGS();else if(!$("cdPage").hidden)closeCD()});
+route();tick();
+</script>
+</body>
+</html>
