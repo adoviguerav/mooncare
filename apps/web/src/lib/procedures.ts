@@ -27,7 +27,7 @@ export type ProcedureStep = {
   record?: { title: string; fields: string[] }
   // Entries of the manual to look up, such as the drugs of a treatment. Shown on screen, read aloud only on request.
   reference?: { title: string; lines: string[] }[]
-  // The decision that picks the next step. The wording of the choices is the manual's.
+  // The decision that picks the next step. In 1.102 the choices are the manual's words; elsewhere they are ours.
   question?: string
   options: StepOption[]
 }
@@ -153,7 +153,7 @@ export const AED_ASSISTED_CPR: Procedure = {
 }
 
 const SURGEON_NOTE =
-  'No link with Earth, so this is the Loss of Signal case of the manual: begin treatment. What you recorded is in the report for the Surgeon, sent when the link returns.'
+  'There is no link with Earth. The manual gives its own rule for Loss of Signal, in its opening note. What you record goes into the report for the Surgeon, sent when the link returns.'
 
 export const BLADDER_KIDNEY_INFECTION: Procedure = {
   id: 'bladder-kidney-infection',
@@ -167,7 +167,10 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       id: 'symptoms',
       block: 'Symptoms and signs',
       title: 'Check symptoms and signs',
-      lines: [],
+      lines: [
+        'NOTE: Contact Surgeon before giving any medication marked with an asterisk. In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible.',
+      ],
+      note: 'The model flags an infection, not where it is. This checklist looks for one in the bladder or kidney. The checklists of other infections are not loaded.',
       checklist: [
         {
           title: 'Symptoms',
@@ -226,6 +229,7 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
           'Hemoglobin (Ery/uL)',
         ],
       },
+      note: 'The manual also has the header of the form (date, flight day, examiner and crew member) and a second form, for the URILUX analyzer. They are left out here.',
       options: [{ label: 'Results recorded', next: 'treatment', heard: ['recorded', 'done', 'next'] }],
     },
     {
@@ -234,7 +238,6 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       title: 'Treatment',
       lines: [
         'Contact Surgeon to discuss treatment.',
-        'Contact Surgeon before giving any medication marked with an asterisk. In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible.',
         'Increase daily fluid intake (at least 1 L extra per day).',
       ],
       note: SURGEON_NOTE,
@@ -281,15 +284,31 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       id: 'pain-relief',
       block: 'Treatment · 5',
       title: 'Pain/Spasm Relief',
-      lines: [
-        'Pyridium (Phenazopyridine) (P1-B8) - Relieves pain from bladder infection, compatible with antibacterial treatment.',
-        'Dose: 1 tablet per day as needed for pain.',
-        'Possible side effects: Colors urine orange, occasional stomach or intestinal upset.',
+      lines: [],
+      reference: [
+        {
+          title: 'Pyridium (Phenazopyridine) (P1-B8)',
+          lines: [
+            'Relieves pain from bladder infection, compatible with antibacterial treatment',
+            'Dose: 1 tablet per day as needed for pain',
+            'Possible side effects: Colors urine orange, occasional stomach or intestinal upset',
+          ],
+        },
       ],
-      question: 'Contracting pain (pain coming and going) and blood in urine?',
+      note: 'The manual also lists Baralgin, from a Russian kit. It is left out here.',
+      options: [{ label: 'Done', next: 'kidney-check', heard: ['done', 'next'] }],
+    },
+    {
+      id: 'kidney-check',
+      block: 'Step 6',
+      title: 'Check for kidney stones',
+      lines: [
+        'If contracting pain (pain coming and going) and blood in urine, proceed to {KIDNEY STONES} (SODF: ISS MED: F THROUGH N).',
+        'If not, continue to step 7.',
+      ],
       options: [
-        { label: 'Yes', next: 'kidney-stones', heard: ['yes'] },
-        { label: 'No', next: 'follow-up', heard: ['no'] },
+        { label: 'Contracting pain and blood in urine', next: 'kidney-stones', heard: ['yes'] },
+        { label: 'Neither: continue to step 7', next: 'follow-up', heard: ['no'] },
       ],
     },
     {
@@ -299,14 +318,14 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       lines: [
         'If no improvement or relief from antibiotic treatment and pain worsens within 24 hours, contact Surgeon.',
       ],
-      note: 'The case is recorded with the urinalysis and the treatment given, and sent to the Surgeon when the link returns.',
+      note: 'Close the case to put the report in the queue for the Surgeon.',
       options: [],
     },
     {
       id: 'kidney-stones',
-      block: 'Step 6',
+      block: 'Kidney stones',
       title: 'Continue with Kidney Stones',
-      lines: ['Proceed to {KIDNEY STONES} (SODF: ISS MED: F THROUGH N).'],
+      lines: [],
       note: 'The Kidney Stones procedure is not loaded in this demo. The guide ends here.',
       options: [],
     },

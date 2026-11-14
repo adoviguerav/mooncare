@@ -35,7 +35,7 @@ test('a step with a form and drug entries tells the agent what is on the screen'
     ),
   )
   const described = describeStep(antibiotics)
-  assert.ok(described.includes('On screen, to read aloud only if she asks:'))
+  assert.ok(described.includes('Read one only when she names it'))
   assert.ok(
     described.includes(
       '- *Duricef (Cefadroxil) (P1-A18,19). Dose: 1 capsule 2 times/day for 10 days. WARNING: Do not use if there is history of Penicillin or Cephalosporin allergy. Possible side effects: Diarrhea, nausea, vomiting, abdominal pain, rash.',
@@ -92,6 +92,12 @@ test('the agent may record the symptoms and signs of the step it is on, and noth
   assert.ok(names.includes('Painful urination'))
   assert.ok(names.includes('Cloudy or bloody urine'))
   assert.ok(!names.includes('Leuk'))
+})
+
+test('the agent may record which drug of the step was given', () => {
+  const antibiotics = BLADDER_KIDNEY_INFECTION.steps.find((step) => step.id === 'antibiotics')
+
+  assert.ok(getRecordableNames(antibiotics).includes('*Cipro (Ciprofloxacin, Oral) (P1-A7)'))
 })
 
 test('the agent may record the values of the form of the step it is on', () => {

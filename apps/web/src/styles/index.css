@@ -1475,6 +1475,19 @@ button.card:active {
   justify-content: space-between;
 }
 
+.guide-reference .tick {
+  margin-top: 12px;
+}
+
+.guide-note strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.guide-closed {
+  border-color: rgb(59 224 160 / 0.5);
+}
+
 .guide-back {
   justify-self: start;
 }

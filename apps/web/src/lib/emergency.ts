@@ -22,19 +22,32 @@ export type Emergency = {
   // What has been found so far, by its name in the manual: a symptom that is present, or a value of a form.
   // It is the report that goes to the Surgeon when the link returns.
   record: Record<string, string>
+  // When the medical officer closed the case, which puts the report in the queue
+  closedAt: string | null
+  // When the report left for Earth. Null while there is no link.
+  sentAt: string | null
 }
 
 let cachedRaw: string | null = null
 let cachedEmergency: Emergency | null = null
 
 function parseEmergency(raw: string): Emergency {
-  const saved = JSON.parse(raw) as Omit<Emergency, 'event' | 'path' | 'record'> & {
+  const saved = JSON.parse(raw) as Omit<Emergency, 'event' | 'path' | 'record' | 'closedAt' | 'sentAt'> & {
     event?: EventId
     path?: string[]
     record?: Record<string, string>
+    closedAt?: string | null
+    sentAt?: string | null
   }
   // An emergency saved before there were two kinds of event is a cardiac one
-  return { ...saved, event: saved.event ?? 'cardiac', path: saved.path ?? [], record: saved.record ?? {} }
+  return {
+    ...saved,
+    event: saved.event ?? 'cardiac',
+    path: saved.path ?? [],
+    record: saved.record ?? {},
+    closedAt: saved.closedAt ?? null,
+    sentAt: saved.sentAt ?? null,
+  }
 }
 
 function readEmergency(): Emergency | null {
@@ -76,6 +89,8 @@ export function startEmergency(event: EventId, patientId: number, patientName: s
     stepStartedAt: null,
     path: [],
     record: {},
+    closedAt: null,
+    sentAt: null,
   })
 }
 
@@ -105,6 +120,17 @@ export function recordFinding(name: string, value: string | null): void {
   if (emergency === null) return
   const { [name]: _removed, ...others } = emergency.record
   writeEmergency({ ...emergency, record: value === null ? others : { ...others, [name]: value } })
+}
+
+export function closeCase(): void {
+  const emergency = readEmergency()
+  if (emergency !== null) writeEmergency({ ...emergency, closedAt: new Date().toISOString() })
+}
+
+// The simulated return of the link: the queued report leaves for Earth
+export function sendReport(): void {
+  const emergency = readEmergency()
+  if (emergency !== null) writeEmergency({ ...emergency, sentAt: new Date().toISOString() })
 }
 
 export function endEmergency() {

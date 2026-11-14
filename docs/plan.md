@@ -19,7 +19,7 @@ Reorganised on 14 Nov. Two decisions behind it:
 | 1 | The app is online | Done |
 | 2 | The platform, finished: every dataset loaded and shown, with our look | To do |
 | 3 | The other profiles: flight surgeon and commander | To do |
-| 4 | One emergency without Earth: chest pain and CPR | To do |
+| 4 | One case closed without Earth: a possible infection, guided by voice | Built, to polish |
 | 5 | The landing page | To do |
 | 6 | Show it | Sunday |
 
@@ -115,11 +115,11 @@ Done when: the two screens are on the Vercel link.
 
 The scenario of the challenge video: halfway to Mars, a crewmate feels a sharp pain in the chest and collapses. What is happening, and what should the others do? The tablet guides the crew step by step, with no link to Earth.
 
-Decided on 14 Nov: chest pain, then collapse, then CPR. Why: it is the emergency the challenge itself shows, and the procedure is NASA's own.
+Decided on 14 Nov: chest pain, then collapse, then CPR. Changed on 15 Nov to a possible infection (E5): the cardiac event has never happened in flight, and the infection has. The cardiac procedure stays loaded.
 
 - **The procedure** is the ISS emergency manual that Adolfo has. If it is not enough, the public ISS Medical Checklist (JSC-48522-E4, 2001), sections "Chest pain - acute" and "Cardiopulmonary resuscitation: CPR". It is public: http://web.archive.org/web/20230519222418/https://www.nasa.gov/centers/johnson/pdf/163533main_ISS_Med_CL.pdf
 - **Why it shows the pain point.** The checklist tells the crew to contact the flight surgeon. Without a link, the tablet is what guides them.
-- **No invented data.** A tap opens the flow, not a reading.
+- **Invented data is labelled.** The readings of the alert are simulated on top of the crew member's real usual values, and the screen says which is which.
 - **Its limits, said on screen.** The checklist is from 2001. No cardiac arrest in space is on record.
 
 Tasks:
@@ -130,14 +130,16 @@ Tasks:
     - The voice: one audio file per step, written once with ElevenLabs by `apps/web/scripts/generate-emergency-audio.mjs` and kept in the repo, so the app needs no key and no network. Without the files, the browser's own voice reads the same text.
     - Done when: starting the simulation and opening the medical officer's profile leads from the alert to the last block.
 - [x] **E2. The steps**, copied word for word from NASA's Emergency Medical Procedures Manual for the ISS, procedure 1.102 AED ASSISTED CPR (09 APR 15, released under FOIA 16-JSC-F-00174), with its Figure 1. They are in `apps/web/src/lib/procedures.ts`. The manual Adolfo has is partial and has no chest pain procedure: the guide starts when the patient is unresponsive. Procedure 1.103 (ALS algorithm), where 1.102 hands over, is not loaded.
-- [ ] **E4. A voice agent the medical officer talks with.** Built on 14 Nov, not yet heard: the ElevenLabs key lacks the ElevenAgents permission, so the agent is not created. It replaces the recorded voice when there is a network: it talks in real time, can be interrupted, and moves the guide when she answers. Its instructions are built from `procedures.ts`. Without it, the recorded voice and the buttons work as before. To finish: give the key the permission, run `apps/web/scripts/create-emergency-agent.mjs`, set `ELEVENLABS_AGENT_ID`, and test it with a microphone.
+- [x] **E4. A voice agent the medical officer talks with**, built with ElevenLabs Agents on 14 and 15 Nov. It talks in real time, can be interrupted, moves the guide and writes the report. Its instructions are built from `procedures.ts`. Without it, the guide works in silence with its buttons.
+- [x] **E5. The scenario is a possible infection** (decided on 15 Nov, replacing the cardiac one in the demo). Seven readings of Liam Novak move away from his usual values, a simulated model flags it, and the guide follows BLADDER/KIDNEY INFECTION of the ISS Medical Checklist (JSC-48522-E4, 2001). The report waits for the link and a button brings the link back. The cardiac procedure stays loaded, out of the demo. Why infection: it has happened in flight (Apollo 13, Salyut 7) and it uses data from the watch and from the blood tests at once.
+- [ ] **E6. Before the demo**: put `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on Render, set a daily limit of calls on the agent in ElevenLabs, allow the microphone on the demo browser, and wake Render up.
 - [ ] **E3. Update the documents**: R9 in the System_design and the demo script (P8).
 
 Looked at and left for the landing and the pitch, as next steps:
 
 | Scenario | Why not now |
 | :-- | :-- |
-| Kidney stone, infection and early sepsis | NASA's worst case for the transit to Mars (HRP-48044), and the ISS checklist has its procedures. None of our data sets it off |
+| Kidney stone and early sepsis | NASA's worst case for the transit to Mars (HRP-48044), and the ISS checklist has its procedures. None of our data sets it off. The infection that can lead to them is the demo (E5) |
 | Low potassium and arrhythmia | Real data sets it off: Crew 1 has 3.0 mmol/L the day after landing, and Apollo 15 had arrhythmias blamed on low potassium. It is mild, a caution more than an emergency |
 | Radiation storm | It happens, and today the warning comes from the ground. No public limit in our units, the RadLab data shows no storm, and no public procedure |
 | Low glucose | Real NASA data sets off the alert. No case in flight, and the three low values come from the same blood draw, so they may be a sample problem. To ask Àngels |

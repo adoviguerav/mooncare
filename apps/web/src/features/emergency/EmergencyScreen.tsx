@@ -1,32 +1,49 @@
 import { ConversationProvider } from '@elevenlabs/react'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Icon } from '../../components/Icon.tsx'
+import type { IconName } from '../../components/Icon.tsx'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
 import { addDays } from '../../lib/format.ts'
 import { useApi } from '../../hooks/useApi.ts'
-import { endEmergency, goBack, goToStep, recordFinding } from '../../lib/emergency.ts'
+import { closeCase, endEmergency, goBack, goToStep, recordFinding, sendReport } from '../../lib/emergency.ts'
 import type { Emergency } from '../../lib/emergency.ts'
 import { PROCEDURE_BY_EVENT, getAudioPath } from '../../lib/procedures.ts'
 import type { EventId, Procedure, ProcedureStep } from '../../lib/procedures.ts'
-import { PRESENT, VOICE_AGENT_EVENT } from '../../lib/voiceAgent.ts'
+import { GIVEN, PRESENT, VOICE_AGENT_EVENT } from '../../lib/voiceAgent.ts'
 import { INFECTION_SIGNALS } from '../../lib/infectionSignals.ts'
 import { InfectionSignals } from './InfectionSignals.tsx'
 import { useVoiceAgent } from './useVoiceAgent.ts'
 import type { VoiceAgent } from './useVoiceAgent.ts'
 
 // What each kind of alert says. The model behind each one is simulated.
-const ALERTS: Record<EventId, { title: string; flagged: string; model: string }> = {
+type Alert = {
+  title: string
+  flagged: string
+  model: string
+  icon: IconName
+  // What the crew member the alert is about reads
+  patientTitle: string
+  patientText: string
+}
+
+const ALERTS: Record<EventId, Alert> = {
   cardiac: {
     title: 'Cardiac alert',
     flagged: 'The heart model flagged an abnormal rhythm.',
     model: 'a model trained on in-flight heart data',
+    icon: 'heart',
+    patientTitle: 'Help is on the way',
+    patientText: 'The medical officer and the commander have been alerted and can see this alert now.',
   },
   infection: {
     title: 'Possible infection',
     flagged: `The infection model flagged ${INFECTION_SIGNALS.length} readings away from their usual values.`,
     model: 'a model trained on in-flight wearable and blood data',
+    icon: 'alert',
+    patientTitle: 'Your readings point to a possible infection',
+    patientText: 'The medical officer has been alerted and will come to examine you. The commander knows too.',
   },
 }
 // Alerts whose procedure is not in the app yet, so the screen is honest about what it covers
@@ -57,8 +74,8 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
           <span className="emergency-triangle">
             <Icon name="alert" size={72} />
           </span>
-          <h1>Help is on the way</h1>
-          <p>The medical officer and the commander have been alerted and can see this alert now.</p>
+          <h1>{alert.patientTitle}</h1>
+          <p>{alert.patientText}</p>
         </section>
       </main>
     )
@@ -77,6 +94,7 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
           </strong>
           <span>{alert.flagged} Tap to respond.</span>
         </button>
+        <Evidence emergency={emergency} />
         {!responds && (
           <button className="ghost" onClick={onOpenPanel}>
             Back to my panel
@@ -110,11 +128,7 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
         <Status procedure={procedure} emergency={emergency} isCommander={crewMember.role === 'commander'} />
       )}
       {emergency.event === 'infection' && <SurgeonReport procedure={procedure} emergency={emergency} />}
-      {emergency.event === 'infection' ? (
-        <InfectionSignals emergency={emergency} />
-      ) : (
-        <Detection emergency={emergency} />
-      )}
+      <Evidence emergency={emergency} />
       <details className="card group">
         <summary className="card-heading">
           <h2>About this simulation</h2>
@@ -130,6 +144,10 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
           </p>
           <p>
             This alert opens {procedure.title}. Not loaded yet: {NOT_LOADED_PROTOCOLS.join(', ')}.
+          </p>
+          <p>
+            The instructions, the lists and the drug entries are the manual's own words. The titles of the steps, the
+            buttons, the drawings and the notes marked "Our note" are ours.
           </p>
           <p className="muted">{procedure.source}</p>
         </div>
@@ -192,34 +210,68 @@ function Detection({ emergency }: { emergency: Emergency }) {
 
 // What has been recorded so far, waiting for the link. The agent fills it in as the medical officer answers.
 function SurgeonReport({ procedure, emergency }: { procedure: Procedure; emergency: Emergency }) {
-  const ticks = procedure.steps.flatMap((step) => step.checklist?.flatMap((group) => group.items) ?? [])
-  const present = ticks.filter((item) => emergency.record[item] !== undefined)
-  const values = Object.entries(emergency.record).filter(([name]) => !ticks.includes(name))
+  const isRecorded = (name: string) => emergency.record[name] !== undefined
+  const present = procedure.steps
+    .flatMap((step) => step.checklist?.flatMap((group) => group.items) ?? [])
+    .filter(isRecorded)
+  const forms = procedure.steps.flatMap((step) => (step.record === undefined ? [] : [step.record]))
+  const given = procedure.steps
+    .flatMap((step) => step.reference?.map((entry) => entry.title) ?? [])
+    .filter(isRecorded)
   const stepsDone = emergency.path.map((stepId) => findStep(procedure, stepId).title)
+  const sentAt = emergency.sentAt === null ? null : formatClock(emergency.sentAt)
 
   return (
     <section className="card report">
       <div className="card-heading">
         <div>
           <h2>Report for the Surgeon</h2>
-          <p className="origin">Filled in as you answer. Nothing is typed twice.</p>
+          <p className="origin">Filled in as the medical officer answers the voice guide.</p>
         </div>
-        <span className="chip chip-alert">No link with Earth · queued</span>
+        {sentAt === null ? (
+          <span className="chip chip-alert">No link with Earth · queued</span>
+        ) : (
+          <span className="chip chip-ok">Link restored · sent at {sentAt}</span>
+        )}
       </div>
       <dl>
         <dt>Patient</dt>
         <dd>{emergency.patientName}</dd>
         <dt>Symptoms and signs</dt>
         <dd>{present.length === 0 ? 'None recorded yet' : present.join(', ')}</dd>
-        <dt>Urinalysis</dt>
-        <dd>
-          {values.length === 0 ? 'Not recorded yet' : values.map(([name, value]) => `${name} ${value}`).join(', ')}
-        </dd>
+        <dt>Raised by</dt>
+        <dd>The infection model: {INFECTION_SIGNALS.map((signal) => signal.label.toLowerCase()).join(', ')}</dd>
+        {forms.map((form) => {
+          const values = form.fields.filter(isRecorded)
+          return (
+            <Fragment key={form.title}>
+              <dt>{form.title}</dt>
+              <dd>
+                {values.length === 0
+                  ? 'Not recorded yet'
+                  : values.map((field) => `${field} ${emergency.record[field]}`).join(', ')}
+              </dd>
+            </Fragment>
+          )
+        })}
+        <dt>Drugs given</dt>
+        <dd>{given.length === 0 ? 'None recorded yet' : given.join(', ')}</dd>
         <dt>Steps done</dt>
         <dd>{stepsDone.length === 0 ? 'None yet' : stepsDone.join(', ')}</dd>
       </dl>
-      <p className="muted">Sent when the link returns. The link status is simulated.</p>
+      <p className="muted">
+        {sentAt === null ? 'Sent when the link returns.' : 'The Surgeon has the report.'} The link status is simulated.
+      </p>
     </section>
+  )
+}
+
+// What the model saw, for the kind of alert
+function Evidence({ emergency }: { emergency: Emergency }) {
+  return emergency.event === 'infection' ? (
+    <InfectionSignals emergency={emergency} />
+  ) : (
+    <Detection emergency={emergency} />
   )
 }
 
@@ -241,7 +293,8 @@ function findStep(procedure: Procedure, stepId: string | null): ProcedureStep {
 function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emergency }) {
   const step = findStep(procedure, emergency.stepId ?? procedure.firstStepId)
   const previousStepId = emergency.path.at(-1)
-  const agent = useVoiceAgent(procedure, step, previousStepId, emergency.event === VOICE_AGENT_EVENT)
+  const isClosed = emergency.closedAt !== null
+  const agent = useVoiceAgent(procedure, step, previousStepId, emergency.event === VOICE_AGENT_EVENT && !isClosed)
   // The recorded voice is the fallback: it reads the step when the agent is off or not reachable
   const agentHasTheVoice = agent.state === 'live' || agent.state === 'starting'
   useNarration(procedure, step, !agentHasTheVoice)
@@ -250,6 +303,8 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
   useEffect(() => {
     if (emergency.stepId === null) goToStep(procedure.firstStepId)
   }, [emergency.stepId, procedure.firstStepId])
+
+  if (isClosed) return <CaseClosed emergency={emergency} />
 
   return (
     <section className="card guide">
@@ -323,15 +378,25 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
           </div>
         </div>
       )}
-      {step.reference?.map((entry) => (
-        <details key={entry.title} className="guide-reference">
-          <summary>{entry.title}</summary>
-          {entry.lines.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </details>
-      ))}
-      {step.note !== undefined && <p className="guide-note">{step.note}</p>}
+      {step.reference?.map((entry) => {
+        const given = emergency.record[entry.title] !== undefined
+        return (
+          <details key={entry.title} className="guide-reference">
+            <summary>{entry.title}</summary>
+            {entry.lines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+            <button className="tick" aria-pressed={given} onClick={() => recordFinding(entry.title, given ? null : GIVEN)}>
+              {given ? 'Given · in the report' : 'Mark as given'}
+            </button>
+          </details>
+        )
+      })}
+      {step.note !== undefined && (
+        <p className="guide-note">
+          <strong>Our note, not from the manual.</strong> {step.note}
+        </p>
+      )}
       {step.timerSeconds !== undefined && <Timer key={emergency.stepStartedAt} seconds={step.timerSeconds} />}
       {step.question !== undefined && <p className="guide-question">{step.question}</p>}
       <div className="guide-options">
@@ -341,8 +406,8 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
           </button>
         ))}
         {step.options.length === 0 && (
-          <button className="primary guide-option" onClick={endEmergency}>
-            Close the case and end the simulation
+          <button className="primary guide-option" onClick={closeCase}>
+            Close the case
           </button>
         )}
       </div>
@@ -353,6 +418,37 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
       )}
     </section>
   )
+}
+
+// The end of the guide: the report waits for the link, and the demo can bring the link back
+function CaseClosed({ emergency }: { emergency: Emergency }) {
+  const isSent = emergency.sentAt !== null
+  return (
+    <section className="card guide guide-closed">
+      <span className="chip chip-ok">Case closed at {formatClock(emergency.closedAt ?? emergency.startedAt)}</span>
+      <h2 className="guide-title">{isSent ? 'The report reached the Surgeon' : 'The report is waiting for the link'}</h2>
+      <p>
+        {isSent
+          ? 'The link with Earth is back and the report below was sent. The Surgeon can now answer.'
+          : 'The procedure is done without Earth. Everything recorded is in the report below, and it leaves by itself when the link returns.'}
+      </p>
+      <div className="guide-options">
+        {isSent ? (
+          <button className="primary guide-option" onClick={endEmergency}>
+            End the simulation
+          </button>
+        ) : (
+          <button className="primary guide-option" onClick={sendReport}>
+            Simulate: the link returns
+          </button>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function formatClock(isoTime: string): string {
+  return new Date(isoTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
 // One dot per step of the procedure, in the order of the manual
@@ -453,7 +549,7 @@ function Status({ procedure, emergency, isCommander }: StatusProps) {
       <section className="card">
         <div className="card-heading">
           <span className="icon-badge icon-badge-alert">
-            <Icon name="heart" />
+            <Icon name={ALERTS[emergency.event].icon} />
           </span>
           <div>
             <h2>Where the medical officer is</h2>

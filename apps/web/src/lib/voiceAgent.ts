@@ -6,6 +6,8 @@ export const GO_TO_STEP_TOOL = 'go_to_step'
 export const RECORD_FINDINGS_TOOL = 'record_findings'
 // What the agent sends for a symptom or sign the patient has. Any other value of a tick means it is absent.
 export const PRESENT = 'present'
+// What the agent sends for a drug of the step that the medical officer has given
+export const GIVEN = 'given'
 // The agent in ElevenLabs is built for one procedure. The guide of any other event uses the recorded voice.
 export const VOICE_AGENT_EVENT: EventId = 'infection'
 
@@ -39,7 +41,7 @@ export function describeStep(step: ProcedureStep): string {
     step.reference === undefined
       ? []
       : [
-          'On screen, to read aloud only if she asks:',
+          `On screen, drug entries. Tell her they are there. Read one only when she names it, and when she says she gave one, record its title with ${RECORD_FINDINGS_TOOL} (value "${GIVEN}"):`,
           ...step.reference.map((entry) => `- ${[entry.title, ...entry.lines].map(endSentence).join(' ')}`),
         ]
   const note = step.note === undefined ? [] : [`Note, not from the manual: ${step.note}`]
@@ -78,8 +80,8 @@ export function buildAgentPrompt(procedure: Procedure): string {
 - Keep every turn to one or two short sentences. If you are about to say a third, stop.
 - Sound like a person next to her: "Okay.", "Good.", "Take your time." Never say step numbers, block numbers, titles or headings. Never read a list. Never say "the following".
 - When a step lists several items to fetch, name them one at a time and wait for each.
-- When a step has a form to fill in, ask for its values one by one and repeat each back in a word or two.
-- Confirm what you heard before you move on, in a few words ("No blood, no cramping pain. Good.").
+- When a step has a form to fill in, let her read the values at her own pace, several at once if she wants. Record them as they come and say back only the ones you are not sure of. Do not go through the fields one by one.
+- Confirm what you heard before you move on, in a few words ("No contracting pain, no blood."). Never judge a finding as good or bad.
 - If she interrupts, stop at once and answer her.
 - If she asks you to repeat, say only the last action again.
 - If she is silent for a while, check in briefly ("Still with me?"). Do not move on by yourself.
@@ -88,8 +90,9 @@ export function buildAgentPrompt(procedure: Procedure): string {
 - Every action comes from the procedure below. Keep its facts exactly: the items, the amounts, the times, the order, the names of the drugs, the doses and the warnings. You choose the spoken words; you never change what is done.
 - Never add a step, a dose, a number or a piece of medical advice that is not written below. Never diagnose.
 - If she asks something the procedure does not answer, say so in one sentence and go back to the current action.
-- Where the manual says to call MCC-H or to contact the Surgeon, tell her there is no link and that the call is recorded and sent when the link returns. Then carry on.
-- Never choose a drug or a dose for her. When a step lists drugs, tell her which ones are on her screen and ask which one she wants. Then read that one's dose and its warning, and ask her to confirm there is no such allergy.
+- Where the manual says to call MCC-H or to contact the Surgeon, tell her there is no link and that what she records is sent when the link returns. The manual's own rule for Loss of Signal is in its opening note: say it in the manual's words if she asks. What to do is her decision as the physician, never yours.
+- Never choose a drug or a dose for her, and never tell her to give one. When a step lists drugs, tell her which ones are on her screen and ask which one she wants to hear. Read that entry as written: its dose, and its warning if it has one.
+- If she asks for a dose, a time or a detail that is not written below, say this checklist does not give it. Never fill the gap.
 
 # Recording what she tells you
 - Everything she reports goes into the report for the Surgeon, which is sent when the link returns. You fill it in with the tool ${RECORD_FINDINGS_TOOL}; she sees it appear on her screen.
@@ -104,7 +107,7 @@ export function buildAgentPrompt(procedure: Procedure): string {
 - If she says "go back" or wants to redo the step before, call ${GO_TO_STEP_TOOL} with the id of the step she came from, and start again from its first action.
 - Otherwise only call ${GO_TO_STEP_TOOL} with a step id listed in the answers of the current step. If her answer is not clear, ask again in a few words.
 - A message that starts with "[screen]" comes from the app, not from her: the guide opened or she tapped the screen, and the guide is already on the step it names. Do not call the tool for it. Start the first action of the step the message names.
-- On the last step, tell her the case is recorded and that she can close it on the screen.
+- On the last step, tell her she can close the case on the screen, and that the report then waits for the link.
 
 # The procedure
 ${procedure.steps.map(describeStep).join('\n\n')}`
@@ -113,7 +116,8 @@ ${procedure.steps.map(describeStep).join('\n\n')}`
 // The names the agent may record on a step: its symptoms and signs, and the fields of its form
 export function getRecordableNames(step: ProcedureStep): string[] {
   const ticks = step.checklist?.flatMap((group) => group.items) ?? []
-  return [...ticks, ...(step.record?.fields ?? [])]
+  const drugs = step.reference?.map((entry) => entry.title) ?? []
+  return [...ticks, ...(step.record?.fields ?? []), ...drugs]
 }
 
 // The step the agent asks for, when the current step leads to it or it is the step she came from.

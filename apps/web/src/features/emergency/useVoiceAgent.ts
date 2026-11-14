@@ -4,6 +4,7 @@ import { createVoiceSession } from '../../lib/api.ts'
 import { goBack, goToStep, recordFinding } from '../../lib/emergency.ts'
 import type { Procedure, ProcedureStep } from '../../lib/procedures.ts'
 import {
+  GIVEN,
   GO_TO_STEP_TOOL,
   PRESENT,
   RECORD_FINDINGS_TOOL,
@@ -76,8 +77,9 @@ export function useVoiceAgent(
         refused.push(String(name))
         continue
       }
-      const isTick = stepRef.current.record?.fields.includes(name) !== true
-      recordFinding(name, isTick && value !== PRESENT ? null : value)
+      const isFormField = stepRef.current.record?.fields.includes(name) === true
+      // A symptom or a drug is either marked or not: any other word takes the mark away
+      recordFinding(name, isFormField || value === PRESENT || value === GIVEN ? value : null)
     }
     return refused.length === 0
       ? 'Recorded.'
