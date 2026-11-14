@@ -1,153 +1,119 @@
 # Real Telemetry · Plan
 
-What we do, step by step, until we submit. Like building a house: each step stands on the one before, so a step is finished before the next one starts.
+What we do, milestone by milestone, until we submit. A milestone is finished before the next one starts.
 
 - What we are building and why: [system_design.md](system_design.md).
-- How it is built: [mvp_architecture.md](mvp_architecture.md). The order of the steps is its build order (section 6).
+- How it is built: [mvp_architecture.md](mvp_architecture.md).
 - What decides whether we win: [how_to_win_nasa_space_apps.md](how_to_win_nasa_space_apps.md).
 - How we use branches: [branches.md](branches.md).
 
-Tick a task when its "done when" check passes. Each task names the requirement (R) it covers. Inside a step, each team does its tasks from top to bottom.
+Reorganised on 14 Nov. Two decisions behind it:
 
-| Step | What | Like in a house |
+- All the code is finished today, Saturday 14. Sunday is for the pitch, the video and the submission.
+- The demo is the base platform plus one extra flow: an emergency handled on board with no connection to Earth. That is the main pain point (System_design, section 1, number 2). Following the crew from the ground already exists on the ISS, so the link to the ground goes to the next steps.
+
+| Milestone | What | State |
 | :-- | :-- | :-- |
-| 0 | The base runs | Foundations. Done |
-| 1 | The database | The ground floor everything stands on |
-| 2 | One complete day | The first room, finished |
-| 3 | The full panel | The other rooms |
-| 4 | Open to the jury | The front door |
-| 5 | Show it | Showing the house |
+| 0 | The platform works with real data | Done |
+| 1 | The app is online | In progress |
+| 2 | The app looks like ours | To do |
+| 3 | One emergency without Earth | Scenario not chosen |
+| 4 | The landing page | To do |
+| 5 | If there is time | To do |
+| 6 | Show it | Sunday |
 
 ## Teams
 
-| Team | People | Folders | Branch |
-| :-- | :-- | :-- | :-- |
-| Backend, data and AI | Adolfo, Ivan | `services/api`, `database` | `feat/backend` |
-| Design, frontend, web and app | Becky, Alex | `apps` | `feat/frontend` |
-| Medical review of the rules | Àngels |  |  |
-| Pitch and submission |  |  |  |
+| Team | People | Folders |
+| :-- | :-- | :-- |
+| Backend, data and frontend of the app | Adolfo | `services/api`, `database`, `apps/web` |
+| Link to the ground | Ivan | `services/api`, `database` |
+| Design and landing | Becky | `apps/landing` |
+| Medical review of the rules | Àngels |  |
 
-- The contracts in the MVP architecture, section 3, are the line between the two teams. They say exactly what the backend returns, so the frontend can build a screen before its endpoint exists.
-- A change to a contract is agreed by both teams first.
-- Inside a team, say which task you take before you start.
+- Alex left on 14 Nov. His landing is in `apps/landing/moon-care-landing.html`.
+- Everybody works on `main` or merges into it often. Say which task you take before you start.
+- The contracts in the MVP architecture, section 3, are not changed without telling the others.
 
-## Step 0 · The base runs (done)
+## Milestone 0 · The platform works with real data (done)
 
-- [x] Database and seed script, with one crew member (Crew 1).
-- [x] Two indicators: blood glucose with its rule, and heart rate.
-- [x] Backend: crew, panel and indicator history. Its tests pass.
-- [x] Frontend: profile picker, panel and indicator detail. The detail shows how to measure, why it matters, the rule, what to do and the source.
-- [x] Every dataset of the data document is in `database/datasets`, so nobody downloads anything.
+- [x] Database on Postgres, built from `.sql` files, the same on a laptop and deployed (D2).
+- [x] Backend: crew, panel, indicator history and check-in. 56 tests pass.
+- [x] Four crew members, each an Inspiration4 astronaut paired with a LifeSnaps volunteer, with a full panel on the demo date, 2021-11-02 (B5).
+- [x] Eight measured indicators and the six moods of the check-in (B1, B3).
+- [x] Five rules with their source: glucose, resting heart rate, sleep and the two mood ones (B4, B2).
+- [x] Each crew member has a role. Crew 1 is the commander.
+- [x] Frontend in `apps/web`: profile picker, panel with the alerts first, check-in and indicator detail. Its look is provisional.
+- [x] Local jury pitch (P3).
 
-## Step 1 · The database
+## Milestone 1 · The app is online
 
-Backend:
+One link opens the real app. It is the link we give the jury (How to win, section 1).
 
-- [x] **D2. Move the database from SQLite to Postgres** (R7, R8). Same five tables and same contracts. Postgres runs in Docker on a laptop, and the same `.sql` files build the deployed one. How to run it is in the README and in `database/postgresql`.
-    - Done when: the backend tests pass against Postgres, the panel of Crew 1 shows the same values as before, the README says how to run Postgres on a laptop, and the MVP architecture and the System_design, section 5, say Postgres.
-
-Frontend:
-
-- [ ] **F3. Look of the app** (R1, R10): name, style and alert colours. It needs nothing from the backend, so it runs alongside D2.
-    - Done when: someone outside the team can tell at a glance which indicator has an alert.
-
-Step 1 is done when: on `main`, the app runs on Postgres and looks like ours.
-
-## Step 2 · One complete day
-
-One astronaut opens the app, checks in and sees an alert.
-
-Backend:
-
-- [x] **B1. Check-in and mood readings** (R2, R3). The `PUT` check-in endpoint, and the six mood indicators loaded from LifeSnaps.
-    - Done when: saving a check-in for 2021-11-02 returns what was saved, and the panel for that day shows it.
-
-Frontend:
-
-- [ ] **F2. Check-in screen** (R2, R3). Six moods, more than one allowed, shown as one card on the panel. The app asks for it when today's is missing. A streak counts the days in a row. It can be built against the contract before B1 is done.
-    - Done when: a check-in made on the tablet is still there after reloading.
-
-Both teams:
-
-- [x] **P3.** Local jury: a 3-minute pitch, at 16:00. They nominate 3 teams.
-- [ ] **P4.** Start the list of AI tools and outside resources, and keep it up to date. The form asks for it.
-
-Step 2 is done when: on `main`, Crew 1 checks in for 2021-11-02 and sees the glucose alert.
-
-## Step 3 · The full panel
-
-Every MVP indicator, the four crew members and the rest of the rules.
-
-Backend:
-
-- [x] **B3. The other MVP indicators** (R1): resting heart rate, sleep duration, sleep efficiency, skin temperature, very active minutes, steps.
-    - Done when: the panel returns all of them for Crew 1 on the demo date.
-- [x] **B5. The other three crew members.** Each one's dates are shifted so their data lands on the demo date, 2021-11-02.
-    - Done when: the profile picker shows four crew members and each has a full panel on the demo date.
-- [x] **B4. Sleep and resting heart rate rules** (R10). The limits are already decided (MVP architecture, section 5).
-    - Done when: a night under 7 hours shows the alert with its explanation and what to do.
-- [x] **B2. Mood rule** (R10). The rule at the end of this document.
-    - Done when: the crew member with the tense fortnight shows the alert on the demo date, and Crew 1 does not.
-
-
-Frontend:
-
-- [ ] **F5. History charts** (R7): readable on a tablet, with the limits of the rule drawn.
-    - Done when: the glucose chart shows the 36 mg/dL reading below the line.
-- [ ] **F4. Mood alert on the mood card** (R10). It needs B2. The backend sends the mood rule as two extra indicators. They are shown inside the mood card, not as cards of their own.
-    - Done when: the tense alert of B2 shows on the mood card with what to do.
-- [ ] **F1. CPR flow** (R9). The last MVP task: the panel comes first, because it has to work really well before we add anything else (System_design, section 2). It follows the ISS procedure, with one image per step and the timers.
-    - Done when: one tap from the panel opens it, and it can be followed to the last step with the network off.
-
-Both teams:
-
-- [ ] **P5.** Pick one global award category: Best Use of Science, Best Use of Technology or Best Mission Concept.
-- [ ] **P6.** Write the opening sentence: user, problem and result.
-- [ ] **P7.** First draft of the project page, in English, submitted.
-
-Step 3 is done when: on `main`, the four crew members each have a full panel on the demo date, the CPR flow can be followed to the end, and the draft page is submitted.
-
-## Step 4 · Open to the jury
-
-The jury opens the app from a link and uses it as if they were the astronauts (How to win, section 1).
-
-Backend:
-
-- [ ] **D3. Backend and Postgres on Render** (not Railway, decided on 14 Nov). A web service from the repo with `services/api` as its folder, at https://mooncare-73hi.onrender.com, and a Postgres database next to it. The free service sleeps after 15 minutes without use, so the first visit takes about a minute. `database/postgresql/scripts/apply.sh` runs once against it to create the tables and load the seeds.
-    - Done when: `/api/crew` answers from the Render address, and a check-in is still there after a restart.
-
-Frontend:
-
-- [ ] **D4. Frontend on Vercel.** It needs D3. Create the account and a project from the repo, with `apps/web` as its folder. A rewrite in `apps/web/vercel.json` sends `/api` to the Render address, so the frontend code does not change.
+- [x] **D3a. Backend and Postgres on Render**, at https://mooncare-73hi.onrender.com. The data is loaded and `/api/crew` answers. The free service sleeps after 15 minutes without use, so the first visit takes about a minute.
+- [ ] **D4. Frontend on Vercel.** One project from the repo with `apps/web` as its folder. `apps/web/vercel.json` already sends `/api` to Render. Adolfo creates the project.
     - Done when: the Vercel link shows the panel of Crew 1 with its glucose alert.
+- [ ] **D3b. A check-in survives.** Save a check-in from the Vercel link, restart the backend on Render and see it is still there. Then load the data again to leave the demo clean.
 - [ ] **D5. The app link** goes first in the README and on the project page, before the repo link.
     - Done when: someone outside the team opens it on a phone in a private window and reaches the panel.
 
-Both teams:
+Done when: the link works from a phone outside our network.
 
-- [ ] **P8.** Demo script: a normal day, then the glucose alert of Crew 1 (36 mg/dL), then the CPR flow.
-- [ ] **P9.** Pitch of 3 minutes with the five pain points (System_design, section 7) and the five judging criteria. It ends with next steps: what we built first and what we left for later.
-- [ ] **P10.** Architecture slide: the target architecture with what is built marked (System_design, section 5).
+## Milestone 2 · The app looks like ours
 
-Step 4 is done when: the app link works from a phone outside our network.
+- [ ] **F3. Look of the app.** The design and the Moon Care logo of Becky's prototype (`apps/landing/index.html`), in the real app. Only the look: the prototype's values are invented and stay out.
+    - Done when: someone outside the team can tell at a glance which indicator has an alert.
+- [ ] **F5. History charts** with the limits of the rule drawn, readable on a tablet.
+    - Done when: the glucose chart shows the 36 mg/dL reading below the line.
+- [ ] **F4. Mood alert inside the mood card**, not as a card of its own.
+    - Done when: the tense alert of Crew 2 shows on the mood card with what to do.
+- [ ] **F2. Streak of check-ins**: the days in a row with a check-in, on the mood card.
+    - Done when: a check-in today adds one to the streak and it is still there after reloading.
 
-## Step 5 · Show it
+Done when: the four tasks are on the Vercel link.
 
-From here on nobody adds features. We only fix what is broken. Both teams, in this order:
+## Milestone 3 · One emergency without Earth
 
-- [ ] **P11.** Record the video: 30 seconds at most, with English subtitles. Going over makes us ineligible.
-- [ ] **P12.** Record a backup of the full demo.
-- [ ] **P13.** Rehearse the pitch twice before the local jury. Everyone can explain what they built.
-- [ ] **P14.** Final project page: text, screenshots, the app link, the repo link, NASA data used, other data and resources, AI use.
-- [ ] **P15.** Test every link in a private window.
-- [ ] **P16.** Submit. Submissions close on Sunday 15 at 23:59, and a submission is final.
+A reading sets off an alert on board, and the tablet guides the crew step by step, with no link. One scenario is built. The others are explained on the landing and in the pitch.
 
-## After the MVP
+- [ ] **E0. Choose the scenario.** It must be a real need, set off by data we have, with a limit and a procedure that both have a source. A research is running on 14 Nov. Looked at so far:
 
-These wait until every task above is ticked. They are the planned parts of the target architecture (System_design, section 5).
+    | Scenario | For | Against |
+    | :-- | :-- | :-- |
+    | Low glucose | Real NASA data already sets off the alert (Crew 1, 36 mg/dL) | No case in flight. The procedure has to come from Àngels |
+    | CPR | The clearest emergency | No case in space. It uses none of our data. The ISS crew already does it alone |
+    | Radiation storm | It happens: ISS crews take shelter, and the warning comes from the ground | No public limit in our units. The RadLab data shows no storm. No public procedure |
 
-- [ ] **Onboard AI.** The emergency assistant, E1 to E6.
-- [ ] **Link to the ground.** The first thing after the MVP. With a link the app works as medical care does today on the ISS: the flight surgeon on the ground follows the crew. Without a link the ship keeps working on its own and the ground catches up later (System_design, section 5). If there is no time to build it, it goes on the architecture slide (P10) and in the next steps of the pitch (P9). Decided on 14 Nov:
+- [ ] **E1. Guided steps screen**: fixed steps, one per screen, with timers where the procedure has them. It works with the network off.
+    - Done when: one tap from the alert opens it and it can be followed to the last step with the network off.
+- [ ] **E2. The procedure of the chosen scenario**, with its source on screen. Nobody invents a step.
+- [ ] **E3. Update the documents**: R9 and the demo script (P8) name the CPR flow today.
+
+Done when: on the Vercel link, the alert of the chosen scenario opens its guide and it can be followed to the end.
+
+## Milestone 4 · The landing page
+
+Our letter of introduction to the NASA experts. It is the first page of the same Vercel project: the landing at `/` and the app at `/app`.
+
+- [ ] **L1. One deploy, two pages.** The landing at `/` with a button that opens the app at `/app`.
+- [ ] **L2. Content**, starting from Becky's landing:
+    - Problem and solution.
+    - What the app does.
+    - Architecture: the real one, with Postgres on board, and the one of the demo, on Render and Vercel.
+    - The team.
+    - Datasets and who provides them.
+    - How we used AI.
+    - Next steps: the link to the ground and the emergency scenarios we did not build.
+- [ ] **L3. Languages.** English and Spanish, with a switch. Any other language is not decided.
+
+Done when: someone who does not know the project reads the landing, opens the app from it and understands what it is.
+
+## Milestone 5 · If there is time
+
+In this order.
+
+- [ ] **VO2 max rule.** The first rule with a NASA limit: in-mission VO2 max at or above 32.9 mL/kg/min (NASA-STD-3001, V1 4001). The data is the watch's estimate in LifeSnaps (data document, Reference values from NASA).
+- [ ] **Link to the ground** (Ivan). It is not part of the demo flow. If it is not finished, it goes on the architecture slide (P10) and in the next steps of the pitch (P9). Decided on 14 Nov:
     - The flight surgeon sees the full panel of each crew member: indicators, history and alerts. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
     - One way only, ship to ground. The ground looks and does not answer.
     - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
@@ -157,9 +123,26 @@ These wait until every task above is ticked. They are the planned parts of the t
         - Done when: the ground panel of Crew 1 shows the glucose alert and the time of the last data received.
     - [ ] **G3. Flight surgeon screen** (frontend). The four crew members, who has an alert and when their last data arrived. A tap opens that crew member's full panel. The link switch is on this screen.
         - Done when: with the link off, the screen says since when it has no data, and the crew app works as before.
-- [ ] **Two profile types: commander and crew member.** Done: `crew_member` has a `role`, `GET /api/crew` returns it and the profile picker shows it. Crew 1 is the commander. Left: a commander screen. Decide first what the commander sees (System_design, section 2, Not decided yet).
-- [ ] **Mobile app** (`apps/mobile`).
-- [ ] The other stretch goals, in the order of the System_design, section 2.
+- [ ] **Commander screen.** The role exists. What the commander sees is not decided (System_design, section 2).
+
+After the hackathon: the onboard AI (E1 to E6 of the System_design), the mobile app and the other stretch goals.
+
+## Milestone 6 · Show it
+
+Sunday 15. Nobody adds features. We only fix what is broken. In this order:
+
+- [ ] **P4.** List of AI tools and outside resources. The form asks for it.
+- [ ] **P5.** Pick one global award category: Best Use of Science, Best Use of Technology or Best Mission Concept.
+- [ ] **P6.** Write the opening sentence: user, problem and result.
+- [ ] **P8.** Demo script: a normal day, then the alert, then the emergency flow of milestone 3.
+- [ ] **P9.** Pitch of 3 minutes with the five pain points (System_design, section 7) and the five judging criteria. It ends with next steps: what we built first and what we left for later.
+- [ ] **P10.** Architecture slide: the target architecture with what is built marked (System_design, section 5).
+- [ ] **P11.** Record the video: 30 seconds at most, with English subtitles. Going over makes us ineligible.
+- [ ] **P12.** Record a backup of the full demo.
+- [ ] **P13.** Rehearse the pitch twice. Everyone can explain what they built.
+- [ ] **P14.** Project page, in English: text, screenshots, the app link, the repo link, NASA data used, other data and resources, AI use.
+- [ ] **P15.** Test every link in a private window.
+- [ ] **P16.** Submit. Submissions close on Sunday 15 at 23:59, and a submission is final.
 
 ## Mood rule (built, to confirm with Àngels)
 
