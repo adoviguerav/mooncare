@@ -49,6 +49,8 @@ class Rule(Base):
     indicator_id: Mapped[str] = mapped_column(ForeignKey("cfg.indicator.id"))
     low: Mapped[float | None]
     high: Mapped[float | None]
+    baseline_direction: Mapped[str | None]
+    baseline_deviations: Mapped[float | None]
     title: Mapped[str]
     explanation: Mapped[str]
     action: Mapped[str]

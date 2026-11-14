@@ -5,6 +5,7 @@ Edit this file to change a text, add an indicator or add a rule. Never write a l
 
 from dataclasses import dataclass
 
+from app.baseline import BASELINE_MIN_READINGS, BASELINE_WINDOW_DAYS
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 
 
@@ -43,6 +44,8 @@ class Rule:
     threshold_source: str
     low: float | None = None
     high: float | None = None
+    baseline_direction: str | None = None
+    baseline_deviations: float | None = None
 
 
 SOURCES = [
@@ -513,6 +516,21 @@ def get_widest_metabolic_panel_range_source(analyte_name: str) -> str:
 
 
 # REVIEW: title, explanation and action are drafts built from docs/parameters_and_datasets.md.
+# Chosen on the LifeSnaps data of the four crew members: at 3 deviations the five baseline rules together
+# alert about once every two weeks per person. At 2.5 it is twice as often.
+BASELINE_DEVIATIONS = 3.0
+
+
+def get_baseline_source(direction: str) -> str:
+    return (
+        f"Your personal baseline: the median of your own readings of the last {BASELINE_WINDOW_DAYS} days. "
+        f"The alert comes when a reading is more than {BASELINE_DEVIATIONS:g} deviations {direction} it, "
+        "where a deviation is the median distance of those readings to their median, times 1.4826 "
+        f"(the Hampel identifier for outliers). It needs at least {BASELINE_MIN_READINGS} readings. "
+        f"The {BASELINE_DEVIATIONS:g} is our choice, not a medical limit."
+    )
+
+
 RULES = [
     Rule(
         indicator_id="glucose",
@@ -714,6 +732,67 @@ RULES = [
             "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-031-exercise-overview.pdf. "
             "The value shown is an estimate by the watch, not an exercise test."
         ),
+    ),
+    Rule(
+        indicator_id="resting_heart_rate",
+        baseline_direction="above",
+        baseline_deviations=BASELINE_DEVIATIONS,
+        title="Resting heart rate above your usual",
+        explanation=(
+            "Your resting heart rate is well above your own usual value of the last 4 weeks. "
+            "A rise like this can point to dehydration, infection, stress or a cardiovascular problem, "
+            "even when the value is normal for other people."
+        ),
+        action="Check your hydration and how you feel, and measure it again tomorrow.",
+        threshold_source=get_baseline_source("above"),
+    ),
+    Rule(
+        indicator_id="skin_temperature",
+        baseline_direction="above",
+        baseline_deviations=BASELINE_DEVIATIONS,
+        title="Skin temperature above your usual",
+        explanation=(
+            "Your skin temperature during the night is well above your own usual value of the last 4 weeks. "
+            "Together with symptoms, this can be an early sign of infection."
+        ),
+        action="Check how you feel. If you have symptoms, start the infection assessment.",
+        threshold_source=get_baseline_source("above"),
+    ),
+    Rule(
+        indicator_id="heart_rate_variability",
+        baseline_direction="below",
+        baseline_deviations=BASELINE_DEVIATIONS,
+        title="Heart rate variability below your usual",
+        explanation=(
+            "Your heart rate variability is well below your own usual value of the last 4 weeks. "
+            "A drop like this is a sign of physical stress: poor sleep, a hard effort or the start of an illness."
+        ),
+        action="Protect tonight's sleep, lower today's effort if you can, and watch how it goes tomorrow.",
+        threshold_source=get_baseline_source("below"),
+    ),
+    Rule(
+        indicator_id="spo2",
+        baseline_direction="below",
+        baseline_deviations=BASELINE_DEVIATIONS,
+        title="Blood oxygen below your usual",
+        explanation=(
+            "Your blood oxygen is well below your own usual value of the last 4 weeks. "
+            "A fall from your baseline is a reason to look at breathing and circulation."
+        ),
+        action="Repeat the measurement. If it stays low, ask for a respiratory and cardiovascular assessment.",
+        threshold_source=get_baseline_source("below"),
+    ),
+    Rule(
+        indicator_id="stress_score",
+        baseline_direction="below",
+        baseline_deviations=BASELINE_DEVIATIONS,
+        title="Stress score below your usual",
+        explanation=(
+            "Your stress score is well below your own usual value of the last 4 weeks. "
+            "On this score a lower number means more signs of physical stress."
+        ),
+        action="Use a stress management routine today and check the score again tomorrow.",
+        threshold_source=get_baseline_source("below"),
     ),
 ]
 

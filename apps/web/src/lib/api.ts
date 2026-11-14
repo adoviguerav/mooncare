@@ -37,6 +37,9 @@ export type Rule = {
   id: number
   low: number | null
   high: number | null
+  // Set on a personal baseline rule, which has no low or high
+  baseline_direction: 'above' | 'below' | null
+  baseline_deviations: number | null
   title: string
   explanation: string
   action: string

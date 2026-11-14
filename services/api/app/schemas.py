@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.baseline import BaselineDirection
+
 
 CrewRole = Literal["commander", "crew_member"]
 
@@ -68,6 +70,8 @@ class Rule(BaseModel):
     id: int
     low: float | None
     high: float | None
+    baseline_direction: BaselineDirection | None  # set on a personal baseline rule, which has no low or high
+    baseline_deviations: float | None
     title: str
     explanation: str
     action: str

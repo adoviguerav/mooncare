@@ -147,6 +147,7 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
 }
 
 function describeLimits(rule: Rule, unit: string | null): string {
+  if (rule.baseline_direction !== null) return `well ${rule.baseline_direction} your own usual value`
   const limits = []
   if (rule.low !== null) limits.push(`below ${formatValue(rule.low, unit)}`)
   if (rule.high !== null) limits.push(`above ${formatValue(rule.high, unit)}`)

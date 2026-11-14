@@ -411,9 +411,15 @@ def build_indicators_sql() -> str:
 
 def build_rules_sql() -> str:
     # Ids follow the order of RULES, as SQLite numbered them, so the ids in the contracts do not change
-    columns = ("id", "indicator_id", "low", "high", "title", "explanation", "action", "threshold_source")
+    columns = (
+        "id", "indicator_id", "low", "high", "baseline_direction", "baseline_deviations",
+        "title", "explanation", "action", "threshold_source",
+    )  # fmt: skip
     rows = [
-        (position, r.indicator_id, r.low, r.high, r.title, r.explanation, r.action, r.threshold_source)
+        (
+            position, r.indicator_id, r.low, r.high, r.baseline_direction, r.baseline_deviations,
+            r.title, r.explanation, r.action, r.threshold_source,
+        )  # fmt: skip
         for position, r in enumerate(RULES, start=1)
     ]
     return with_header(build_inserts("cfg.rule", columns, rows) + reset_identity("cfg.rule"))

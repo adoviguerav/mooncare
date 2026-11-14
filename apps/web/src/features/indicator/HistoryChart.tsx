@@ -38,7 +38,9 @@ export function HistoryChart({ name, unit, readings, rules }: Props) {
 
   // Read as UTC, so the ticks fall on whole hours and days in any time zone
   const times = readings.map((reading) => Date.parse(`${reading.taken_at}Z`))
-  const limits = rules.flatMap((rule) => [rule.low, rule.high]).filter((limit) => limit !== null)
+  // A personal baseline rule has no fixed limit to draw: its limit moves with the readings
+  const fixedRules = rules.filter((rule) => rule.baseline_direction === null)
+  const limits = fixedRules.flatMap((rule) => [rule.low, rule.high]).filter((limit) => limit !== null)
   const values = [...readings.map((reading) => reading.value), ...limits]
 
   const firstTime = Math.min(...times)
@@ -80,7 +82,7 @@ export function HistoryChart({ name, unit, readings, rules }: Props) {
             </text>
           </g>
         ))}
-        {rules.map((rule) => {
+        {fixedRules.map((rule) => {
           // The band of normal values: between the two limits, or from the one limit to the edge of the plot
           const top = rule.high === null ? MARGIN.top : toY(rule.high)
           const bottom = rule.low === null ? MARGIN.top + plotHeight : toY(rule.low)

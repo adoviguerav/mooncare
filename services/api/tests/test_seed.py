@@ -454,3 +454,38 @@ def test_every_daily_indicator_has_its_text_and_source() -> None:
 )
 def test_writes_values_as_sql_literals(value: str | int | float | None, literal: str) -> None:
     assert to_sql_literal(value) == literal
+
+
+def test_loads_the_personal_baseline_rules_with_their_direction_and_no_fixed_limit(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    assert fetch_all(
+        "SELECT id, indicator_id, low, high, baseline_direction, baseline_deviations"
+        " FROM cfg.rule WHERE baseline_direction IS NOT NULL ORDER BY id"
+    ) == [
+        (18, "resting_heart_rate", None, None, "above", 3.0),
+        (19, "skin_temperature", None, None, "above", 3.0),
+        (20, "heart_rate_variability", None, None, "below", 3.0),
+        (21, "spo2", None, None, "below", 3.0),
+        (22, "stress_score", None, None, "below", 3.0),
+    ]
+
+
+def test_the_database_rejects_a_rule_with_both_a_fixed_limit_and_a_baseline(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    with pytest.raises(psycopg.errors.CheckViolation):
+        fetch_all(
+            "INSERT INTO cfg.rule (indicator_id, high, baseline_direction, baseline_deviations,"
+            " title, explanation, action, threshold_source)"
+            " VALUES ('glucose', 99, 'above', 3, 't', 'e', 'a', 's') RETURNING id"
+        )
