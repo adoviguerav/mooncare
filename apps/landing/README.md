@@ -8,7 +8,7 @@ Presentation site for the project. Technology not decided.
 
 - A landing page with two buttons: Crew and Admin.
 - Crew: the daily health dashboard (check-in, vitals, history, checklist, incident warning, and the Data page with the parameters).
-- Admin: a mission-control page with every crew member's readings. Only Eva's row is live; the other crew are demo data.
+- Admin: a mission-control page. A ranked "Needs you" list with grouped signals, a crew-wide check, a review log, a plain-text summary for the ground team, and a detail view per crew member with 7-day trends against their own baseline. Only Eva's row is live; the other crew are demo data.
 
 All readings are demo values and are not connected to the API yet.
 
