@@ -310,6 +310,53 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .linkbtn{background:none;border:0;color:var(--cy);font:inherit;cursor:pointer;padding:6px 0}
 #grid{grid-template-columns:repeat(2,1fr)!important;gap:10px}@media(min-width:960px){#grid{grid-template-columns:repeat(3,1fr)!important}}
 .cp .top{flex-wrap:wrap;gap:6px}.cp .top .tag{order:3;margin-left:auto}.cp .pn{flex:1 1 60%;font-size:12px}.cp .val{font-size:24px}.cp .val small{font-size:11px;display:block}.cp .spark svg{width:100%;max-width:120px}
+
+/* emergency simulation */
+#emFab{position:fixed;right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:42;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;color:#ff6b6b;border:1px solid rgba(255,107,107,.55);background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.03)),rgba(60,8,14,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 6px 20px rgba(0,0,0,.45),0 0 18px rgba(255,80,80,.3)}
+#emFab svg{width:24px;height:24px}#emFab[hidden]{display:none}
+#emPage{position:fixed;inset:0;z-index:70;overflow-y:auto;background:radial-gradient(circle at 50% 38%,rgba(120,14,24,.55),rgba(26,4,10,.78) 70%);-webkit-backdrop-filter:blur(12px) saturate(120%);backdrop-filter:blur(12px) saturate(120%);padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));color:#fff}
+#emPage[hidden]{display:none}
+#emPage .x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;width:44px;height:44px;border-radius:50%;padding:0;font-size:22px}
+#emAlarm{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+#emIcon{position:relative;width:clamp(190px,62vw,320px);aspect-ratio:1;display:grid;place-items:center;background:none;border:0;cursor:pointer;color:#ff5a5a;filter:drop-shadow(0 0 28px rgba(255,70,70,.65))}
+#emIcon svg{width:100%;height:100%;stroke-width:1.2}
+#emIcon .ring{position:absolute;inset:6%;border-radius:50%;border:2px solid rgba(255,90,90,.55);animation:emring 2s ease-out infinite}#emIcon .r2{animation-delay:1s}
+@keyframes emring{from{transform:scale(.7);opacity:.9}to{transform:scale(1.35);opacity:0}}
+#emIcon:focus-visible{outline:3px solid #fff;outline-offset:8px;border-radius:50%}
+#emAlarm h2{font-size:clamp(34px,10vw,64px);letter-spacing:.18em;margin:6px 0 0;text-shadow:0 0 24px rgba(255,70,70,.7)}
+#emAlarm p{margin:0;color:rgba(255,255,255,.75)}
+#emPred{max-width:600px;margin:64px auto 0}
+.emcard{padding:18px;border-radius:24px;border:1px solid rgba(255,120,120,.4);background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(14,6,12,.62);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.emcard h3{font-size:22px;margin:8px 0 10px}.emcard h4{margin:18px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.emclock{display:flex;gap:28px;align-items:flex-end;margin-bottom:8px}.emclock small{display:block;color:rgba(255,255,255,.7);font-size:12px}.emclock b{font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.emclock div:last-child b{font-size:30px;color:var(--warn)}
+.emsig{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.12);font-size:15px}.emsig:first-child{border-top:0}.emsig b{font-variant-numeric:tabular-nums;white-space:nowrap}.emsig b i{font-style:normal;color:#ff8a8a}
+.emstep{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid rgba(255,255,255,.12);cursor:pointer;min-height:44px}.emstep:first-child{border-top:0}
+.emstep input{width:22px;height:22px;margin-top:2px;accent-color:#2fd8ff}.emstep.done b{text-decoration:line-through;opacity:.55}.emstep.cur{background:rgba(255,184,74,.1);border-radius:12px;padding-left:8px;padding-right:8px}.emstep .note{margin:2px 0 0;color:rgba(255,255,255,.7)}
+.emres{padding:12px;border-radius:14px;background:rgba(59,224,160,.16);border:1px solid rgba(59,224,160,.5);margin:12px 0 0}
+#emPage .note{color:rgba(255,255,255,.7)}
+@media(prefers-reduced-motion:reduce){#emIcon .ring{animation:none;opacity:.4}}
+
+/* emergency v2: guided layout */
+.emcard .tag{font-size:12px}.emcard h3{font-size:22px;line-height:1.25;margin:10px 0 14px}
+.emhero{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.emring{position:relative;width:150px;height:150px;flex:none}.emring svg{width:100%;height:100%}
+.emc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.emc b{font-size:34px;font-variant-numeric:tabular-nums;line-height:1}.emc small{font-size:11px;color:rgba(255,255,255,.7);margin-top:4px;text-align:center;max-width:90px}
+.emrisk{flex:1;min-width:140px}.emrisk small{color:rgba(255,255,255,.7);font-size:13px}.emrisk b{display:block;font-size:40px;line-height:1.1;color:#ff5a5a;margin-bottom:6px}
+.emsum{font-size:16px;line-height:1.45;margin:14px 0 0}
+.emsigs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.emsg{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}.emsg:last-child:nth-child(odd){grid-column:1/-1}
+.emsg small{display:block;font-size:12px;color:rgba(255,255,255,.7)}.emsg b{display:block;font-size:17px;margin-top:2px;font-variant-numeric:tabular-nums}.emsg b em{font-style:normal;color:#ff8a8a;font-size:15px}.emsg b i{font-style:normal;color:rgba(255,255,255,.5);font-weight:400;margin:0 4px}
+.emseg{display:flex;gap:6px;margin-bottom:10px}.emseg i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.18)}.emseg i.d{background:#3be0a0}.emseg i.c{background:var(--warn)}
+.emnow{padding:16px;border-radius:18px;background:linear-gradient(180deg,rgba(255,184,74,.2),rgba(255,184,74,.07));border:1px solid rgba(255,184,74,.55)}
+.emnow h3{font-size:24px;margin:8px 0 6px}.emnow p{margin:0 0 14px;font-size:16px;line-height:1.45}
+.emnow .primary{width:100%;min-height:52px;font-size:17px}
+.emres{padding:16px;border-radius:18px;background:rgba(59,224,160,.16);border:1px solid rgba(59,224,160,.55);font-size:16px;line-height:1.45;margin:0}
+.emall{margin:14px 0 4px}.emall summary{cursor:pointer;color:var(--cy);min-height:44px;display:flex;align-items:center}
+.emst{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid rgba(255,255,255,.12);font-size:15px;color:rgba(255,255,255,.8)}.emst:first-child{border-top:0}
+.emst u{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;text-decoration:none;background:rgba(255,255,255,.12)}
+.emst.d u{background:#3be0a0;color:#05261a}.emst.d span{text-decoration:line-through;opacity:.6}.emst.c u{background:var(--warn);color:#2a1700}.emst.c{color:#fff}
+.emcard .acts{margin-top:14px}
 </style>
 </head>
 <body>
@@ -443,6 +490,31 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 </header>
 
 <button id="etaBar" class="etabar" type="button" hidden></button>
+<button id="emFab" type="button" aria-label="Emergency simulation" title="Emergency simulation" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 2.6 19.6h18.8Z"/><path d="M12 9.6v4.6M12 17.1h.01"/></svg></button>
+<section id="emPage" role="dialog" aria-modal="true" aria-label="Emergency" hidden>
+  <button type="button" class="back x" id="emX" aria-label="Close emergency">×</button>
+  <div id="emAlarm"><button type="button" id="emIcon" aria-label="Emergency. Tap to run the predictive emergency simulation"><span class="ring"></span><span class="ring r2"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 2.6 19.6h18.8Z"/><path d="M12 9.6v4.6M12 17.1h.01"/></svg></button><h2>EMERGENCY</h2><p>Tap the icon to run the simulation</p></div>
+  <div id="emPred" hidden>
+    <div class="emcard">
+      <span class="tag warn">Simulation · predictive alert</span>
+      <h3 id="emTitle"></h3>
+      <div class="emhero">
+        <div class="emring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="9"/><circle id="emRing" cx="60" cy="60" r="52" fill="none" stroke="#ff5a5a" stroke-width="9" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1s linear,stroke .3s"/></svg><div class="emc"><b id="emT">25:00</b><small id="emTs">until predicted event</small></div></div>
+        <div class="emrisk"><small>Risk right now</small><b id="emRisk">91%</b><div class="bar warn" aria-hidden="true"><i id="emBar" style="width:91%"></i></div></div>
+      </div>
+      <p class="emsum" id="emConf"></p>
+      <h4>What the AI sees</h4>
+      <div class="emsigs" id="emSig"></div>
+      <h4>What to do</h4>
+      <div class="emseg" id="emSeg" aria-hidden="true"></div>
+      <div id="emNow" aria-live="polite"></div>
+      <p class="emres" id="emRes" hidden></p>
+      <details class="emall"><summary>See all steps</summary><div id="emSteps"></div></details>
+      <div class="acts"><button type="button" id="emAgain">Run again</button><button type="button" id="emDone">Close</button></div>
+      <p class="note">Demo simulation with made-up readings. No real tool can yet time a cardiac arrest this precisely; this shows what an early warning could look like. The steps are general guidance, to be confirmed with the flight surgeon. It never diagnoses.</p>
+    </div>
+  </div>
+</section>
 <main id="home">
 <section class="hero">
   <div class="card">
@@ -887,7 +959,7 @@ $("ptiles").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dat
 $("ptiles").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};
 setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME];document.querySelectorAll("[data-live]").forEach(e=>{const k=e.dataset.live;e.textContent=k==="hr"?M[0].val+Math.round(Math.sin(t/4000)*2+(Math.random()-.5)*2):k==="spo2"?d.spo2-(Math.sin(t/9000)>.85?1:0):d.br+(Math.sin(t/6000)>.6?1:0)})},3000);
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
-function route(){const v=view();$("tabs").hidden=v!=="crew";if(v!=="crew"){$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
+function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
   if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
@@ -1247,6 +1319,30 @@ function applyProfile(i,first){
 }
 applyProfile(0,true);
 route();tick();
+
+// emergency simulation (predictive alert). Replace the made-up numbers with the model output later.
+var emT=0,emTick=null,emSteps=[],emSent=false;
+const EMS=[["Call for help now","Alert the nearest crewmate and press the emergency call. Say: possible cardiac emergency.",1],["Stop, lie down and strap in","Stop all activity. Lie down and secure yourself so you cannot drift or fall.",1],["Bring the defibrillator and medical kit","A crewmate fetches the defibrillator and the medical kit and places them beside you.",2],["Attach the defibrillator pads","Stick the pads on as the pictures show. The device decides if a shock is needed. Never trigger it yourself.",2],["Stay in contact with the flight surgeon","They guide the next steps. If you stop responding or breathing, your crewmate starts chest compressions and follows the device’s voice prompts.",1]];
+function emSignals(){const d=PD[ME];return[["Extra heartbeats (ECG)",2,14,"/min",1],["T-wave shape (ECG)","Normal","Abnormal","",1],["QT interval (ECG)",412,482,"ms",1],["Heart rate variability",d.hrv,Math.max(12,d.hrv-30),"ms",0],["Blood pressure (top)",M[6].sys,M[6].sys-30,"mmHg",0],["Blood oxygen",d.spo2,d.spo2-8,"%",0]]}
+function emSend(){if(emSent)return;emSent=true;LOG.unshift({t:nowT(),a:"Predictive alert from "+PD[ME].name,note:"Dr. Nova AI predicted a dangerous heart rhythm (cardiac arrest risk) in about "+Math.ceil(emT/60)+" min. Readings: "+emSignals().map(x=>x[0]+" "+x[1]+" to "+x[2]+" "+x[3]).join("; ")});}
+function emDraw(){const tot=EMS.reduce((a,x)=>a+x[2],0),dn=EMS.reduce((a,x,i)=>a+(emSteps[i]?x[2]:0),0),risk=Math.round(91*(1-dn/tot)),all=emSteps.every(Boolean),k=emSteps.findIndex(v=>!v);
+  $("emRisk").textContent=risk+"%";$("emRisk").style.color=all?"var(--ok)":"#ff5a5a";$("emBar").style.width=Math.max(3,risk)+"%";$("emBar").parentNode.className="bar "+(all?"":"warn");
+  $("emT").textContent=all?"Safe":emT>0?mmss(emT):"Now";$("emTs").textContent=all?"event averted":emT>0?"until predicted event":"act immediately";
+  const r=$("emRing");r.style.strokeDashoffset=all?0:100-Math.max(0,emT)/600*100;r.style.stroke=all?"var(--ok)":"#ff5a5a";
+  $("emSeg").innerHTML=EMS.map((x,i)=>`<i class="${emSteps[i]?"d":i===k?"c":""}"></i>`).join("");
+  $("emNow").innerHTML=k<0?"":`<div class="emnow"><span class="tag warn">Step ${k+1} of ${EMS.length} · about ${EMS[k][2]} min</span><h3>${EMS[k][0]}</h3><p>${EMS[k][1]}</p><button type="button" class="primary" id="emNext">${k===EMS.length-1?"Send readings to the flight surgeon":"Done, next step"}</button></div>`;
+  if(k>=0)$("emNext").onclick=()=>{if(k===EMS.length-1)emSend();emSteps[k]=true;emDraw();$("emPage").scrollTo({top:$("emSeg").offsetTop-90,behavior:RM?"auto":"smooth"})};
+  $("emSteps").innerHTML=EMS.map((x,i)=>`<div class="emst ${emSteps[i]?"d":i===k?"c":""}"><u>${emSteps[i]?"✓":i+1}</u><span>${x[0]} · about ${x[2]} min</span></div>`).join("");
+  $("emRes").hidden=!all;if(all){$("emRes").innerHTML="<b>Averted in the simulation.</b> Your readings are expected to settle and the predicted event is no longer expected. Keep resting and wait for the flight surgeon’s reply.";if(emTick){clearInterval(emTick);emTick=null}}}
+function openEm(){document.body.style.overflow="hidden";$("emAlarm").hidden=false;$("emPred").hidden=true;$("emPage").hidden=false;$("emPage").scrollTop=0;$("emIcon").focus();buzz([200,100,200])}
+function closeEm(){if(emTick){clearInterval(emTick);emTick=null}$("emPage").hidden=true;if($("alertsPage").hidden)document.body.style.overflow=""}
+function runEm(){emT=10*60;emSent=false;emSteps=EMS.map(()=>false);$("emAlarm").hidden=true;$("emPred").hidden=false;$("emPage").scrollTop=0;
+  $("emTitle").textContent="Cardiac arrest risk: a dangerous heart rhythm is developing";
+  $("emConf").textContent="Six readings from your chest ECG, wearable and cuff show a dangerous heart rhythm building. If nothing changes, the model is 91% sure your heart could stop within about 10 minutes. Get help now.";
+  $("emSig").innerHTML=emSignals().map(x=>`<div class="emsg"><small>${x[0]} <em style="float:right;font-style:normal;color:#ff8a8a">${x[4]?"▲":"▼"}</em></small><b>${x[1]}<i>→</i>${x[2]} <small style="display:inline">${x[3]}</small></b></div>`).join("");
+  emDraw();if(emTick)clearInterval(emTick);emTick=setInterval(()=>{if(emT>0)emT--;if(!emSteps.every(Boolean))emDraw()},1000)}
+$("emFab").onclick=openEm;$("emX").onclick=closeEm;$("emDone").onclick=closeEm;$("emIcon").onclick=runEm;$("emAgain").onclick=runEm;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("emPage").hidden)closeEm()});
 </script>
 </body>
 </html>
