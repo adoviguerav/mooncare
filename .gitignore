@@ -221,5 +221,4 @@ __marimo__/
 
 # Real Telemetry
 node_modules/
-database/datasets/
 *.db

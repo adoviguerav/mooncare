@@ -195,6 +195,7 @@ built in: [MVP architecture](mvp_architecture.md)  REVIEW pending
 - Build: with AI (Claude Code, Adolfo's account), a front end and back end are doable in about 2 days. Build the base platform first, then split into parallel workstreams: gamification, AI, emergency (Adolfo).
 - Demo: a normal scenario, then an emergency simulation, such as a heart attack with CPR guidance (Adolfo, Alex).
 - Demo. Run the flow live and bring a backup recording.
+- Pitch. Say "Earth Independent Medical Operations (EIMO)": NASA's name for moving medical care from Earth to the crew as missions get farther away (Levin 2023). It is what our panel works towards, and NASA still lists it as open (HRP gap Medical-701).
 - Pitch. We found no open human data for the most severe effects (bone, muscle, eyesight). The panel tracks exercise, the main countermeasure, and their alerts are ready for when data exists.
 - Priority rule. Among the indicators we have data for, show first the ones behind the risks NASA rates highest for a long mission (Antonsen 2023, Table 4). Next steps follow the same rule, as a separate list.
 - Team: Àngels knows 3D animators for character or background design
