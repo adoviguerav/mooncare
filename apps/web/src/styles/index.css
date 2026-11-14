@@ -30,6 +30,11 @@ body {
   margin: 0;
   min-height: 100dvh;
   background:
+    radial-gradient(1.5px 1.5px at 20px 30px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
+    radial-gradient(1px 1px at 90px 120px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
+    radial-gradient(1.5px 1.5px at 160px 60px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
+    radial-gradient(1px 1px at 60px 180px, rgb(255 255 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
+    radial-gradient(1px 1px at 140px 150px, rgb(207 233 255 / 0.75), transparent) 0 0 / 200px 200px fixed,
     radial-gradient(ellipse at 50% -8%, var(--bg-glow), var(--bg) 62%) fixed,
     var(--bg);
   color: var(--ink);
@@ -37,7 +42,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The moon glow behind everything. Fixed and inert, so scrolling never repaints it. */
+/* The aurora behind everything. Fixed and inert, so scrolling never repaints it. */
 body::before {
   content: '';
   position: fixed;
@@ -45,8 +50,39 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(38vmax 38vmax at 18% 12%, rgb(47 216 255 / 0.16), transparent 62%),
-    radial-gradient(40vmax 40vmax at 85% 90%, rgb(47 216 160 / 0.08), transparent 62%);
+    radial-gradient(38vmax 38vmax at 18% 22%, rgb(47 216 255 / 0.24), transparent 62%),
+    radial-gradient(34vmax 34vmax at 82% 30%, rgb(124 92 255 / 0.2), transparent 62%),
+    radial-gradient(40vmax 40vmax at 55% 88%, rgb(47 216 160 / 0.14), transparent 62%);
+}
+
+/* The Earth on the horizon */
+body::after {
+  content: '';
+  position: fixed;
+  left: 50%;
+  bottom: -78vw;
+  z-index: -1;
+  width: 150vw;
+  max-width: 1400px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.4;
+  background: radial-gradient(circle at 50% 0, #58b7f2, #1f66b8 28%, #0a2a5e 60%, transparent 72%);
+  box-shadow: 0 -10px 60px rgb(47 216 255 / 0.35);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body::before {
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes drift {
+  to {
+    transform: translate3d(3%, -4%, 0) scale(1.08) rotate(3deg);
+  }
 }
 
 h1,
