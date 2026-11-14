@@ -1,8 +1,7 @@
 import { useId } from 'react'
 import type { ReactElement } from 'react'
 
-// The Moon Care logo of the design prototype (apps/landing/index.html): the wordmark, the moon with its
-// craters and glow, and the heartbeat line under it
+// The Moon Care logo of the design prototype (apps/landing/index.html)
 export function Logo({ height = 56 }: { height?: number }): ReactElement {
   const id = useId()
   const ink = `${id}-ink`

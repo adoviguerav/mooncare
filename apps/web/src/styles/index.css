@@ -68,7 +68,6 @@ body::before {
   inset: -10%;
   z-index: -1;
   pointer-events: none;
-  will-change: transform;
   background:
     radial-gradient(38vmax 38vmax at 18% 22%, rgb(47 216 255 / 0.24), transparent 62%),
     radial-gradient(34vmax 34vmax at 82% 30%, rgb(124 92 255 / 0.2), transparent 62%),
@@ -93,10 +92,10 @@ body::after {
   box-shadow: 0 -10px 60px rgb(47 216 255 / 0.35);
 }
 
-/* The aurora drifts only behind the profile picker: under the many glass cards of the other screens, each
-   frame of it would blur them all again */
+/* Only behind the profile picker: elsewhere each frame would blur every glass card again */
 @media (prefers-reduced-motion: no-preference) {
   body:has(.picker)::before {
+    will-change: transform;
     animation: drift 26s ease-in-out infinite alternate;
   }
 }
@@ -136,6 +135,7 @@ button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+  transition: scale 0.15s ease;
 }
 
 :focus-visible {
@@ -181,7 +181,8 @@ button {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--mute);
+  /* Not --mute: this text sits on the sky, and over the Earth --mute is too faint */
+  color: var(--ink);
 }
 
 /* --- Glass card --- */
@@ -332,7 +333,7 @@ button {
   font-weight: 700;
 }
 
-.primary:hover {
+.primary:hover:not(:disabled) {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.7),
     0 6px 24px rgb(47 216 255 / 0.55);
@@ -346,6 +347,11 @@ button {
 /* scale, not transform: it adds to the lift of a hovered tile instead of replacing it */
 button:active:not(:disabled) {
   scale: 0.97;
+}
+
+/* A card is too wide for the same press */
+button.card:active {
+  scale: 0.99;
 }
 
 /* --- Chips --- */
@@ -436,7 +442,6 @@ button:active:not(:disabled) {
 }
 
 .profile:hover {
-  transform: translateY(-2px);
   border-color: var(--accent);
   box-shadow:
     var(--tile-edge),
@@ -474,9 +479,8 @@ button:active:not(:disabled) {
     animation-delay: 180ms;
   }
 
-  /* The lines draw themselves. Both carry pathLength="1". */
-  .sparkline polyline,
-  .chart-line {
+  /* The line draws itself. It carries pathLength="1". */
+  .sparkline polyline {
     stroke-dasharray: 1;
     animation: draw-in 1.4s ease-out;
   }
@@ -764,8 +768,21 @@ button:active:not(:disabled) {
 }
 
 .tile:hover {
-  transform: translateY(-2px);
   border-color: rgb(47 216 255 / 0.5);
+}
+
+/* The lifts are for a pointer: after a tap they would stay up */
+@media (hover: hover) {
+  .tile:hover,
+  .profile:hover {
+    transform: translateY(-2px);
+  }
+
+  .tabs button:hover .icon,
+  .tabs button:focus-visible .icon {
+    transform: translateY(-2px) scale(1.1);
+    filter: drop-shadow(0 0 8px rgb(47 216 255 / 0.6));
+  }
 }
 
 .tile-alert {
@@ -920,12 +937,6 @@ button:active:not(:disabled) {
   transition:
     transform 0.2s ease,
     filter 0.2s ease;
-}
-
-.tabs button:hover .icon,
-.tabs button:focus-visible .icon {
-  transform: translateY(-2px) scale(1.1);
-  filter: drop-shadow(0 0 8px rgb(47 216 255 / 0.6));
 }
 
 /* The Alerts tab stays amber while something needs a look */

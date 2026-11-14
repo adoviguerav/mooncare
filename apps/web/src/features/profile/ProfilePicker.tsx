@@ -13,7 +13,6 @@ const ROLE_NAMES: Record<CrewRole, string> = {
 // Who has the simulated cardiac event of the demo
 const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
-// Each profile card comes in a little after the one before it
 const PROFILE_STAGGER_MS = 60
 
 type Props = { onPick: (crewMember: CrewMember) => void }
