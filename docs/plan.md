@@ -43,7 +43,7 @@ Tick a task when its "done when" check passes. Each task names the requirement (
 
 Backend:
 
-- [x] **D2. Move the database from SQLite to Postgres** (R7, R8). Same five tables and same contracts. Postgres runs in Docker on a laptop, and the same `.sql` files build the deployed one. How to run it is in the README and in `database/postgresql`.
+- [x] **D2. Move the database from SQLite to Postgres** (R7, R8). Same five tables and same contracts. Postgres runs on a laptop (installed, or in Docker) or on Supabase, and `DATABASE_PROVIDER` in `services/api/.env` picks one. The same `.sql` files build both, and `services/api/load_database.py` creates the tables and loads the data. How to run it is in the README and in `database/postgresql`.
     - Done when: the backend tests pass against Postgres, the panel of Crew 1 shows the same values as before, the README says how to run Postgres on a laptop, and the MVP architecture and the System_design, section 5, say Postgres.
 
 Frontend:
@@ -113,7 +113,7 @@ The jury opens the app from a link and uses it as if they were the astronauts (H
 
 Backend:
 
-- [ ] **D3. Backend and Postgres on Railway.** Create the account, a service from the repo with `services/api` as its folder, and a Postgres database next to it. `database/postgresql/scripts/apply.sh` runs once against it to create the tables and load the seeds.
+- [ ] **D3. Backend and Postgres on Railway.** Create the account, a service from the repo with `services/api` as its folder, and a Postgres database next to it. `uv run python load_database.py`, with that database in the environment, runs once to create the tables and load the seeds. For the jury it is one server, the moon (`NODE_ROLE=moon`). The final deployment, after the hackathon, is in "After the MVP".
     - Done when: `/api/crew` answers from the Railway address, and a check-in is still there after a restart.
 
 Frontend:
@@ -147,16 +147,22 @@ From here on nobody adds features. We only fix what is broken. Both teams, in th
 These wait until every task above is ticked. They are the planned parts of the target architecture (System_design, section 5).
 
 - [ ] **Onboard AI.** The emergency assistant, E1 to E6.
-- [ ] **Link to the ground.** The first thing after the MVP. With a link the app works as medical care does today on the ISS: the flight surgeon on the ground follows the crew. Without a link the ship keeps working on its own and the ground catches up later (System_design, section 5). If there is no time to build it, it goes on the architecture slide (P10) and in the next steps of the pitch (P9). Decided on 14 Nov:
-    - The flight surgeon sees the full panel of each crew member: indicators, history and alerts. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
-    - One way only, ship to ground. The ground looks and does not answer.
-    - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
-    - [ ] **G1. Link switch and queue** (backend). With the link off, new readings are saved on board and wait in a queue. With the link on, the queue empties. Each sync is recorded in the `his` schema. It adds to the data model, so agree it first.
-        - Done when: with the link off, a check-in shows on the crew panel and not on the ground. After turning the link on, the ground shows it.
-    - [ ] **G2. Ground panel** (backend). The same panel and history, built only from what has reached the ground, plus when the last data arrived.
-        - Done when: the ground panel of Crew 1 shows the glucose alert and the time of the last data received.
-    - [ ] **G3. Flight surgeon screen** (frontend). The four crew members, who has an alert and when their last data arrived. A tap opens that crew member's full panel. The link switch is on this screen.
-        - Done when: with the link off, the screen says since when it has no data, and the crew app works as before.
+- [ ] **Link to the ground: moon and earth servers.** With a link the app works as medical care does today on the ISS: the flight surgeon on the ground follows the crew. Without a link the moon keeps working on its own and the ground catches up later (System_design, section 5). How it works: [moon_earth_sync.md](moon_earth_sync.md). Decided on 14 Nov, replacing the earlier "one backend, one database, one way only":
+    - One backend, deployed twice: the MOON server on board and the EARTH server on the ground, each with its own database. `NODE_ROLE` in the configuration says which one a server is.
+    - The moon chooses when to sync. It sends its readings and check-ins to earth (push) and downloads the configuration and the crew from earth (pull), replacing its own copy. Each kind of data is written on one side only.
+    - Every sync, successful or not, is recorded on both servers.
+    - The flight surgeon sees the full panel of each crew member: indicators, history and alerts, as of the last sync. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
+    - The dashboard has two views: connected to the moon server or to the earth server.
+    - [x] **G1. Moon and earth servers, and the sync** (backend). `NODE_ROLE`, push, pull, the sync history in `his.sync_operation`, `GET /api/node`, `GET /api/sync/history` and `POST /api/sync`. Built on `feat/backend-ivan`, with tests against two databases.
+        - Done when: a check-in saved on the moon is not on earth until the moon syncs, and is there after it. A sync with earth down is recorded as failed, and the next one sends everything pending. Checked on 14 Nov with both servers on one laptop.
+    - [x] **G2. Ground panel** (backend). The earth server is the ground panel: the same panel and history, built only from what the moon has sent. `GET /api/node` says when the last sync arrived.
+        - Done when: the earth panel of Crew 1 shows the glucose alert, and `GET /api/node` on earth gives the time of the last push it received.
+    - [ ] **G3. Earth view of the dashboard** (frontend). A switch between the moon and the earth server. On earth: the four crew members, who has an alert and when the last sync arrived; a tap opens that crew member's full panel. On the moon: a "Sync with Earth" button, the result of the last sync and how many rows are still to send. The contract is in [moon_earth_sync.md](moon_earth_sync.md), section 5.
+        - Done when: a check-in made in the moon view shows in the earth view only after pressing "Sync with Earth", and the crew app works as before when the earth server is down.
+    - [ ] **G4. Accounts and sign-in** (backend first, then frontend). Each backend signs its own users in and checks every request. Users and roles are managed on earth and downloaded by the moon with the configuration, so the crew can sign in without a link. Public endpoints only for what comes before the login page. Decide first which roles exist and what each one may see (System_design, section 6).
+        - Done when: without signing in, only the public endpoints answer; an astronaut sees only their own panel; a user created on earth can sign in on the moon after a sync, with the link down.
+    - [ ] **G5. Deploy both servers** (after the hackathon). Two services on Render from this repo, one with `NODE_ROLE=moon` and one with `NODE_ROLE=earth`, each with its own Supabase project. `SYNC_TOKEN` the same on both, set in Render and never in git. The dashboard on another domain needs CORS.
+        - Done when: `POST /api/sync` on the moon service sends a new check-in to the earth service, and the earth view shows it.
 - [ ] **Two profile types: commander and crew member.** Done: `crew_member` has a `role`, `GET /api/crew` returns it and the profile picker shows it. Crew 1 is the commander. Left: a commander screen. Decide first what the commander sees (System_design, section 2, Not decided yet).
 - [ ] **Mobile app** (`apps/mobile`).
 - [ ] The other stretch goals, in the order of the System_design, section 2.
