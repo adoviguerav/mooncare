@@ -246,15 +246,7 @@ The MVP starts with these three rules. The sleep and heart rate limits are gener
 6. The other MVP indicators and the other three crew members.
 7. The other rules, as they get a definition and a source.
 
-Steps 1 to 3 are the base. It already shows NASA data, a history and an alert. Once it runs, the data model (section 2) and the contracts (section 3) are fixed and the rest is built in parallel.
-
-- Data. Step 6. It touches `seed.py`, plus one new row per indicator in `seed_content.py`.
-- Frontend and design. Charts, look and gamification. It builds against the contracts.
-- Check-in. Step 4. Both sides build it against its contract in section 3.
-- Rules. Step 7. A limit and a source for each rule. It touches only `seed_content.py`.
-- CPR flow. Step 5. Frontend only.
-
-Rules and the CPR flow do not depend on the base and can start now.
+Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an alert. The data model (section 2) and the contracts (section 3) are now fixed and the rest is built in parallel by two teams. Who builds what is in the [plan](plan.md), and how the branches work is in [branches.md](branches.md).
 
 ## Starting decisions
 
