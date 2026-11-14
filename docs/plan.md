@@ -76,7 +76,7 @@ Data and backend:
     - Done when: each one has its card and its history for the four crew members.
 - [x] **N5. VO2 max rule.** The first rule with a NASA limit: in-mission VO2 max at or above 32.9 mL/kg/min (NASA-STD-3001, V1 4001). The data is the watch's estimate (data document, Reference values from NASA). None of the four crew members is under the limit (their lowest value is 41.7), so the alert does not fire with this data.
     - Done when: a crew member under the limit shows the alert with its source.
-- [ ] **N6. Radiation dose** (Table 2), from the RadLab dosimeters of the ISS. It is a reading of the ship, not of a person, and the data model stores readings per crew member. To agree how to store it before building it.
+- [x] **N6. Radiation dose** (Table 2), from the RadLab dosimeters of the ISS. It is a reading of the ship, not of a person: each day's mean dose rate, over every dosimeter reading of that day, is stored as a reading of every crew member, so the data model does not change. No rule: there is no public limit for a dose rate.
     - Done when: the panel shows the dose rate of the ship and its history.
 
 Frontend:

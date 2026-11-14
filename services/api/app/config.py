@@ -16,6 +16,7 @@ NASA_DIR = DATABASE_DIR / "datasets" / "nasa"
 LIFESNAPS_DIR = DATABASE_DIR / "datasets" / "lifesnaps"
 
 METABOLIC_PANEL_CSV = NASA_DIR / "metabolic_panel.csv"
+RADLAB_DIR = NASA_DIR / "radlab"
 BLOOD_COUNT_CSV = NASA_DIR / "blood_count.csv"
 CARDIOVASCULAR_PANEL_CSV = NASA_DIR / "cardiovascular_panel.csv"
 IMMUNE_PANEL_EVE_CSV = NASA_DIR / "immune_panel_eve.csv"

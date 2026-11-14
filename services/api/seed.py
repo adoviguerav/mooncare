@@ -7,7 +7,9 @@ Loading the files into a database is done by load_database.py.
 import csv
 import logging
 import re
+from functools import lru_cache
 from collections.abc import Callable, Iterable, Sequence
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -22,6 +24,7 @@ from app.config import (
     LIFESNAPS_PANAS_CSV,
     LIFESNAPS_STAI_CSV,
     METABOLIC_PANEL_CSV,
+    RADLAB_DIR,
     SEEDS_DIR,
 )
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
@@ -138,6 +141,8 @@ class DatasetFiles:
     # The LifeSnaps questionnaires
     stai: Path | None = None
     panas: Path | None = None
+    # RadLab: a folder of monthly files with the readings of the dosimeters of the ISS
+    radlab_dir: Path | None = None
 
 
 DATASET_FILES = DatasetFiles(
@@ -150,6 +155,7 @@ DATASET_FILES = DatasetFiles(
     IMMUNE_PANEL_ALAMAR_CSV,
     LIFESNAPS_STAI_CSV,
     LIFESNAPS_PANAS_CSV,
+    RADLAB_DIR,
 )
 
 
@@ -259,6 +265,24 @@ def read_questionnaire_readings(
     return readings
 
 
+@lru_cache
+def read_radiation_readings(radlab_dir: Path) -> tuple[Reading, ...]:
+    """The mean absorbed dose rate of each day, over every dosimeter reading of that day.
+
+    It is a reading of the ship, not of a person: every crew member gets the same one.
+    """
+    dose_rates_by_day: dict[str, list[float]] = defaultdict(list)
+    for monthly_tsv in sorted(radlab_dir.glob("*.tsv")):
+        with monthly_tsv.open(newline="", encoding="utf-8-sig") as tsv_file:
+            for row in csv.DictReader(tsv_file, delimiter="\t"):
+                if row["absorbed_dose_rate"] != "":
+                    dose_rates_by_day[row["timestamp"][:10]].append(float(row["absorbed_dose_rate"]))
+    return tuple(
+        Reading("radiation_dose_rate", f"{day}T00:00", round(sum(dose_rates) / len(dose_rates), 2))
+        for day, dose_rates in sorted(dose_rates_by_day.items())
+    )
+
+
 def build_mood_day_counts(readings: list[Reading]) -> list[Reading]:
     """For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen.
 
@@ -305,9 +329,11 @@ def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> lis
             questionnaire_csv, columns, pairing.lifesnaps_id, pairing.lifesnaps_offset_days
         )
     ]
+    radiation_readings = list(read_radiation_readings(dataset_files.radlab_dir)) if dataset_files.radlab_dir else []
     return (
         blood_readings
         + questionnaire_readings
+        + radiation_readings
         + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
         + daily_readings
         + build_mood_day_counts(daily_readings)

@@ -20,6 +20,7 @@ from seed import (
     read_blood_readings,
     read_heart_rate_readings,
     read_questionnaire_readings,
+    read_radiation_readings,
     STAI_COLUMNS,
     to_sql_literal,
 )
@@ -392,6 +393,29 @@ def test_loads_the_vo2_max_rule_with_the_nasa_limit(
     assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE indicator_id = 'vo2_max'") == [
         (17, "vo2_max", 32.9, None)
     ]
+
+
+def test_stores_the_mean_dose_rate_of_the_ship_for_each_day(tmp_path: Path) -> None:
+    header = "timestamp\tinstrument_id\tabsorbed_dose_rate\tdose_equivalent_rate\tinstrument\tmodule\tspacecraft\n"
+    write_csv(
+        tmp_path / "iss_2021-11.tsv",
+        header
+        + '"2021-11-01T00:00:00"\t"Lidal"\t10.0\t\t"Lidal"\t"Columbus"\t"ISS"\n'
+        + '"2021-11-01T00:05:00"\t"DosTel2"\t20.0\t\t"DosTel2"\t"Columbus"\t"ISS"\n'
+        + '"2021-11-01T00:10:00"\t"DosTel2"\t\t\t"DosTel2"\t"Columbus"\t"ISS"\n'
+        + '"2021-11-02T00:00:00"\t"Lidal"\t7.5\t\t"Lidal"\t"Columbus"\t"ISS"\n',
+    )
+
+    assert read_radiation_readings(tmp_path) == (
+        Reading("radiation_dose_rate", "2021-11-01T00:00", 15.0),
+        Reading("radiation_dose_rate", "2021-11-02T00:00", 7.5),
+    )
+
+
+def test_the_real_radiation_data_gives_every_crew_member_the_same_dose_rate_of_the_ship() -> None:
+    panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
+
+    assert [panel["radiation_dose_rate"] for panel in panels] == [9.76, 9.76, 9.76, 9.76]
 
 
 def test_every_daily_indicator_has_its_text_and_source() -> None:

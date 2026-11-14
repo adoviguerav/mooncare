@@ -24,6 +24,7 @@ const GROUPS = [
   { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
   { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency', 'sleep_awake_minutes'] },
   { title: 'Temperature', indicatorIds: ['skin_temperature'] },
+  { title: 'Ship', indicatorIds: ['radiation_dose_rate'] },
   { title: 'Mind', indicatorIds: ['stress_score', 'anxiety_score', 'positive_affect', 'negative_affect'] },
   // shortcut: the mood rule is shown as cards of its own; F4 puts it inside the mood card
   { title: 'Mood over the last 14 days', indicatorIds: MOOD_DAY_COUNT_IDS },

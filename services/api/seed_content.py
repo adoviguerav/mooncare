@@ -57,6 +57,12 @@ SOURCES = [
         ),
     ),
     Source(
+        id="radlab",
+        name="RadLab (NASA OSDR)",
+        url="https://visualization.osdr.nasa.gov/radlab/",
+        citation="NASA Open Science Data Repository, RadLab: readings of the radiation detectors of the ISS.",
+    ),
+    Source(
         id="lifesnaps",
         name="LifeSnaps",
         url="https://doi.org/10.5281/zenodo.7229547",
@@ -433,6 +439,20 @@ INDICATORS = [
             "The negative score of the PANAS questionnaire: how strongly you felt negative emotions. Follow its trend over time."
         ),
         source_id="lifesnaps",
+    ),
+    Indicator(
+        id="radiation_dose_rate",
+        name="Radiation dose rate in the ship",
+        unit="µGy/h",
+        how_to_measure=(
+            "With the dosimeters inside the ship, all the time. It is a reading of the ship, the same for "
+            "the whole crew, not your personal dose."
+        ),
+        why_it_matters=(
+            "How much radiation the ship is receiving. The dose adds up over a mission, so a sustained rise "
+            "matters. The value is the mean of the day."
+        ),
+        source_id="radlab",
     ),
     *[
         Indicator(

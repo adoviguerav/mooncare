@@ -94,6 +94,7 @@ How each dataset becomes readings:
 | File | Indicator ids | Note |
 | :-- | :-- | :-- |
 | LifeSnaps daily | `resting_heart_rate`, `sleep_duration`, `sleep_efficiency`, `skin_temperature`, `very_active_minutes`, `steps`, `mood_happy`, `mood_sad`, `mood_tense`, `mood_alert`, `mood_rested`, `mood_neutral`, `mood_tired`, `spo2`, `breathing_rate`, `heart_rate_variability`, `stress_score`, `sleep_awake_minutes`, `vo2_max` | One reading per person, day and indicator. Each mood column holds 0 or 1 and becomes its own indicator. The frontend shows the seven moods as one card |
+| RadLab | `radiation_dose_rate` | One reading per day: the mean absorbed dose rate over every dosimeter reading of that day. The same for the four crew members, because it is a reading of the ship |
 | LifeSnaps questionnaires (STAI, PANAS) | `anxiety_score`, `positive_affect`, `negative_affect` | One reading per person and answered questionnaire, 2 to 7 each |
 | LifeSnaps daily, computed | `mood_sad_days_14`, `mood_tense_days_14` | For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen (section 5) |
 | LifeSnaps hourly | `heart_rate` | One reading per person and hour |
