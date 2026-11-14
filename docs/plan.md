@@ -43,7 +43,7 @@ Tick a task when its "done when" check passes. Each task names the requirement (
 
 Backend:
 
-- [ ] **D2. Move the database from SQLite to Postgres** (R7, R8). Same five tables and same contracts. It changes `schema.sql`, `db.py`, the SQL in `main.py`, the seed script and the test setup. Why now: everything built after it is written once. Why Postgres: Railway and Supabase both run it.
+- [ ] **D2. Move the database from SQLite to Postgres** (R7, R8). In progress, by the other backend person. Same five tables and same contracts. It changes `schema.sql`, `db.py`, the SQL in `main.py`, the seed script and the test setup. Why now: everything built after it is written once. Why Postgres: Railway and Supabase both run it.
     - Done when: the backend tests pass against Postgres, the panel of Crew 1 shows the same values as before, the README says how to run Postgres on a laptop, and the MVP architecture and the System_design, section 5, say Postgres.
 
 Frontend:
@@ -59,7 +59,7 @@ One astronaut opens the app, checks in and sees an alert.
 
 Backend:
 
-- [ ] **B1. Check-in and mood readings** (R2, R3). The `PUT` check-in endpoint, and the six mood indicators loaded from LifeSnaps.
+- [x] **B1. Check-in and mood readings** (R2, R3). The `PUT` check-in endpoint, and the six mood indicators loaded from LifeSnaps.
     - Done when: saving a check-in for 2021-11-02 returns what was saved, and the panel for that day shows it.
 
 Frontend:
@@ -80,7 +80,7 @@ Every MVP indicator, the four crew members and the rest of the rules.
 
 Backend:
 
-- [ ] **B3. The other MVP indicators** (R1): resting heart rate, sleep duration, sleep efficiency, skin temperature, very active minutes, steps.
+- [x] **B3. The other MVP indicators** (R1): resting heart rate, sleep duration, sleep efficiency, skin temperature, very active minutes, steps.
     - Done when: the panel returns all of them for Crew 1 on the demo date.
 - [ ] **B5. The other three crew members.** Each one's dates are shifted so their data lands on the demo date, 2021-11-02.
     - Done when: the profile picker shows four crew members and each has a full panel on the demo date.

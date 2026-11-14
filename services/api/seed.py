@@ -23,7 +23,13 @@ LANDING_DATE = date(2021, 9, 18)
 SAMPLE_LABEL_PATTERN = re.compile(r"([LR])[+-](\d+)")
 
 GLUCOSE_COLUMN = "glucose_value_milligram_per_deciliter"
-MOOD_COLUMNS = {
+DAILY_COLUMNS = {
+    "resting_heart_rate": "resting_hr",
+    "sleep_duration": "minutesAsleep",
+    "sleep_efficiency": "sleep_efficiency",
+    "skin_temperature": "nightly_temperature",
+    "very_active_minutes": "very_active_minutes",
+    "steps": "steps",
     "mood_happy": "HAPPY",
     "mood_sad": "SAD",
     "mood_tense": "TENSE/ANXIOUS",
@@ -95,14 +101,14 @@ def read_heart_rate_readings(hourly_csv: Path, lifesnaps_id: str, offset_days: i
     return readings
 
 
-def read_mood_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) -> list[Reading]:
+def read_daily_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) -> list[Reading]:
     readings = []
     with daily_csv.open(newline="", encoding="utf-8-sig") as csv_file:
         for row in csv.DictReader(csv_file):
             if row["id"] != lifesnaps_id:
                 continue
             day = datetime.fromisoformat(row["date"]).date() + timedelta(days=offset_days)
-            for indicator_id, column in MOOD_COLUMNS.items():
+            for indicator_id, column in DAILY_COLUMNS.items():
                 if row[column] != "":
                     readings.append(Reading(indicator_id, f"{day.isoformat()}T00:00", float(row[column])))
     return readings
@@ -141,7 +147,7 @@ def seed_database(
             readings = (
                 read_glucose_readings(metabolic_panel_csv, pairing.inspiration4_code)
                 + read_heart_rate_readings(hourly_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
-                + read_mood_readings(daily_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+                + read_daily_readings(daily_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
             )
             connection.executemany(
                 "INSERT INTO reading VALUES (?, ?, ?, ?)",

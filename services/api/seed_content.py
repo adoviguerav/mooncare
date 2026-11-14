@@ -90,8 +90,74 @@ INDICATORS = [
             "With a wearable ECG or a smartwatch, all day. On the ISS, the Bio-Monitor shirt does it."
         ),
         why_it_matters=(
-            "How many times your heart beats each minute. A heart rate that stays high at rest can point "
-            "to dehydration, infection, stress or a cardiovascular problem."
+            "How many times your heart beats each minute, hour by hour through the day."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="resting_heart_rate",
+        name="Resting heart rate",
+        unit="bpm",
+        how_to_measure=(
+            "With a wearable ECG or a smartwatch, all day. On the ISS, the Bio-Monitor shirt does it."
+        ),
+        why_it_matters=(
+            "Your heart rate when you are at rest. A resting heart rate that stays above your usual value "
+            "can point to dehydration, infection, stress or a cardiovascular problem."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="sleep_duration",
+        name="Sleep duration",
+        unit="min",
+        how_to_measure="With a wrist tracker, every night. On the ISS, the Actiwatch does it.",
+        why_it_matters=(
+            "How long you slept last night. Sleeping too little, night after night, is sleep deprivation."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="sleep_efficiency",
+        name="Sleep efficiency",
+        unit="%",
+        how_to_measure="With a wrist tracker, every night. On the ISS, the Actiwatch does it.",
+        why_it_matters=(
+            "The share of your time in bed that you spent asleep. A lower efficiency is a sign of "
+            "reduced sleep quality."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="skin_temperature",
+        name="Skin temperature",
+        unit="°C",
+        how_to_measure="With a wearable, every night. On the ISS, the Bio-Monitor shirt does it.",
+        why_it_matters=(
+            "The temperature of your skin during the night. It is skin temperature, not core temperature. "
+            "A raised temperature together with symptoms can point to an infection."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="very_active_minutes",
+        name="Very active minutes",
+        unit="min",
+        how_to_measure="With a wearable sensor, all day.",
+        why_it_matters=(
+            "The minutes of the day you spent in intense activity. It is general activity, not resistance "
+            "exercise, so it shows only in part whether you are keeping up with the exercise programme."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="steps",
+        name="Steps",
+        unit="steps",
+        how_to_measure="With a wearable sensor, all day.",
+        why_it_matters=(
+            "The steps you took during the day. It is general activity, not resistance exercise, so it "
+            "shows only in part whether you are keeping up with the exercise programme."
         ),
         source_id="lifesnaps",
     ),

@@ -10,7 +10,10 @@ METABOLIC_PANEL_HEADER = (
     "glucose_range_min_milligram_per_deciliter,glucose_range_max_milligram_per_deciliter\n"
 )
 HOURLY_HEADER = "id,date,hour,bpm\n"
-DAILY_HEADER = "id,date,ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
+DAILY_HEADER = (
+    "id,date,resting_hr,minutesAsleep,sleep_efficiency,nightly_temperature,very_active_minutes,steps,"
+    "ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
+)
 VOLUNTEER = "621e2f9167b776a240011ccb"
 OTHER_VOLUNTEER = "621e2fce67b776a240279baa"
 
@@ -153,9 +156,9 @@ def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(
     daily = write_csv(
         tmp_path / "daily.csv",
         DAILY_HEADER
-        + f"{VOLUNTEER},2021-10-30,0.0,1.0,0.0,1.0,0.0,0.0\n"
-        + f"{VOLUNTEER},2021-10-31,,,,,,\n"
-        + f"{OTHER_VOLUNTEER},2021-10-30,0.0,0.0,0.0,0.0,1.0,0.0\n",
+        + f"{VOLUNTEER},2021-10-30,,,,,,,0.0,1.0,0.0,1.0,0.0,0.0\n"
+        + f"{VOLUNTEER},2021-10-31,,,,,,,,,,,,\n"
+        + f"{OTHER_VOLUNTEER},2021-10-30,,,,,,,0.0,0.0,0.0,0.0,1.0,0.0\n",
     )
 
     seed_database(
@@ -178,4 +181,44 @@ def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(
         ("mood_rested", "2021-11-01T00:00", 1.0),
         ("mood_sad", "2021-11-01T00:00", 0.0),
         ("mood_tense", "2021-11-01T00:00", 0.0),
+    ]
+
+
+def test_stores_the_daily_wearable_values_of_the_volunteer_on_the_shifted_day(
+    tmp_path: Path, database_path: Path
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        DAILY_HEADER
+        + f"{VOLUNTEER},2022-01-18,61.5,367.0,98.0,31.25,0,4958.0,,,,,,\n"
+        + f"{VOLUNTEER},2022-01-19,62.5,134.0,99.0,,0,3800.0,,,,,,\n"
+        + f"{OTHER_VOLUNTEER},2022-01-18,70.0,400.0,90.0,33.0,12,9000.0,,,,,,\n",
+    )
+
+    seed_database(
+        database_path,
+        [CrewPairing("Crew 1", "C003", VOLUNTEER, lifesnaps_offset_days=-77)],
+        metabolic_panel,
+        hourly,
+        daily,
+    )
+
+    with sqlite3.connect(database_path) as connection:
+        readings = connection.execute(
+            "SELECT indicator_id, taken_at, value FROM reading ORDER BY taken_at, indicator_id"
+        ).fetchall()
+    assert readings == [
+        ("resting_heart_rate", "2021-11-02T00:00", 61.5),
+        ("skin_temperature", "2021-11-02T00:00", 31.25),
+        ("sleep_duration", "2021-11-02T00:00", 367.0),
+        ("sleep_efficiency", "2021-11-02T00:00", 98.0),
+        ("steps", "2021-11-02T00:00", 4958.0),
+        ("very_active_minutes", "2021-11-02T00:00", 0.0),
+        ("resting_heart_rate", "2021-11-03T00:00", 62.5),
+        ("sleep_duration", "2021-11-03T00:00", 134.0),
+        ("sleep_efficiency", "2021-11-03T00:00", 99.0),
+        ("steps", "2021-11-03T00:00", 3800.0),
+        ("very_active_minutes", "2021-11-03T00:00", 0.0),
     ]

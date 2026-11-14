@@ -27,9 +27,19 @@ HOURLY = (
     f"{VOLUNTEER},2021-11-03,0.0,58.0\n"
 )
 DAILY = (
-    "id,date,ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
-    f"{VOLUNTEER},2021-11-01,0.0,0.0,0.0,0.0,1.0,0.0\n"
+    "id,date,resting_hr,minutesAsleep,sleep_efficiency,nightly_temperature,very_active_minutes,steps,"
+    "ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
+    f"{VOLUNTEER},2021-11-01,63.5,307.0,96.0,34.75,0,7876.0,0.0,0.0,0.0,0.0,1.0,0.0\n"
+    f"{VOLUNTEER},2021-11-02,61.5,367.0,98.0,31.25,0,4958.0,,,,,,\n"
 )
+DAILY_WEARABLE_IDS = [
+    "resting_heart_rate",
+    "sleep_duration",
+    "sleep_efficiency",
+    "skin_temperature",
+    "very_active_minutes",
+    "steps",
+]
 MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
 
 
@@ -66,8 +76,9 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
     assert response.status_code == 200
     panel = response.json()
     assert panel["date"] == "2021-11-02"
-    glucose, heart_rate, *moods = panel["indicators"]
-    assert [mood["id"] for mood in moods] == MOOD_IDS
+    indicators = {indicator["id"]: indicator for indicator in panel["indicators"]}
+    assert set(indicators) == {"glucose", "heart_rate", *DAILY_WEARABLE_IDS, *MOOD_IDS}
+    glucose, heart_rate = indicators["glucose"], indicators["heart_rate"]
     assert glucose == {
         "id": "glucose",
         "name": "Blood glucose",
@@ -93,11 +104,9 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
 def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) -> None:
     response = client.get("/api/crew/1/panel", params={"date": "2021-01-01"})
 
-    assert [(i["id"], i["reading"], i["broken_rule"]) for i in response.json()["indicators"]] == [
-        ("glucose", None, None),
-        ("heart_rate", None, None),
-        *[(mood_id, None, None) for mood_id in MOOD_IDS],
-    ]
+    indicators = response.json()["indicators"]
+    assert {i["id"] for i in indicators} == {"glucose", "heart_rate", *DAILY_WEARABLE_IDS, *MOOD_IDS}
+    assert all(i["reading"] is None and i["broken_rule"] is None for i in indicators)
 
 
 def test_panel_carries_the_last_reading_forward_to_later_days(client: TestClient) -> None:
@@ -272,3 +281,18 @@ def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> No
     assert get_panel_moods(client, "2021-11-02") == {
         mood_id: {"taken_at": "2021-11-02T00:00", "value": 0.0} for mood_id in MOOD_IDS
     }
+
+
+def test_panel_returns_the_daily_wearable_indicators_of_the_demo_date(client: TestClient) -> None:
+    response = client.get("/api/crew/1/panel", params={"date": "2021-11-02"})
+
+    indicators = {i["id"]: i for i in response.json()["indicators"]}
+    assert [(i, indicators[i]["unit"], indicators[i]["reading"]) for i in DAILY_WEARABLE_IDS] == [
+        ("resting_heart_rate", "bpm", {"taken_at": "2021-11-02T00:00", "value": 61.5}),
+        ("sleep_duration", "min", {"taken_at": "2021-11-02T00:00", "value": 367.0}),
+        ("sleep_efficiency", "%", {"taken_at": "2021-11-02T00:00", "value": 98.0}),
+        ("skin_temperature", "°C", {"taken_at": "2021-11-02T00:00", "value": 31.25}),
+        ("very_active_minutes", "min", {"taken_at": "2021-11-02T00:00", "value": 0.0}),
+        ("steps", "steps", {"taken_at": "2021-11-02T00:00", "value": 4958.0}),
+    ]
+    assert all(indicators[i]["name"] != "" for i in DAILY_WEARABLE_IDS)
