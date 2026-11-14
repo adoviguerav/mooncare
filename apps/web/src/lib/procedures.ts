@@ -19,6 +19,14 @@ export type ProcedureStep = {
   note?: string
   image?: { src: string; caption: string }
   timerSeconds?: number
+  // Things of the manual to tick when the patient has them, such as symptoms
+  checklist?: { title: string; items: string[] }[]
+  // Ours, not from the manual: drawings of the items to fetch
+  pictures?: { src: string; caption: string }[]
+  // The form of the manual where the result of the step is written down
+  record?: { title: string; fields: string[] }
+  // Entries of the manual to look up, such as the drugs of a treatment. Shown on screen, read aloud only on request.
+  reference?: { title: string; lines: string[] }[]
   // The decision that picks the next step. The wording of the choices is the manual's.
   question?: string
   options: StepOption[]
@@ -144,8 +152,171 @@ export const AED_ASSISTED_CPR: Procedure = {
   ],
 }
 
+const SURGEON_NOTE =
+  'No link with Earth, so this is the Loss of Signal case of the manual: begin treatment. What you recorded is in the report for the Surgeon, sent when the link returns.'
+
+export const BLADDER_KIDNEY_INFECTION: Procedure = {
+  id: 'bladder-kidney-infection',
+  title: 'Bladder/Kidney Infection',
+  source:
+    'NASA, International Space Station Integrated Medical Group (IMG) Medical Checklist, ISS - All Expeditions, JSC-48522-E4, 12 NOV 01. Procedure BLADDER/KIDNEY INFECTION (ISS MED/3A - ALL/FIN), 22 AUG 00.',
+  secondRescuer: [],
+  firstStepId: 'symptoms',
+  steps: [
+    {
+      id: 'symptoms',
+      block: 'Symptoms and signs',
+      title: 'Check symptoms and signs',
+      lines: [],
+      checklist: [
+        {
+          title: 'Symptoms',
+          items: [
+            'Painful urination',
+            'Bladder spasms',
+            "Feeling of 'heaviness' in groin",
+            'Fever may or may not be present',
+            'Pain in lower abdomen',
+            'Back pain/flank pain',
+            'Pain is constant',
+          ],
+        },
+        { title: 'Signs', items: ['Frequent urination', 'Small volume of urine', 'Cloudy or bloody urine'] },
+      ],
+      options: [{ label: 'Checked', next: 'unstow', heard: ['checked', 'done', 'next'] }],
+    },
+    {
+      id: 'unstow',
+      block: 'Diagnosis · 1',
+      // The title is ours: the manual says "Unstow"
+      title: 'Get the kit out',
+      lines: ['Gloves, Non-Sterile (P3-B2)', 'Cotton Swabs (P2-B3)', 'Urine Chemstrips w/Color Chart (P4-A3)'],
+      pictures: [
+        { src: '/emergency/gloves.svg', caption: 'Gloves, Non-Sterile' },
+        { src: '/emergency/cotton-swabs.svg', caption: 'Cotton Swabs' },
+        { src: '/emergency/urine-chemstrips.svg', caption: 'Urine Chemstrips w/Color Chart' },
+      ],
+      options: [{ label: 'I have the kit', next: 'urinalysis', heard: ['done', 'next'] }],
+    },
+    {
+      id: 'urinalysis',
+      block: 'Diagnosis · 2',
+      // The title is ours: the manual says "Analyze Urine with Urine Chemstrips w/Color Chart"
+      title: 'Urine test',
+      lines: [
+        'Don Non-Sterile Gloves.',
+        'Hold two Cotton Swabs together under urine stream to saturate.',
+        'Pass two Cotton Swabs over Chemstrip to saturate colored reagent pads.',
+        'Compare with Color Chart after recommended time, record results.',
+        'Dispose of Cotton Swabs, Urine Chemstrips w/Color Chart in biohazardous trash.',
+      ],
+      record: {
+        title: 'Urinalysis (CHEMSTRIP 10SG)',
+        fields: [
+          'SpG',
+          'pH',
+          'Leuk',
+          'Nit',
+          'Protein (mg/dL)',
+          'Glucose (mg/dL)',
+          'Ketones',
+          'Urobilinogen (mg/dL)',
+          'Bilirubin',
+          'Blood',
+          'Hemoglobin (Ery/uL)',
+        ],
+      },
+      options: [{ label: 'Results recorded', next: 'treatment', heard: ['recorded', 'done', 'next'] }],
+    },
+    {
+      id: 'treatment',
+      block: 'Treatment · 3',
+      title: 'Treatment',
+      lines: [
+        'Contact Surgeon to discuss treatment.',
+        'Contact Surgeon before giving any medication marked with an asterisk. In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible.',
+        'Increase daily fluid intake (at least 1 L extra per day).',
+      ],
+      note: SURGEON_NOTE,
+      options: [{ label: 'Done', next: 'antibiotics', heard: ['done', 'next'] }],
+    },
+    {
+      id: 'antibiotics',
+      block: 'Treatment · 4',
+      title: 'Antibiotics',
+      lines: [
+        'All of these medications (Bactrim, Ampioks, Duricef, Cipro/Ciprolet, Tarivid, Nitroxoline) are generally effective for urinary tract infection and serious side effects are uncommon. Selection depends on individual experience and known allergies or sensitivities. It is best to check with Surgeon before selecting.',
+      ],
+      reference: [
+        {
+          title: '*Bactrim DS (Trimethoprim/Sulfamethoxasole) (P1-A4,5)',
+          lines: [
+            'Dose: 1 tablet 2 times/day for 7 days',
+            'WARNING: Do not use if allergy to Sulfa or Trimethoprim exists. Give with caution to patients with severe allergy or asthma.',
+            'Possible side effects: Skin rash, headache, stomach upset',
+          ],
+        },
+        {
+          title: '*Duricef (Cefadroxil) (P1-A18,19)',
+          lines: [
+            'Dose: 1 capsule 2 times/day for 10 days',
+            'WARNING: Do not use if there is history of Penicillin or Cephalosporin allergy.',
+            'Possible side effects: Diarrhea, nausea, vomiting, abdominal pain, rash',
+          ],
+        },
+        {
+          title: '*Cipro (Ciprofloxacin, Oral) (P1-A7)',
+          lines: [
+            'Dose: 1 capsule 2 times/day for 7 days',
+            'Possible side effects: Nausea, diarrhea, vomiting, abdominal pain',
+          ],
+        },
+      ],
+      // Ours: the manual also gives the drugs of the Russian kits (Biseptol, Ampioks, Ciprolet, Tarivid,
+      // Nitroxoline). The three shown are the ones of the US Ambulatory Medical Pack.
+      note: 'Shown: the three antibiotics of the Ambulatory Medical Pack. The manual lists more, from the Russian kits.',
+      options: [{ label: 'Antibiotic given', next: 'pain-relief', heard: ['given', 'done', 'next'] }],
+    },
+    {
+      id: 'pain-relief',
+      block: 'Treatment · 5',
+      title: 'Pain/Spasm Relief',
+      lines: [
+        'Pyridium (Phenazopyridine) (P1-B8) - Relieves pain from bladder infection, compatible with antibacterial treatment.',
+        'Dose: 1 tablet per day as needed for pain.',
+        'Possible side effects: Colors urine orange, occasional stomach or intestinal upset.',
+      ],
+      question: 'Contracting pain (pain coming and going) and blood in urine?',
+      options: [
+        { label: 'Yes', next: 'kidney-stones', heard: ['yes'] },
+        { label: 'No', next: 'follow-up', heard: ['no'] },
+      ],
+    },
+    {
+      id: 'follow-up',
+      block: 'Step 7',
+      title: 'Follow up',
+      lines: [
+        'If no improvement or relief from antibiotic treatment and pain worsens within 24 hours, contact Surgeon.',
+      ],
+      note: 'The case is recorded with the urinalysis and the treatment given, and sent to the Surgeon when the link returns.',
+      options: [],
+    },
+    {
+      id: 'kidney-stones',
+      block: 'Step 6',
+      title: 'Continue with Kidney Stones',
+      lines: ['Proceed to {KIDNEY STONES} (SODF: ISS MED: F THROUGH N).'],
+      note: 'The Kidney Stones procedure is not loaded in this demo. The guide ends here.',
+      options: [],
+    },
+  ],
+}
+
 // Which procedure an alert opens. The others are listed in the app as not loaded yet.
-export const PROCEDURE_BY_EVENT = { cardiac: AED_ASSISTED_CPR }
+export const PROCEDURE_BY_EVENT = { cardiac: AED_ASSISTED_CPR, infection: BLADDER_KIDNEY_INFECTION }
+
+export type EventId = keyof typeof PROCEDURE_BY_EVENT
 
 // What the voice says for a step: its lines as written, then the decision
 export function getNarration(step: ProcedureStep): string {

@@ -1,23 +1,36 @@
 import { ConversationProvider } from '@elevenlabs/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '../../components/Icon.tsx'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
 import { addDays } from '../../lib/format.ts'
 import { useApi } from '../../hooks/useApi.ts'
-import { endEmergency, goToStep } from '../../lib/emergency.ts'
+import { endEmergency, goToStep, recordFinding } from '../../lib/emergency.ts'
 import type { Emergency } from '../../lib/emergency.ts'
-import { PROCEDURE_BY_EVENT, getAudioPath, getNarration } from '../../lib/procedures.ts'
-import type { Procedure, ProcedureStep } from '../../lib/procedures.ts'
+import { PROCEDURE_BY_EVENT, getAudioPath } from '../../lib/procedures.ts'
+import type { EventId, Procedure, ProcedureStep } from '../../lib/procedures.ts'
+import { PRESENT, VOICE_AGENT_EVENT } from '../../lib/voiceAgent.ts'
+import { INFECTION_SIGNALS } from '../../lib/infectionSignals.ts'
+import { InfectionSignals } from './InfectionSignals.tsx'
 import { useVoiceAgent } from './useVoiceAgent.ts'
-import type { VoiceAgentState } from './useVoiceAgent.ts'
+import type { VoiceAgent } from './useVoiceAgent.ts'
 
-const PROCEDURE = PROCEDURE_BY_EVENT.cardiac
+// What each kind of alert says. The model behind each one is simulated.
+const ALERTS: Record<EventId, { title: string; flagged: string; model: string }> = {
+  cardiac: {
+    title: 'Cardiac alert',
+    flagged: 'The heart model flagged an abnormal rhythm.',
+    model: 'a model trained on in-flight heart data',
+  },
+  infection: {
+    title: 'Possible infection',
+    flagged: `The infection model flagged ${INFECTION_SIGNALS.length} readings away from their usual values.`,
+    model: 'a model trained on in-flight wearable and blood data',
+  },
+}
 // Alerts whose procedure is not in the app yet, so the screen is honest about what it covers
 const NOT_LOADED_PROTOCOLS = ['Low glucose', 'Potassium out of range', 'Radiation storm']
-// The same pace as the recorded audio, which is generated at 1.2 times normal speech
-const FALLBACK_VOICE_RATE = 1.2
 const MS_PER_SECOND = 1000
 // The invented part of the demo: the heart rate the model would have seen, in bpm, after the real readings.
 // It is drawn dashed and labelled as simulated. The real readings before it come from LifeSnaps.
@@ -31,6 +44,8 @@ type Props = { crewMember: CrewMember; emergency: Emergency; onOpenPanel: () => 
 // the medical officer the guided procedure. Everyone starts on the alert.
 export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
   const [acknowledged, setAcknowledged] = useState(false)
+  const procedure = PROCEDURE_BY_EVENT[emergency.event]
+  const alert = ALERTS[emergency.event]
   const isPatient = crewMember.id === emergency.patientId
   const responds = crewMember.role === 'medical_officer' || crewMember.role === 'commander'
 
@@ -57,8 +72,10 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
           <span className="emergency-triangle">
             <Icon name="alert" size={120} />
           </span>
-          <strong className="emergency-title">Cardiac alert: {emergency.patientName}</strong>
-          <span>The heart model flagged an abnormal rhythm. Tap to respond.</span>
+          <strong className="emergency-title">
+            {alert.title}: {emergency.patientName}
+          </strong>
+          <span>{alert.flagged} Tap to respond.</span>
         </button>
         {!responds && (
           <button className="ghost" onClick={onOpenPanel}>
@@ -74,9 +91,11 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
       <SimulationBanner />
       <header className="screen-header">
         <div>
-          <h1>Cardiac alert: {emergency.patientName}</h1>
+          <h1>
+            {alert.title}: {emergency.patientName}
+          </h1>
           <p className="muted">
-            {PROCEDURE.title}. Started <Elapsed since={emergency.startedAt} /> ago.
+            {procedure.title}. Started <Elapsed since={emergency.startedAt} /> ago.
           </p>
         </div>
         <button className="ghost" onClick={onOpenPanel}>
@@ -85,12 +104,17 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
       </header>
       {crewMember.role === 'medical_officer' ? (
         <ConversationProvider>
-          <Guide procedure={PROCEDURE} emergency={emergency} />
+          <Guide procedure={procedure} emergency={emergency} />
         </ConversationProvider>
       ) : (
-        <Status procedure={PROCEDURE} emergency={emergency} isCommander={crewMember.role === 'commander'} />
+        <Status procedure={procedure} emergency={emergency} isCommander={crewMember.role === 'commander'} />
       )}
-      <Detection emergency={emergency} />
+      {emergency.event === 'infection' && <SurgeonReport procedure={procedure} emergency={emergency} />}
+      {emergency.event === 'infection' ? (
+        <InfectionSignals emergency={emergency} />
+      ) : (
+        <Detection emergency={emergency} />
+      )}
       <details className="card group">
         <summary className="card-heading">
           <h2>About this simulation</h2>
@@ -100,14 +124,14 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
         </summary>
         <div className="prose">
           <p>
-            On a mission, a model trained on in-flight heart data would raise this alert from the crew member's own
-            readings. That model is not built: there is no open in-flight dataset to train it on. Here the event is
-            started by hand and the abnormal readings are invented.
+            On a mission, {alert.model} would raise this alert from the crew member's own readings. That model is not
+            built: there is no open in-flight dataset to train it on. Here the event is started by hand and the
+            abnormal readings are invented.
           </p>
           <p>
-            A heart alert opens {PROCEDURE.title}. Not loaded yet: {NOT_LOADED_PROTOCOLS.join(', ')}.
+            This alert opens {procedure.title}. Not loaded yet: {NOT_LOADED_PROTOCOLS.join(', ')}.
           </p>
-          <p className="muted">{PROCEDURE.source}</p>
+          <p className="muted">{procedure.source}</p>
         </div>
       </details>
     </main>
@@ -166,6 +190,39 @@ function Detection({ emergency }: { emergency: Emergency }) {
   )
 }
 
+// What has been recorded so far, waiting for the link. The agent fills it in as the medical officer answers.
+function SurgeonReport({ procedure, emergency }: { procedure: Procedure; emergency: Emergency }) {
+  const ticks = procedure.steps.flatMap((step) => step.checklist?.flatMap((group) => group.items) ?? [])
+  const present = ticks.filter((item) => emergency.record[item] !== undefined)
+  const values = Object.entries(emergency.record).filter(([name]) => !ticks.includes(name))
+  const stepsDone = emergency.path.map((stepId) => findStep(procedure, stepId).title)
+
+  return (
+    <section className="card report">
+      <div className="card-heading">
+        <div>
+          <h2>Report for the Surgeon</h2>
+          <p className="origin">Filled in as you answer. Nothing is typed twice.</p>
+        </div>
+        <span className="chip chip-alert">No link with Earth · queued</span>
+      </div>
+      <dl>
+        <dt>Patient</dt>
+        <dd>{emergency.patientName}</dd>
+        <dt>Symptoms and signs</dt>
+        <dd>{present.length === 0 ? 'None recorded yet' : present.join(', ')}</dd>
+        <dt>Urinalysis</dt>
+        <dd>
+          {values.length === 0 ? 'Not recorded yet' : values.map(([name, value]) => `${name} ${value}`).join(', ')}
+        </dd>
+        <dt>Steps done</dt>
+        <dd>{stepsDone.length === 0 ? 'None yet' : stepsDone.join(', ')}</dd>
+      </dl>
+      <p className="muted">Sent when the link returns. The link status is simulated.</p>
+    </section>
+  )
+}
+
 function SimulationBanner() {
   return (
     <div className="simulation-banner" role="status">
@@ -183,12 +240,11 @@ function findStep(procedure: Procedure, stepId: string | null): ProcedureStep {
 
 function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emergency }) {
   const step = findStep(procedure, emergency.stepId ?? procedure.firstStepId)
-  const [voiceOn, setVoiceOn] = useState(true)
-  const agent = useVoiceAgent(procedure, step)
-  // The recorded voice and the spoken commands are the fallback: they work when the agent does not
+  const previousStepId = emergency.path.at(-1)
+  const agent = useVoiceAgent(procedure, step, previousStepId, emergency.event === VOICE_AGENT_EVENT)
+  // The recorded voice is the fallback: it reads the step when the agent is off or not reachable
   const agentHasTheVoice = agent.state === 'live' || agent.state === 'starting'
-  const { listening, heard, toggleListening, canListen } = useVoiceCommands(step)
-  const replay = useNarration(procedure, step, voiceOn && !agentHasTheVoice)
+  useNarration(procedure, step, !agentHasTheVoice)
 
   // The first step starts when the guide opens
   useEffect(() => {
@@ -198,38 +254,39 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
   return (
     <section className="card guide">
       <div className="guide-top">
-        <span className="chip chip-alert">{step.block}</span>
-        <div className="guide-controls">
-          <button className="ghost" aria-pressed={agentHasTheVoice} onClick={agent.toggle}>
-            {agentHasTheVoice ? 'Stop talking' : 'Talk to the guide'}
-          </button>
-          {!agentHasTheVoice && (
-            <>
-              <button className="ghost" onClick={replay}>
-                Repeat
-              </button>
-              <button className="ghost" aria-pressed={voiceOn} onClick={() => setVoiceOn(!voiceOn)}>
-                Voice {voiceOn ? 'on' : 'off'}
-              </button>
-              {canListen && (
-                <button className="ghost" aria-pressed={listening} onClick={toggleListening}>
-                  {listening ? 'Listening' : 'Voice commands'}
-                </button>
-              )}
-            </>
-          )}
-        </div>
+        <Progress procedure={procedure} step={step} />
+        <VoiceIndicator agent={agent} />
       </div>
-      <p className={`agent-status agent-status-${agent.state}`} role="status">
-        {describeAgent(agent.state, agent.isSpeaking)}
-      </p>
+      <span className="chip chip-alert">{step.block}</span>
       <h2 className="guide-title">{step.title}</h2>
+      {step.checklist?.map((group) => (
+        <div key={group.title} className="guide-checklist">
+          <p className="muted">{group.title}</p>
+          <div className="guide-ticks">
+            {group.items.map((item) => {
+              const present = emergency.record[item] !== undefined
+              return (
+                <button
+                  key={item}
+                  className="tick"
+                  aria-pressed={present}
+                  onClick={() => recordFinding(item, present ? null : PRESENT)}
+                >
+                  {item}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
       <div className="guide-body">
-        <ol className="guide-lines">
-          {step.lines.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ol>
+        {step.lines.length > 0 && (
+          <ol className="guide-lines">
+            {step.lines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ol>
+        )}
         {step.image !== undefined && (
           <figure className="guide-figure">
             <img src={step.image.src} alt={step.image.caption} />
@@ -237,6 +294,43 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
           </figure>
         )}
       </div>
+      {step.pictures !== undefined && (
+        <div className="guide-pictures">
+          {step.pictures.map((picture) => (
+            <figure key={picture.src}>
+              <img src={picture.src} alt="" />
+              <figcaption>{picture.caption}</figcaption>
+            </figure>
+          ))}
+          <p className="muted">Drawings to recognise the items. They are ours, not from the manual.</p>
+        </div>
+      )}
+      {step.record !== undefined && (
+        <div className="guide-record">
+          <p className="muted">{step.record.title}</p>
+          <div className="guide-record-fields">
+            {step.record.fields.map((field) => (
+              <label key={field}>
+                <span>{field}</span>
+                <input
+                  type="text"
+                  autoComplete="off"
+                  value={emergency.record[field] ?? ''}
+                  onChange={(event) => recordFinding(field, event.target.value === '' ? null : event.target.value)}
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+      {step.reference?.map((entry) => (
+        <details key={entry.title} className="guide-reference">
+          <summary>{entry.title}</summary>
+          {entry.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </details>
+      ))}
       {step.note !== undefined && <p className="guide-note">{step.note}</p>}
       {step.timerSeconds !== undefined && <Timer key={emergency.stepStartedAt} seconds={step.timerSeconds} />}
       {step.question !== undefined && <p className="guide-question">{step.question}</p>}
@@ -248,111 +342,61 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
         ))}
         {step.options.length === 0 && (
           <button className="primary guide-option" onClick={endEmergency}>
-            End simulation
+            Close the case and end the simulation
           </button>
         )}
       </div>
-      {listening && (
-        <p className="muted" aria-live="polite">
-          Say {step.options.map((option) => `"${option.heard[0]}"`).join(' or ')}, or "repeat".
-          {heard !== '' && ` Heard: ${heard}`}
-        </p>
+      {previousStepId !== undefined && (
+        <button className="ghost guide-back" onClick={() => goToStep(previousStepId)}>
+          Back to the step before
+        </button>
       )}
     </section>
   )
 }
 
-function describeAgent(state: VoiceAgentState, isSpeaking: boolean): string {
-  if (state === 'starting') return 'Connecting the voice guide'
-  if (state === 'live') return isSpeaking ? 'The guide is speaking. Talk over it to interrupt.' : 'The guide is listening'
-  if (state === 'unavailable') return 'Voice guide not reachable. The recorded voice reads each step.'
-  return 'Voice guide off. The recorded voice reads each step.'
+// One dot per step of the procedure, in the order of the manual
+function Progress({ procedure, step }: { procedure: Procedure; step: ProcedureStep }) {
+  const current = procedure.steps.indexOf(step)
+  return (
+    <ol className="guide-progress" aria-label={`Step ${current + 1} of ${procedure.steps.length}`}>
+      {procedure.steps.map((each, index) => (
+        <li key={each.id} className={index < current ? 'done' : index === current ? 'current' : undefined} />
+      ))}
+    </ol>
+  )
 }
 
-// Plays the recorded audio of the step. Without the file, the browser's own voice reads the same text.
-function useNarration(procedure: Procedure, step: ProcedureStep, voiceOn: boolean): () => void {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [replays, setReplays] = useState(0)
+const VOICE_LABELS = {
+  starting: 'Connecting',
+  listening: 'Listening',
+  speaking: 'Speaking',
+  off: 'Voice guide off',
+  unavailable: 'Voice guide not connected',
+}
 
+// The one control of the voice: what the guide is doing, and a tap to turn it off or on
+function VoiceIndicator({ agent }: { agent: VoiceAgent }) {
+  const mode = agent.state === 'live' ? (agent.isSpeaking ? 'speaking' : 'listening') : agent.state
+  return (
+    <button className={`voice voice-${mode}`} onClick={agent.toggle} aria-label={`${VOICE_LABELS[mode]}. Tap to turn the voice guide on or off.`}>
+      <span className="voice-orb" aria-hidden="true" />
+      {VOICE_LABELS[mode]}
+    </button>
+  )
+}
+
+// Plays the recorded audio of the step, where one exists. A step without a file stays silent:
+// the browser's own voice reads a whole step in one go, which is worse than the screen alone.
+function useNarration(procedure: Procedure, step: ProcedureStep, voiceOn: boolean): void {
   useEffect(() => {
     if (!voiceOn) return
     const audio = new Audio(getAudioPath(procedure, step))
-    audioRef.current = audio
-    const speakInstead = () => {
-      window.speechSynthesis?.cancel()
-      const utterance = new SpeechSynthesisUtterance(getNarration(step))
-      utterance.rate = FALLBACK_VOICE_RATE
-      window.speechSynthesis?.speak(utterance)
-    }
-    audio.addEventListener('error', speakInstead)
     audio.play().catch(() => {
-      // Autoplay refused or file missing: the "error" listener covers the missing file
+      // Autoplay refused or no recording for this step: the screen guides in silence
     })
-    return () => {
-      audio.removeEventListener('error', speakInstead)
-      audio.pause()
-      window.speechSynthesis?.cancel()
-    }
-  }, [procedure, step, voiceOn, replays])
-
-  return () => setReplays(replays + 1)
-}
-
-type SpeechRecognitionLike = {
-  continuous: boolean
-  lang: string
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
-  onend: (() => void) | null
-  start: () => void
-  stop: () => void
-}
-
-function getSpeechRecognition(): (new () => SpeechRecognitionLike) | undefined {
-  const scope = window as unknown as Record<string, new () => SpeechRecognitionLike>
-  return scope.SpeechRecognition ?? scope.webkitSpeechRecognition
-}
-
-// Hands are busy during CPR: with the microphone on, saying the choice moves to the next step.
-// It uses the browser's own recognition, where it exists.
-function useVoiceCommands(step: ProcedureStep) {
-  const [listening, setListening] = useState(false)
-  const [heard, setHeard] = useState('')
-  const stepRef = useRef(step)
-  const canListen = getSpeechRecognition() !== undefined
-
-  useEffect(() => {
-    stepRef.current = step
-  }, [step])
-
-  useEffect(() => {
-    const Recognition = getSpeechRecognition()
-    if (!listening || Recognition === undefined) return
-    const recognition = new Recognition()
-    recognition.continuous = true
-    recognition.lang = 'en-US'
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase()
-      setHeard(transcript)
-      // The longest phrase first, so "not breathing" is not read as "breathing normally" or "no"
-      const matches = stepRef.current.options
-        .flatMap((option) => option.heard.map((phrase) => ({ phrase, next: option.next })))
-        .filter(({ phrase }) => transcript.includes(phrase))
-        .toSorted((a, b) => b.phrase.length - a.phrase.length)
-      if (matches.length > 0) goToStep(matches[0].next)
-    }
-    // The browser stops listening after a silence: start again while the switch is on
-    let stopped = false
-    recognition.onend = () => {
-      if (!stopped) recognition.start()
-    }
-    recognition.start()
-    return () => {
-      stopped = true
-      recognition.stop()
-    }
-  }, [listening])
-
-  return { listening, heard, canListen, toggleListening: () => setListening(!listening) }
+    return () => audio.pause()
+  }, [procedure, step, voiceOn])
 }
 
 function Timer({ seconds }: { seconds: number }) {
@@ -431,7 +475,7 @@ function Status({ procedure, emergency, isCommander }: StatusProps) {
           </>
         )}
       </section>
-      {isCommander && (
+      {isCommander && procedure.secondRescuer.length > 0 && (
         <section className="card">
           <div className="card-heading">
             <h2>Your task</h2>

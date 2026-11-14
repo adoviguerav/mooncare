@@ -115,7 +115,7 @@ function PanelContent({
           <button className="card status emergency-return" onClick={onOpenEmergency}>
             <Icon name="alert" size={28} />
             <span>
-              <strong>Cardiac alert in progress</strong>
+              <strong>Medical alert in progress</strong>
               <span className="muted">Simulation</span>
             </span>
             <span className="status-link">Open</span>

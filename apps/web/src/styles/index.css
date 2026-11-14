@@ -1281,45 +1281,252 @@ button.card:active {
   border-color: rgb(255 90 82 / 0.5);
 }
 
-.guide-top,
-.guide-controls {
+.guide-top {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.guide .chip {
+  justify-self: start;
+}
+
+.guide-progress {
+  display: flex;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.guide-controls .ghost {
-  min-height: 40px;
-  padding: 0 14px;
-  font-size: 0.875rem;
+.guide-progress li {
+  width: 28px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--line);
 }
 
-.guide-controls .ghost[aria-pressed='true'] {
+.guide-progress .done {
+  background: var(--ok);
+}
+
+.guide-progress .current {
+  background: var(--accent);
+}
+
+.voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 0 18px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--mute);
+  font: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.voice-orb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.voice-listening,
+.voice-speaking {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.agent-status {
-  display: flex;
-  align-items: center;
+.voice-listening .voice-orb {
+  opacity: 1;
+}
+
+.voice-speaking .voice-orb,
+.voice-starting .voice-orb {
+  opacity: 1;
+  animation: voice-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-orb {
+    animation: none;
+  }
+}
+
+.guide-record-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.guide-record-fields label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--mute);
+}
+
+.guide-record-fields input {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: rgb(255 255 255 / 0.04);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.guide-record-fields input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.guide-checklist {
+  display: grid;
   gap: 8px;
+}
+
+.guide-ticks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tick {
+  min-height: var(--tap);
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tick[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: rgb(47 216 255 / 0.16);
+  color: var(--accent);
+}
+
+.guide-pictures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.guide-pictures figure {
   margin: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.guide-pictures img {
+  width: 96px;
+  height: 96px;
+}
+
+.guide-pictures p {
+  grid-column: 1 / -1;
+  font-size: 0.8125rem;
+}
+
+.report dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 20px;
+  margin: 0 0 12px;
+}
+
+.report dt {
   color: var(--mute);
   font-size: 0.875rem;
 }
 
-.agent-status::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
+.report dd {
+  margin: 0;
 }
 
-.agent-status-live {
-  color: var(--accent);
+.report .card-heading {
+  justify-content: space-between;
+}
+
+.guide-back {
+  justify-self: start;
+}
+
+.guide-reference {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+}
+
+.guide-reference summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guide-reference p {
+  margin-top: 8px;
+  color: var(--mute);
+}
+
+.signals {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.signal {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.signal-label {
+  font-weight: 700;
+}
+
+.signal-usual {
+  color: var(--mute);
+  font-size: 0.875rem;
+}
+
+.signal-now {
+  min-width: 120px;
+  color: var(--danger);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .guide-title {

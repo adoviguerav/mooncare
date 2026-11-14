@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { EventId } from './procedures.ts'
 
 // The simulated emergency lives in this browser only, so a demo can be started and repeated without
 // touching the database. shortcut: every profile must be opened on the same device to see it;
@@ -7,6 +8,8 @@ const STORAGE_KEY = 'emergency'
 const CHANGE_EVENT = 'emergency-change'
 
 export type Emergency = {
+  // What the model flagged, which decides the procedure the guide opens
+  event: EventId
   patientId: number
   patientName: string
   // Real clock time, to count how long the response has taken
@@ -14,16 +17,31 @@ export type Emergency = {
   // Where the medical officer is in the procedure. Null until the guide is opened.
   stepId: string | null
   stepStartedAt: string | null
+  // The steps she has been through, oldest first, so she can go back
+  path: string[]
+  // What has been found so far, by its name in the manual: a symptom that is present, or a value of a form.
+  // It is the report that goes to the Surgeon when the link returns.
+  record: Record<string, string>
 }
 
 let cachedRaw: string | null = null
 let cachedEmergency: Emergency | null = null
 
+function parseEmergency(raw: string): Emergency {
+  const saved = JSON.parse(raw) as Omit<Emergency, 'event' | 'path' | 'record'> & {
+    event?: EventId
+    path?: string[]
+    record?: Record<string, string>
+  }
+  // An emergency saved before there were two kinds of event is a cardiac one
+  return { ...saved, event: saved.event ?? 'cardiac', path: saved.path ?? [], record: saved.record ?? {} }
+}
+
 function readEmergency(): Emergency | null {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (raw !== cachedRaw) {
     cachedRaw = raw
-    cachedEmergency = raw === null ? null : (JSON.parse(raw) as Emergency)
+    cachedEmergency = raw === null ? null : parseEmergency(raw)
   }
   return cachedEmergency
 }
@@ -48,13 +66,39 @@ export function useEmergency(): Emergency | null {
   return useSyncExternalStore(subscribe, readEmergency)
 }
 
-export function startEmergency(patientId: number, patientName: string) {
-  writeEmergency({ patientId, patientName, startedAt: new Date().toISOString(), stepId: null, stepStartedAt: null })
+export function startEmergency(event: EventId, patientId: number, patientName: string): void {
+  writeEmergency({
+    event,
+    patientId,
+    patientName,
+    startedAt: new Date().toISOString(),
+    stepId: null,
+    stepStartedAt: null,
+    path: [],
+    record: {},
+  })
 }
 
-export function goToStep(stepId: string) {
+export function goToStep(stepId: string): void {
   const emergency = readEmergency()
-  if (emergency !== null) writeEmergency({ ...emergency, stepId, stepStartedAt: new Date().toISOString() })
+  if (emergency === null) return
+  const cameFrom = emergency.path.at(-1)
+  // Going to the step she came from is a step back: it leaves the path instead of joining it
+  const path =
+    stepId === cameFrom
+      ? emergency.path.slice(0, -1)
+      : emergency.stepId === null
+        ? emergency.path
+        : [...emergency.path, emergency.stepId]
+  writeEmergency({ ...emergency, stepId, stepStartedAt: new Date().toISOString(), path })
+}
+
+// Writes a finding into the report, or takes it out when the value is null
+export function recordFinding(name: string, value: string | null): void {
+  const emergency = readEmergency()
+  if (emergency === null) return
+  const { [name]: _removed, ...others } = emergency.record
+  writeEmergency({ ...emergency, record: value === null ? others : { ...others, [name]: value } })
 }
 
 export function endEmergency() {

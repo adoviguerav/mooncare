@@ -10,7 +10,7 @@ const ROLE_NAMES: Record<CrewRole, string> = {
   medical_officer: 'Medical officer',
   crew_member: 'Crew member',
 }
-// Who has the simulated cardiac event of the demo
+// Who has the simulated event of the demo
 const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
 const PROFILE_STAGGER_MS = 60
@@ -64,13 +64,13 @@ export function ProfilePicker({ onPick }: Props) {
       </section>
       {emergency !== null ? (
         <div className="simulation-banner" role="status">
-          <span>Simulation running: cardiac alert for {emergency.patientName}. Open a profile to see it.</span>
+          <span>Simulation running: an alert for {emergency.patientName}. Open a profile to see it.</span>
           <button onClick={endEmergency}>End simulation</button>
         </div>
       ) : (
         patient !== undefined && (
-          <button className="simulate" onClick={() => startEmergency(patient.id, patient.name)}>
-            Simulate a cardiac event
+          <button className="simulate" onClick={() => startEmergency('infection', patient.id, patient.name)}>
+            Simulate a possible infection
           </button>
         )
       )}
