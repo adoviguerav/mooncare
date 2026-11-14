@@ -143,6 +143,16 @@ h1 .mini{display:block}
 @keyframes slideup{from{transform:translateY(28px);opacity:0}}
 button:active{transform:scale(.97)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.tlbar{height:10px;border-radius:10px;background:color-mix(in srgb,var(--ok) 40%,var(--line));overflow:hidden;margin-top:2px}
+.tlbar i{display:block;height:100%;width:0;background:var(--warn);transition:width 1s linear,background .3s}
+.stp{display:flex;gap:6px;margin:0 0 10px}.stp i{flex:1;height:6px;border-radius:6px;background:var(--line);transition:background .3s}.stp i.d{background:var(--ok)}.stp i.c{background:var(--warn);animation:pulse2 1.6s ease-in-out infinite}
+@keyframes pulse2{50%{opacity:.45}}
+.next{border:1px solid var(--warn);border-radius:12px;padding:14px;background:color-mix(in srgb,var(--warn) 9%,transparent)}
+.next h3{margin:8px 0 2px;font-size:20px}.next p{margin:0}
+.next.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,transparent)}
+.accr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.accr:first-child{border-top:0}
+.rate{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:14px 0 12px}.rate b{font-size:26px;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -352,19 +362,26 @@ button:active{transform:scale(.97)}
 <section id="alertsPage" role="dialog" aria-modal="true" aria-label="Potential incident warning" hidden>
   <div class="inc card">
     <button class="back x" id="back" type="button" aria-label="Close warning">×</button>
-    <span class="tag warn">Class X-2.4 solar flare</span>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-right:52px"><span class="tag warn">Class X-2.4 solar flare</span><span class="tag" id="aPhase"></span></div>
     <h2>Potential incident warning</h2>
     <p class="note">Coronal mass ejection (CME) inbound</p>
     <div class="eta"><span>ETA impact window</span><b id="eta" role="timer">00:18:42</b></div>
-    <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span>Tracking</span></div>
-    <svg viewBox="0 0 340 110" width="100%" role="img" aria-label="Solar shock wave moving toward the lunar base"><defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient></defs><g fill="none" stroke="#ff9a3c" stroke-opacity=".6"><path d="M85 25q22 30 0 60"/><path d="M105 18q30 37 0 74"/><path d="M125 11q38 44 0 88"/></g><circle cx="45" cy="55" r="30" fill="url(#sunG)"/><line x1="80" y1="55" x2="280" y2="55" stroke="#ffb84a" stroke-dasharray="4 4"/><rect x="150" y="45" width="70" height="20" rx="6" fill="#3a2a0a" stroke="#ffb84a"/><text x="185" y="59" text-anchor="middle" font-size="11" fill="#ffd27a">1,240 km/s</text><circle cx="300" cy="55" r="15" fill="#2fa8d8"/><circle cx="300" cy="55" r="22" fill="none" stroke="#2fd8ff" stroke-opacity=".5"/></svg></div>
-    <div class="stats"><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Deep bunker shield</span><b>99.45% eff.</b></div></div>
-    <div class="row" style="margin-bottom:8px"><b style="color:var(--ink)">Incident action protocol</b><span id="stepCount"></span></div>
-    <div class="steps" id="steps"></div>
-    <div class="novabox"><span aria-hidden="true">🤖</span><span><b>Dr. Nova AI:</b> “Eva, solar magnetic flux is spiking rapidly. Safe shelter window is 18 minutes. Take your rad-mitigation pack and proceed to shelter.”</span></div>
+    <div class="tlbar" aria-hidden="true"><i id="tlNeed"></i></div>
+    <div class="row" style="margin:6px 0 14px"><span id="tlNeedT"></span><span id="tlSpareT"></span></div>
+    <div class="stp" id="stepper" aria-hidden="true"></div>
+    <div class="next" id="next"></div>
     <button class="primary" id="seal" type="button"></button>
+    <details><summary>All steps</summary><div class="steps" id="steps" style="margin-top:8px"></div></details>
+    <div class="row" style="margin:16px 0 6px"><b style="color:var(--ink)">Crew whereabouts</b><span id="crewSum"></span></div>
+    <div id="crewList"></div>
+    <div class="rate"><div><span class="note">Radiation at your position (demo)</span><div><b id="rate">0.14</b> <small>mSv/h</small></div><div class="note" id="rateWhere"></div></div><svg id="rateSp" viewBox="0 0 120 40" width="120" height="40" aria-hidden="true"></svg></div>
+    <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span>Tracking</span></div>
+    <svg viewBox="0 0 340 110" width="100%" role="img" aria-label="Solar shock wave moving toward the lunar base"><defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient></defs><g id="shock" fill="none" stroke="#ff9a3c" stroke-opacity=".6" style="transition:transform 1s linear"><path d="M85 25q22 30 0 60"/><path d="M105 18q30 37 0 74"/><path d="M125 11q38 44 0 88"/></g><circle cx="45" cy="55" r="30" fill="url(#sunG)"/><line x1="80" y1="55" x2="280" y2="55" stroke="#ffb84a" stroke-dasharray="4 4"/><rect x="150" y="45" width="70" height="20" rx="6" fill="#3a2a0a" stroke="#ffb84a"/><text x="185" y="59" text-anchor="middle" font-size="11" fill="#ffd27a">1,240 km/s</text><circle cx="300" cy="55" r="15" fill="#2fa8d8"/><circle cx="300" cy="55" r="22" fill="none" stroke="#2fd8ff" stroke-opacity=".5"/></svg></div>
+    <div class="stats"><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Deep bunker shield</span><b>99.45% eff.</b></div></div>
+    <div class="novabox"><span aria-hidden="true">🤖</span><span><b>Dr. Nova AI:</b> <span id="novaLine"></span></span></div>
     <button class="linkbtn" id="tele" type="button" aria-expanded="false">View solar radiation telemetry</button>
-    <div class="telem" id="telem" hidden><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Shock speed</span><b>1,240 km/s</b></div><div><span>Bunker shield efficiency</span><b>99.45%</b></div><div><span>Surface dose rate now</span><b>0.14 mSv, rising</b></div></div>
+    <div class="telem" id="telem" hidden><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Shock speed</span><b>1,240 km/s</b></div><div><span>Bunker shield efficiency</span><b>99.45%</b></div><div><span>Surface dose rate now</span><b id="telRate">0.14 mSv/h, rising</b></div></div>
+    <p class="note" style="margin-top:12px">Step times and radiation values are demo estimates.</p>
   </div>
 </section>
 <nav id="tabs" aria-label="Sections"><button data-t="today">Today</button><button data-t="vitals">Vitals</button><button data-t="sleep">Sleep</button><button data-t="list">Checklist</button><button data-t="data">Data</button><button data-t="alerts">Alerts</button></nav>
@@ -495,16 +512,43 @@ function drawQ(){
 drawQ();
 // incident page
 const STEPS=[["Immediate EVA recall","Abort lunar surface operations and return to airlock"],["Airlock seal and magnetic deflector","Lock primary habitat hatch and charge coil array"],["Move to regolith storm shelter","Crew report to Sub-Surface Bunker Level 3"],["Biometric sync and dosimeter calibration","Telemetry streaming to Alpha Station AI"]];
+const DUR=[4,2,5,1],WHY=["Every minute outside adds to your dose, and the flux is still climbing.","Seals the hatch and charges the magnetic deflector against charged particles.","The bunker’s regolith cover gives the most shielding on the base.","Lets Dr. Nova and the ground team follow your dose while you shelter."];
+let hist=[],mEta=200;
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+const buzz=p=>{try{if(!RM&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
+const needMin=()=>inc.done.reduce((s,d,i)=>s+(d?0:DUR[i]),0);
+function phase(){if(inc.ack)return["ok","Sealed"];if(inc.done[2])return["ok","In shelter"];if(eta<=0)return["bad","Impact window open"];return eta/60-needMin()<2?["bad","Move now"]:["warn","Prepare"]}
 function drawAlerts(){
-  const n=inc.done.filter(Boolean).length;
-  $("stepCount").textContent=n+" of 4 done";
+  const k=inc.done.findIndex(d=>!d);
+  $("stepper").innerHTML=inc.done.map((d,i)=>`<i class="${d?"d":i===k?"c":""}"></i>`).join("");
+  const nx=$("next");nx.className="next"+(k<0?" ok":"");
+  nx.innerHTML=k<0?`<span class="tag ok">All steps done</span><h3>Ready to seal the habitat</h3><p class="note">Confirm below, then stay in the shelter until the all-clear.</p>`:`<span class="tag warn">Step ${k+1} of 4 · about ${DUR[k]} min</span><h3>${STEPS[k][0]}</h3><p>${STEPS[k][1]}</p><p class="note">${WHY[k]}</p><button class="primary" id="nextDone" type="button" style="margin-top:10px">Mark step done</button>`;
   $("steps").innerHTML=STEPS.map((s,i)=>`<label class="${inc.done[i]?"done":""}"><input type="checkbox" data-i="${i}" ${inc.done[i]?"checked":""}><span><b>${s[0]}</b><span class="note">${s[1]}</span></span></label>`).join("");
   const sb=$("seal");sb.disabled=inc.ack;sb.textContent=inc.ack?"Habitat sealed and incident acknowledged":"Acknowledge and seal habitat";
+  drawLive();
 }
+function drawLive(){
+  const f=1-Math.max(0,eta)/1122,out=.14+(14.8-.14)*Math.pow(f,3),sh=inc.done[2]||inc.ack,mine=sh?out*(1-.9945):out;
+  hist.push(mine);if(hist.length>40)hist.shift();
+  $("rate").textContent=mine<1?mine.toFixed(2):mine.toFixed(1);$("telRate").textContent=out.toFixed(2)+" mSv/h, rising";
+  $("rateWhere").textContent=sh?"In the shelter, 99.45% shielded":"Outside the shelter, outside rate "+out.toFixed(2)+" mSv/h";
+  $("rateSp").innerHTML=`<polyline points="${hist.map((v,i)=>(i*120/39)+","+(36-Math.min(1,v/16)*32)).join(" ")}" fill="none" stroke="${sh?"var(--ok)":"var(--warn)"}" stroke-width="2"/>`;
+  $("shock").style.transform="translateX("+(f*150)+"px)";
+  $("eta").style.color=eta<300?"var(--bad)":"";
+  const ph=phase();$("aPhase").className="tag "+ph[0];$("aPhase").textContent=ph[1];
+  const need=needMin(),win=eta/60,spare=win-need;
+  $("tlNeed").style.width=Math.min(100,need/Math.max(win,.05)*100)+"%";$("tlNeed").style.background=spare<2?"var(--bad)":"var(--warn)";
+  $("tlNeedT").textContent=need?"You need about "+need+" min":"All steps done";
+  $("tlSpareT").textContent=eta<=0?"Stay in the shelter":spare>=0?"Spare time about "+Math.floor(spare)+" min":"Short by about "+Math.ceil(-spare)+" min: go straight to the shelter";
+  let ok=0;const rows=CREW.map((c,i)=>{let st;if(i===0)st=sh?["ok","In shelter"]:["warn","Moving"];else if(c.sm>60)st=["bad","No signal for "+age(c.sm).replace(" ago","")];else if(c.seal)st=["ok","In shelter"];else st=["warn","Moving · "+mmss(mEta)];if(st[0]==="ok")ok++;return`<div class="accr"><span>${i===0?"You":c.n}</span><span class="tag ${st[0]}">${st[1]}</span></div>`});
+  $("crewList").innerHTML=rows.join("");$("crewSum").textContent=ok+" of "+CREW.length+" in shelter";
+  $("novaLine").textContent=inc.ack?"Habitat sealed. Stay in the shelter. I will message you when the dose rate drops and the ground team clears you to leave.":sh?"You are in the shelter. Finish the last steps, then confirm the seal.":"Eva, solar magnetic flux is spiking rapidly. You have about "+Math.max(0,Math.floor(win))+" minutes before impact and need about "+need+". Take your rad-mitigation pack and move to the shelter."
+}
+$("next").onclick=e=>{if(e.target.id!=="nextDone")return;const k=inc.done.findIndex(d=>!d);if(k<0)return;inc.done[k]=true;buzz(30);drawAlerts();save()};
 $("steps").onchange=e=>{inc.done[+e.target.dataset.i]=e.target.checked;drawAlerts();save()};
-let armed=0;$("seal").onclick=()=>{const b=$("seal");if(!armed){armed=setTimeout(()=>{armed=0;drawAlerts()},4000);b.textContent="Tap again to confirm seal";return}clearTimeout(armed);armed=0;inc.ack=true;inc.done[1]=true;drawAlerts();render();save()};
+let armed=0;$("seal").onclick=()=>{const b=$("seal");if(!armed){armed=setTimeout(()=>{armed=0;drawAlerts()},4000);b.textContent="Tap again to confirm seal";buzz(20);return}clearTimeout(armed);armed=0;inc.ack=true;inc.done[1]=true;buzz([40,40,40]);drawAlerts();render();save()};
 $("tele").onclick=e=>{const t=$("telem");t.hidden=!t.hidden;e.currentTarget.setAttribute("aria-expanded",String(!t.hidden))};
-let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true;const rp=$("ringP");rp.style.strokeDashoffset=100-Math.max(0,eta/1122)*100;$("ring").style.display=inc.ack?"none":"";if(!inc.ack)$("banner").title="Impact window "+t}
+let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true;const rp=$("ringP");rp.style.strokeDashoffset=100-Math.max(0,eta/1122)*100;$("ring").style.display=inc.ack?"none":"";if(!inc.ack)$("banner").title="Impact window "+t;if(mEta>0){mEta--;if(mEta===0)CREW[3].seal=true}if(!$("alertsPage").hidden)drawLive()}
 setInterval(()=>{if(eta>0)eta--;tick()},1000);
 var pv='core';
 const P2=[
