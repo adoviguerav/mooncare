@@ -24,7 +24,7 @@ What is not a concept:
 
 ## 2. Data model
 
-One PostgreSQL database with five tables, in two schemas: `cfg` for what the system knows before any reading arrives, and `dat` for the crew and their readings. A third schema, `his`, is reserved for history and is empty. The same files build the local database (Docker) and the deployed one. They live in `database/postgresql/schema`, and that folder's README describes every column.
+One PostgreSQL database with five tables for the panel, in two schemas: `cfg` for what the system knows before any reading arrives, and `dat` for the crew and their readings. A third schema, `his`, holds the history of the synchronisations between the moon and earth servers ([moon_earth_sync.md](moon_earth_sync.md)). The same files build the local database (Docker) and the deployed one. They live in `database/postgresql/schema`, and that folder's README describes every column.
 
 ```sql
 CREATE TABLE cfg.source (
@@ -94,7 +94,7 @@ How each dataset becomes readings:
 | File | Indicator ids | Note |
 | :-- | :-- | :-- |
 | LifeSnaps daily | `resting_heart_rate`, `sleep_duration`, `sleep_efficiency`, `skin_temperature`, `very_active_minutes`, `steps`, `mood_happy`, `mood_sad`, `mood_tense`, `mood_alert`, `mood_rested`, `mood_neutral`, `mood_tired`, `spo2`, `breathing_rate`, `heart_rate_variability`, `stress_score`, `sleep_awake_minutes`, `vo2_max` | One reading per person, day and indicator. Each mood column holds 0 or 1 and becomes its own indicator. The frontend shows the seven moods as one card |
-| RadLab | `radiation_dose_rate` | One reading per day: the mean absorbed dose rate over every dosimeter reading of that day. The same for the four crew members, because it is a reading of the ship |
+| RadLab | `radiation_dose_rate` | One reading per day: the mean absorbed dose rate of the Lidal detector, which reports every 5 minutes. The other detectors sample unevenly and stop for weeks. The same for the four crew members, because it is a reading of the ship |
 | LifeSnaps questionnaires (STAI, PANAS) | `anxiety_score`, `positive_affect`, `negative_affect` | One reading per person and answered questionnaire, 2 to 7 each |
 | LifeSnaps daily, computed | `mood_sad_days_14`, `mood_tense_days_14` | For each day with a mood entry, on how many of the 14 days ending on it the mood was chosen (section 5) |
 | LifeSnaps hourly | `heart_rate` | One reading per person and hour |
@@ -205,7 +205,7 @@ The numbers are examples. Text shown as "..." comes from the seed script. PUT /a
 { "date": "2021-11-02", "moods": ["mood_happy", "mood_rested"] }
 ```
 
-- The returned moods come in the order of the check-in: happy, sad, tense, alert, rested, neutral.
+- The returned moods come in the order of the check-in: happy, sad, tense, alert, rested, neutral, tired.
 - An empty list is valid and saves the seven as 0. A mood id that is not one of the seven returns 422 and saves nothing.
 - The seven readings are stored at T00:00 of the date in the path.
 
@@ -275,7 +275,7 @@ Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an
 
 ## Starting decisions
 
-- Rules. Five fixed-range rules: glucose, sleep, resting heart rate and the two mood ones (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
+- Rules. Seventeen fixed-range rules (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
 - Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add an entry to the rules in `seed_content.py`.
 - Temperature. No rule for now, because no dataset has symptoms. The panel shows `skin_temperature`.
 - Dates. The Inspiration4 readings keep their real dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 is shifted by -77 days, so the last day with a mood entry (2022-01-17) falls on 2021-11-01, the day before the demo date. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. The other three are paired the same way:

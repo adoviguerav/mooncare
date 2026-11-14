@@ -9,11 +9,11 @@ A daily health panel for astronauts, built for the NASA Space Apps Challenge 202
 ```
 apps/
   web/        Tablet web app: React + Vite + TypeScript
-    src/features/   One folder per screen: profile, panel, indicator
+    src/features/   One folder per screen: profile, panel, indicator, checkin
     src/lib/        API client (the contracts as types), formatting, config
     src/hooks/  src/styles/
   mobile/     Empty for now
-  landing/    Empty for now
+  landing/    Landing page prototype (static HTML)
 services/
   api/        FastAPI backend
     app/            main.py (routes), schemas.py, models.py (SQLAlchemy), db.py, config.py

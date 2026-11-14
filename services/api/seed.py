@@ -95,8 +95,11 @@ DAILY_COLUMNS = {
     "sleep_awake_minutes": "minutesAwake",
     "vo2_max": "filteredDemographicVO2Max",  # an estimate by the watch, not an exercise test
 }
-# The watch gives a stress score from 1 to 100. A 0 is a day it could not work one out, not a reading.
-ZERO_MEANS_NO_READING = {"stress_score"}
+# A 0 in these columns is a night the watch could not work the value out, not a reading
+ZERO_MEANS_NO_READING = {"stress_score", "breathing_rate"}
+# RadLab: the one detector that reports every 5 minutes on nearly every day. The DosTel detectors sample
+# faster when the dose is high and stop for weeks, so a mean over them is not comparable from day to day.
+RADIATION_INSTRUMENT = "Lidal"
 
 # LifeSnaps questionnaire files: indicator id to the column it comes from. One reading per person and answer.
 STAI_COLUMNS = {"anxiety_score": "stai_stress"}
@@ -267,7 +270,7 @@ def read_questionnaire_readings(
 
 @lru_cache
 def read_radiation_readings(radlab_dir: Path) -> tuple[Reading, ...]:
-    """The mean absorbed dose rate of each day, over every dosimeter reading of that day.
+    """The mean absorbed dose rate of each day, over the readings of RADIATION_INSTRUMENT.
 
     It is a reading of the ship, not of a person: every crew member gets the same one.
     """
@@ -275,7 +278,7 @@ def read_radiation_readings(radlab_dir: Path) -> tuple[Reading, ...]:
     for monthly_tsv in sorted(radlab_dir.glob("*.tsv")):
         with monthly_tsv.open(newline="", encoding="utf-8-sig") as tsv_file:
             for row in csv.DictReader(tsv_file, delimiter="\t"):
-                if row["absorbed_dose_rate"] != "":
+                if row["instrument"] == RADIATION_INSTRUMENT and row["absorbed_dose_rate"] != "":
                     dose_rates_by_day[row["timestamp"][:10]].append(float(row["absorbed_dose_rate"]))
     return tuple(
         Reading("radiation_dose_rate", f"{day}T00:00", round(sum(dose_rates) / len(dose_rates), 2))

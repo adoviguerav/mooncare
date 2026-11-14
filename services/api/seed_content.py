@@ -445,8 +445,8 @@ INDICATORS = [
         name="Radiation dose rate in the ship",
         unit="µGy/h",
         how_to_measure=(
-            "With the dosimeters inside the ship, all the time. It is a reading of the ship, the same for "
-            "the whole crew, not your personal dose."
+            "With a radiation detector inside the ship, every 5 minutes (Lidal, in the Columbus module of "
+            "the ISS). It is a reading of the ship, the same for the whole crew, not your personal dose."
         ),
         why_it_matters=(
             "How much radiation the ship is receiving. The dose adds up over a mission, so a sustained rise "

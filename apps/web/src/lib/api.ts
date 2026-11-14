@@ -50,6 +50,7 @@ export type MoodId =
   | 'mood_alert'
   | 'mood_rested'
   | 'mood_neutral'
+  | 'mood_tired'
 
 export type Checkin = { date: string; moods: MoodId[] }
 

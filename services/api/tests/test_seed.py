@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import get_args
 
 import psycopg
 import pytest
@@ -12,6 +13,7 @@ from seed import (
     CrewPairing,
     Reading,
     build_mood_day_counts,
+    build_seed_files,
     read_crew_readings,
     read_daily_readings,
     METABOLIC_PANEL_COLUMNS,
@@ -24,7 +26,9 @@ from seed import (
     STAI_COLUMNS,
     to_sql_literal,
 )
-from seed_content import INDICATORS, RULES
+from app.config import SEEDS_DIR
+from app.schemas import MoodId
+from seed_content import INDICATORS, MOOD_NAMES, RULES
 
 METABOLIC_PANEL_HEADER = (
     "Sample Name,glucose_value_milligram_per_deciliter,"
@@ -338,7 +342,7 @@ def test_stores_one_reading_per_day_and_daily_column_of_the_paired_volunteer(tmp
     ]
 
 
-def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(tmp_path: Path) -> None:
+def test_stores_the_moods_of_each_day_the_volunteer_logged_one(tmp_path: Path) -> None:
     daily = write_csv(
         tmp_path / "daily.csv",
         ",id,date,resting_hr,very_active_minutes,steps,minutesAsleep,sleep_efficiency,nightly_temperature,"
@@ -371,6 +375,15 @@ def test_reads_the_questionnaire_scores_of_the_paired_volunteer_shifted_by_the_c
     ]
 
 
+def test_a_breathing_rate_of_zero_produces_no_reading(tmp_path: Path) -> None:
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        "id,date,full_sleep_breathing_rate\n" + f"{VOLUNTEER},2021-11-01,0.0\n" + f"{VOLUNTEER},2021-11-02,14.2\n",
+    )
+
+    assert read_daily_readings(daily, VOLUNTEER, 0) == [Reading("breathing_rate", "2021-11-02T00:00", 14.2)]
+
+
 def test_a_stress_score_of_zero_produces_no_reading(tmp_path: Path) -> None:
     daily = write_csv(
         tmp_path / "daily.csv",
@@ -395,14 +408,16 @@ def test_loads_the_vo2_max_rule_with_the_nasa_limit(
     ]
 
 
-def test_stores_the_mean_dose_rate_of_the_ship_for_each_day(tmp_path: Path) -> None:
+def test_stores_the_mean_dose_rate_of_the_lidal_detector_for_each_day(tmp_path: Path) -> None:
     header = "timestamp\tinstrument_id\tabsorbed_dose_rate\tdose_equivalent_rate\tinstrument\tmodule\tspacecraft\n"
     write_csv(
         tmp_path / "iss_2021-11.tsv",
         header
         + '"2021-11-01T00:00:00"\t"Lidal"\t10.0\t\t"Lidal"\t"Columbus"\t"ISS"\n'
-        + '"2021-11-01T00:05:00"\t"DosTel2"\t20.0\t\t"DosTel2"\t"Columbus"\t"ISS"\n'
-        + '"2021-11-01T00:10:00"\t"DosTel2"\t\t\t"DosTel2"\t"Columbus"\t"ISS"\n'
+        + '"2021-11-01T00:05:00"\t"Lidal"\t20.0\t\t"Lidal"\t"Columbus"\t"ISS"\n'
+        + '"2021-11-01T00:10:00"\t"Lidal"\t\t\t"Lidal"\t"Columbus"\t"ISS"\n'
+        # Another detector, which samples faster when the dose is high: left out
+        + '"2021-11-01T00:00:20"\t"DosTel2"\t700.0\t\t"DosTel2"\t"Columbus"\t"ISS"\n'
         + '"2021-11-02T00:00:00"\t"Lidal"\t7.5\t\t"Lidal"\t"Columbus"\t"ISS"\n',
     )
 
@@ -415,7 +430,18 @@ def test_stores_the_mean_dose_rate_of_the_ship_for_each_day(tmp_path: Path) -> N
 def test_the_real_radiation_data_gives_every_crew_member_the_same_dose_rate_of_the_ship() -> None:
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
-    assert [panel["radiation_dose_rate"] for panel in panels] == [9.76, 9.76, 9.76, 9.76]
+    assert [panel["radiation_dose_rate"] for panel in panels] == [6.01, 6.01, 6.01, 6.01]
+
+
+def test_the_committed_seed_files_are_what_the_seed_script_writes_today() -> None:
+    for file_name, content in build_seed_files(CREW, DATASET_FILES).items():
+        assert (SEEDS_DIR / file_name).read_text(encoding="utf-8") == content, f"Run seed.py: {file_name} is stale"
+
+
+def test_the_checkin_moods_are_the_mood_columns_of_the_daily_file_and_have_a_name() -> None:
+    mood_columns = {indicator_id for indicator_id in DAILY_COLUMNS if indicator_id.startswith("mood_")}
+
+    assert set(get_args(MoodId)) == mood_columns == set(MOOD_NAMES)
 
 
 def test_every_daily_indicator_has_its_text_and_source() -> None:

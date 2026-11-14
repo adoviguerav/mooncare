@@ -141,7 +141,7 @@ ENV_FILE=.env.earth uv run uvicorn app.main:app --port 8001   # earth
 curl -X POST http://localhost:8000/api/sync                   # sync now
 ```
 
-Both load the same seed files. The first push sends earth every reading the moon has; earth already has the seeded ones and simply replaces them.
+Both load the same seed files. After regenerating the seeds, rebuild both databases (`load_database.py --rebuild`): a moon and an earth built from different seeds cannot sync. The first push sends earth every reading the moon has; earth already has the seeded ones and simply replaces them.
 
 ### Deployed (proposal)
 

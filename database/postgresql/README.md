@@ -77,6 +77,7 @@ A fictional astronaut.
 | :-- | :-- | :-- |
 | `id` | `INTEGER` PK, identity | |
 | `name` | `TEXT` UNIQUE | |
+| `role` | `TEXT` | `commander` or `crew_member` |
 
 ### `dat.reading`
 
