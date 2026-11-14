@@ -1,0 +1,5 @@
+# Connection strings and passwords never go to git: any .env file, whatever its suffix.
+# Only the template, with no real values, is committed.
+.env
+.env.*
+!.env.example
