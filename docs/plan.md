@@ -155,6 +155,8 @@ Our letter of introduction to the NASA experts. Decided on 14 Nov: two deploys. 
     - How we used AI.
     - Next steps: the link to the ground and the emergency scenarios of milestone 4 that we did not build.
 - [ ] **L3. Languages.** English and Spanish, with a switch. Any other language is not decided.
+- [ ] **L4. Our own domain.** GoDaddy gives every Space Apps participant a free domain and a year of hosting (Global Offers, message of the GO Team at the kick-off). Claim one and point it to the landing on Netlify, once the landing is up. The app keeps its Vercel address, or gets a subdomain such as `app.`. It is an outside resource, so it goes on the list of P4.
+    - Done when: the domain opens the landing in a private window.
 
 Done when: someone who does not know the project reads the landing, opens the app from it and understands what it is.
 
