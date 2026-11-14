@@ -357,6 +357,30 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .emst u{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;text-decoration:none;background:rgba(255,255,255,.12)}
 .emst.d u{background:#3be0a0;color:#05261a}.emst.d span{text-decoration:line-through;opacity:.6}.emst.c u{background:var(--warn);color:#2a1700}.emst.c{color:#fff}
 .emcard .acts{margin-top:14px}
+
+/* AI assistant for the flight surgeon */
+#aiFab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:8px;min-height:48px;padding:0 18px 0 14px;border-radius:26px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;border:1px solid rgba(47,216,255,.5);background:linear-gradient(135deg,rgba(47,216,255,.28),rgba(47,216,255,.08)),rgba(8,22,42,.7);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 8px 28px rgba(0,0,0,.45),0 0 22px rgba(47,216,255,.3)}
+#aiFab[hidden],#aiPage[hidden]{display:none}#aiFab svg{color:var(--cy)}
+#aiPage{position:fixed;z-index:65;left:0;right:0;bottom:0;height:min(88vh,760px);display:flex;flex-direction:column;border-radius:26px 26px 0 0;border:1px solid var(--gl-line,rgba(255,255,255,.2));background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.03)),rgba(8,20,38,.86);-webkit-backdrop-filter:blur(28px) saturate(160%);backdrop-filter:blur(28px) saturate(160%);box-shadow:0 -12px 50px rgba(0,0,0,.5);color:var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(min-width:720px){#aiPage{left:auto;right:16px;bottom:16px;width:440px;height:min(720px,calc(100vh - 32px));border-radius:26px}}
+.aihead{display:flex;align-items:center;gap:12px;padding:14px 14px 12px 16px;border-bottom:1px solid rgba(255,255,255,.12)}.aihead div{flex:1}.aihead b{display:block;font-size:17px}.aihead small{color:var(--mute);font-size:12px}
+.aiav{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--cy);background:rgba(47,216,255,.14);border:1px solid rgba(47,216,255,.4)}
+.aix{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font-size:22px;cursor:pointer;padding:0}
+.aimsgs{flex:1;overflow-y:auto;padding:14px 14px 4px;display:flex;flex-direction:column;gap:12px}
+.aim{max-width:94%;padding:12px 14px;border-radius:18px;font-size:15px;line-height:1.5;word-wrap:break-word}
+.aim.u{align-self:flex-end;background:rgba(47,216,255,.2);border:1px solid rgba(47,216,255,.4);border-bottom-right-radius:6px}
+.aim.a{align-self:flex-start;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-bottom-left-radius:6px}
+.aim h4{margin:0 0 6px;font-size:15px}.aim p{margin:0 0 8px}.aim ul{margin:0 0 8px;padding:0;list-style:none}.aim li{padding:7px 0;border-top:1px solid rgba(255,255,255,.1)}.aim li:first-child{border-top:0}
+.aim .lv{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:1px}
+.lv.hi{background:rgba(255,90,90,.2);color:#ff8a8a}.lv.md{background:rgba(255,184,74,.2);color:#ffc266}.lv.lo{background:rgba(59,224,160,.18);color:#5eeab0}
+.aim .src{font-size:12px;color:var(--mute);margin:4px 0 0}
+.aim pre{white-space:pre-wrap;font:inherit;font-size:14px;background:rgba(0,0,0,.25);border-radius:12px;padding:10px;margin:0 0 8px}
+.aim .aiacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.aim .aiacts button{font:inherit;font-size:14px;min-height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--cy);cursor:pointer}
+.aim.typing{color:var(--mute)}
+.aichips{display:flex;gap:8px;overflow-x:auto;padding:8px 14px;scrollbar-width:none}.aichips button{flex:none;font:inherit;font-size:14px;min-height:40px;padding:0 14px;border-radius:20px;border:1px solid rgba(47,216,255,.4);background:rgba(47,216,255,.1);color:var(--ink);cursor:pointer;white-space:nowrap}
+.aiform{display:flex;gap:8px;padding:6px 14px 4px}.aiform input{flex:1;min-width:0;min-height:48px;border-radius:24px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:inherit;padding:0 16px}.aiform .primary{min-height:48px;border-radius:24px;padding:0 20px}
+.aiform input{width:auto;flex:1 1 auto}.aiform .primary{width:auto;flex:none;background:linear-gradient(180deg,rgba(47,216,255,.9),rgba(47,216,255,.6));color:#04202c;border:0;font-weight:700;box-shadow:0 0 18px rgba(47,216,255,.35)}
+.ainote{font-size:12px;margin:2px 14px 10px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -672,6 +696,14 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <footer>Demo data only. Mood is a confidential self-report and never triggers an automatic diagnosis.</footer>
 </div>
 
+<button id="aiFab" type="button" aria-label="Ask Dr. Nova AI" hidden><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg><span>Ask Nova AI</span></button>
+<section id="aiPage" role="dialog" aria-label="Dr. Nova AI assistant" hidden>
+  <div class="aihead"><span class="aiav"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg></span><div><b>Dr. Nova AI</b><small>Decision support for the flight surgeon · demo</small></div><button type="button" class="aix" id="aiX" aria-label="Close assistant">×</button></div>
+  <div class="aimsgs" id="aiMsgs" aria-live="polite"></div>
+  <div class="aichips" id="aiChips"></div>
+  <form class="aiform" id="aiForm"><input id="aiIn" type="text" placeholder="Ask about the crew…" autocomplete="off" aria-label="Ask Dr. Nova AI"><button class="primary" type="submit">Send</button></form>
+  <p class="note ainote">Demo: answers come from the crew data on screen using simple rules, not a trained model yet. Decision support only. The doctor decides.</p>
+</section>
 <script>
 const M=[
  {mod:"CARDIO",name:"Heart rate",val:72,unit:"bpm resting",base:66,tol:8,pri:"L3",
@@ -959,7 +991,7 @@ $("ptiles").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dat
 $("ptiles").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};
 setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME];document.querySelectorAll("[data-live]").forEach(e=>{const k=e.dataset.live;e.textContent=k==="hr"?M[0].val+Math.round(Math.sin(t/4000)*2+(Math.random()-.5)*2):k==="spo2"?d.spo2-(Math.sin(t/9000)>.85?1:0):d.br+(Math.sin(t/6000)>.6?1:0)})},3000);
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
-function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
+function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";$("aiFab").hidden=v!=="admin";if(v!=="admin")closeAi();if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
   if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
@@ -1343,6 +1375,62 @@ function runEm(){emT=10*60;emSent=false;emSteps=EMS.map(()=>false);$("emAlarm").
   emDraw();if(emTick)clearInterval(emTick);emTick=setInterval(()=>{if(emT>0)emT--;if(!emSteps.every(Boolean))emDraw()},1000)}
 $("emFab").onclick=openEm;$("emX").onclick=closeEm;$("emDone").onclick=closeEm;$("emIcon").onclick=runEm;$("emAgain").onclick=runEm;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("emPage").hidden)closeEm()});
+
+// AI assistant for the flight surgeon. Front end only: simple rules over the crew data on screen.
+const aiRows=()=>CREW.map((c,i)=>crow(c,i)),aiFirst=n=>n.replace(/^(Cmdr\.|Dr\.)\s*/,""),aiNorm=t=>t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+const AICHK={hr:"Re-measure resting heart rate after 5 min of rest. Ask about caffeine, stress, fluids and new symptoms.",bp:"Re-measure seated after 5 min of rest and compare both arms. Ask about exertion and salt intake.",spo2:"Check the sensor fit and re-measure. Check the cabin oxygen and CO2 readings.",sleep:"Review the sleep schedule, light, noise and workload for the last three sols.",temp:"Re-measure with a second device. Ask about symptoms. Start the infection assessment if it persists.",act:"Ask about workload, pain or equipment problems. Reschedule the session.",glu:"Repeat the measurement. Ask about the last meal. Follow the metabolic assessment.",sync:"Check the wearable battery and fit. Ask the crew member to sync."};
+const AIU={hr:["Heart rate","bpm",c=>c.hr],bp:["Blood pressure","mmHg",c=>c.bps+"/"+c.bpd],spo2:["Blood oxygen","%",c=>c.spo2],sleep:["Sleep","h",c=>c.sleep],temp:["Skin temperature","°C",c=>c.temp],act:["Exercise","min",c=>c.act],glu:["Glucose","mg/dL",c=>c.glu]};
+const aiLv=c=>{const v=sev(c);return v>=10?["hi","High"]:v>=4?["md","Medium"]:v>0?["lo","Low"]:["lo","Stable"]};
+const aiSrc='<p class="src">Rule-based demo on the readings shown. Suggested checks are general and need confirming against the medical protocol.</p>';
+const aiSaveBtn=t=>`<div class="aiacts"><button type="button" data-save="${esc(t)}">Add to review log</button></div>`;
+function aiRisk(c){const k=flags(c).map(x=>x[0]),o=[],b=c.b||{};
+  if(k.includes("temp")||(c.temp>=37.1&&c.hr>(b.hr||0)+6))o.push(["Possible early infection","Temperature and heart rate are rising together. Re-measure in 2 h and start the infection assessment if it persists.","hi"]);
+  if(c.spo2<95)o.push(["Low blood oxygen","SpO2 is "+c.spo2+"%. Check the sensor, then the cabin air.","hi"]);
+  if(c.glu<70||c.glu>140)o.push(["Glucose out of range","Reading is "+c.glu+" mg/dL. Repeat it and ask about the last meal.","hi"]);
+  if(c.bps>=130||c.bpd>=80||(b.hr&&c.hr>b.hr+8))o.push(["Cardiovascular strain","Blood pressure "+c.bps+"/"+c.bpd+" with heart rate "+c.hr+" bpm"+(b.hr?" (baseline "+b.hr+")":"")+". Re-measure at rest in 1 h.","md"]);
+  if(c.sleep<7||(b.sleep&&c.sleep<b.sleep-0.8))o.push(["Fatigue and slower reactions","Sleep was "+c.sleep+" h"+(b.sleep?" against a personal "+b.sleep+" h":"")+". Likely worse during long tasks tomorrow.","md"]);
+  if(c.act<45)o.push(["Muscle and bone loss","Exercise is "+c.act+" min. Several low days in a row add up in low gravity.","lo"]);
+  if(c.sm>60)o.push(["Blind spot","No data for "+age(c.sm).replace(" ago","")+". Nothing can be predicted until the wearable syncs.","md"]);
+  return o}
+function aiPeople(c){const f=flags(c),b=c.b||{},line=(k,now,base,u)=>`<li>${AIU[k][0]}: <b>${now} ${u}</b>${base!=null?` <span class="note">(baseline ${base})</span>`:""}</li>`;
+  const ks=[...new Set(f.map(x=>x[0]))].filter(k=>AICHK[k]);
+  return `<h4>${esc(c.n)} · ${esc(c.r)} <span class="lv ${aiLv(c)[0]}">${aiLv(c)[1]}</span></h4><ul>${line("hr",c.hr,b.hr,"bpm")}${line("bp",c.bps+"/"+c.bpd,null,"mmHg")}${line("spo2",c.spo2,null,"%")}${line("sleep",c.sleep,b.sleep,"h")}${line("temp",c.temp,b.temp,"°C")}${line("act",c.act,b.act,"min")}${line("glu",c.glu,b.glu,"mg/dL")}</ul>
+  <p><b>What I notice:</b> ${f.length?esc(reason(c)):"Everything is within the usual range for this person."}</p>${ks.length?`<p><b>Suggested checks</b></p><ul>${ks.map(k=>`<li>${esc(AICHK[k])}</li>`).join("")}</ul>`:""}${c.dose!=null?`<p class="src">Radiation dose: ${c.dose} mSv today, ${c.cum} mSv since arrival. No limit is set in this prototype.</p>`:""}${aiSrc}${aiSaveBtn("Summary of "+c.n+": "+(f.length?reason(c):"stable"))}`}
+function aiAnswer(q){const t=aiNorm(q),R=aiRows(),byN=R.find(c=>t.includes(aiNorm(aiFirst(c.n))));
+  if(byN)return aiPeople(byN);
+  if(/predict|24|forecast|risk|going to|will |next sol|tomorrow/.test(t)){
+    const L=R.map(c=>[c,aiRisk(c)]).filter(x=>x[1].length).sort((a,b)=>sev(b[0])-sev(a[0])),calm=R.length-L.length;
+    return `<h4>Outlook for the next 24 hours</h4>${L.length?`<ul>${L.slice(0,4).map(([c,o])=>`<li><b>${esc(aiFirst(c.n))}</b><span class="lv ${aiLv(c)[0]}">${aiLv(c)[1]}</span><br>${o.slice(0,2).map(x=>esc(x[0])+": "+esc(x[1])).join("<br>")}</li>`).join("")}</ul>`:"<p>No risks stand out.</p>"}<p>${calm} of ${R.length} crew show nothing to worry about right now.</p><p class="src">Confidence is low to medium. This is a simple rule-based demo; a trained model will replace it.</p>${aiSaveBtn("24 h outlook: "+L.slice(0,3).map(([c,o])=>aiFirst(c.n)+" ("+o[0][0]+")").join("; "))}`}
+  if(/pattern|across|everyone|crew.?wide|common|shared|trend/.test(t)){
+    const P=[],n=R.length,names=f=>R.filter(f).map(c=>aiFirst(c.n)).join(", "),cnt=f=>R.filter(f).length;
+    if(cnt(c=>c.sleep<7)>0)P.push([cnt(c=>c.sleep<7)+" of "+n+" slept under 7 h ("+names(c=>c.sleep<7)+")",cnt(c=>c.sleep<7)>1?"More than one person: check shared causes such as lighting, noise or the work schedule.":"Check this person’s schedule and workload."]);
+    if(cnt(c=>c.temp>=37.3)>0)P.push([names(c=>c.temp>=37.3)+" with raised temperature","Ask about symptoms and contact with others. Start the infection assessment."]);
+    if(cnt(c=>c.act<45)>0)P.push([cnt(c=>c.act<45)+" of "+n+" below the exercise programme ("+names(c=>c.act<45)+")","Check equipment and the day’s schedule."]);
+    if(cnt(c=>c.bps>=130||c.bpd>=80)>0)P.push([names(c=>c.bps>=130||c.bpd>=80)+" with blood pressure at or above 130/80","Re-measure at rest before acting."]);
+    if(cnt(c=>c.sm>60)>0)P.push([names(c=>c.sm>60)+" not syncing","Check the wearable."]);
+    return `<h4>Patterns across the crew</h4>${P.length?`<ul>${P.map(x=>`<li>${esc(x[0])}<br><span class="note">${esc(x[1])}</span></li>`).join("")}</ul>`:"<p>No crew-wide patterns today.</p>"}${aiSrc}`}
+  if(/handover|hand.?over|report|note|draft/.test(t)){
+    const tx="Crew health handover, Sol 248\n"+R.map(c=>"- "+c.n+": "+(flags(c).length?reason(c):"stable")+(rvw[c.n]?" (reviewed)":"")).join("\n")+"\nOpen items: "+R.filter(c=>flags(c).length&&!rvw[c.n]).length+" of "+R.length+". Demo data.";
+    return `<h4>Handover note</h4><pre>${esc(tx)}</pre><div class="aiacts"><button type="button" data-copy="${esc(tx)}">Copy text</button><button type="button" data-save="${esc(tx)}">Add to review log</button></div>${aiSrc}`}
+  const pk=[["sleep",/sleep/],["temp",/temp|fever/],["bp",/pressure|\bbp\b/],["glu",/gluc|sugar/],["hr",/heart|pulse/],["spo2",/oxygen|spo2/],["act",/exercise|active|workout/]].find(x=>x[1].test(t));
+  if(pk){const u=AIU[pk[0]];return `<h4>${u[0]} across the crew</h4><ul>${R.map(c=>{const fl=flags(c).some(x=>x[0]===pk[0]);return `<li><b>${esc(aiFirst(c.n))}</b>: ${u[2](c)} ${u[1]}${fl?'<span class="lv hi">Flag</span>':""}</li>`}).join("")}</ul>${aiSrc}`}
+  if(/who|first|attention|priority|urgent|worst|flag|review|concern/.test(t)){
+    const L=R.filter(c=>flags(c).length).sort((a,b)=>sev(b)-sev(a));
+    return L.length?`<h4>${L.length} of ${R.length} need attention</h4><ul>${L.map(c=>`<li><b>${esc(aiFirst(c.n))}</b><span class="lv ${aiLv(c)[0]}">${aiLv(c)[1]}</span>${rvw[c.n]?' <span class="note">(reviewed)</span>':""}<br>${esc(reason(c))}</li>`).join("")}</ul><p><b>Start with ${esc(aiFirst(L[0].n))}.</b> ${esc(AICHK[flags(L[0])[0][0]]||"")}</p>${aiSrc}${aiSaveBtn("Priority: "+L.map(c=>aiFirst(c.n)).join(", "))}`:`<p>Nobody is flagged right now.</p>`}
+  return `<p>I can review the crew data for you. Try one of these:</p><ul><li>“Who needs attention first?”</li><li>“Predict risks for the next 24 hours”</li><li>“Spot patterns across the crew”</li><li>“Summarise ${esc(aiFirst(R[2].n))}”</li><li>“Draft a handover note”</li></ul>`}
+function aiAdd(role,html){const m=document.createElement("div");m.className="aim "+(role==="u"?"u":"a");m.innerHTML=html;$("aiMsgs").appendChild(m);$("aiMsgs").scrollTop=$("aiMsgs").scrollHeight;return m}
+function aiAsk(q){q=q.trim();if(!q)return;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");w.classList.add("typing");setTimeout(()=>{w.classList.remove("typing");w.innerHTML=aiAnswer(q);$("aiMsgs").scrollTop=w.offsetTop-8},RM?0:700)}
+let aiInit=false;
+function openAi(){$("aiPage").hidden=false;if(!aiInit){aiInit=true;const R=aiRows(),L=R.filter(c=>flags(c).length).sort((a,b)=>sev(b)-sev(a));
+  aiAdd("a",`<h4>Good morning, Dr. ${esc(aiFirst(PD[1].name))}</h4><p>I scanned all ${R.length} crew. ${L.length?`<b>${L.length} need attention.</b> Top of the list: <b>${esc(aiFirst(L[0].n))}</b>. ${esc(reason(L[0]))}`:"Nobody is flagged right now."}</p><p class="note">Ask me to review, predict or summarise. I only use the data on this screen.</p>`);
+  $("aiChips").innerHTML=["Who needs attention first?","Predict risks for the next 24 h","Spot patterns across the crew",L[0]?"Summarise "+aiFirst(L[0].n):"Summarise "+aiFirst(R[2].n),"Draft a handover note"].map(x=>`<button type="button">${esc(x)}</button>`).join("");
+  document.querySelectorAll("#aiChips button").forEach(b=>b.onclick=()=>aiAsk(b.textContent))}
+  setTimeout(()=>$("aiIn").focus(),50)}
+function closeAi(){$("aiPage").hidden=true}
+$("aiFab").onclick=openAi;$("aiX").onclick=closeAi;
+$("aiForm").onsubmit=e=>{e.preventDefault();const v=$("aiIn").value;$("aiIn").value="";aiAsk(v)};
+$("aiMsgs").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.save!=null){LOG.unshift({t:nowT(),a:"AI note saved",note:b.dataset.save});b.textContent="Saved to review log";b.disabled=true;if(view()==="admin")drawAdmin()}if(b.dataset.copy!=null){try{navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied"}catch(x){b.textContent="Select and copy"}}};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("aiPage").hidden)closeAi()});
 </script>
 </body>
 </html>
