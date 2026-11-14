@@ -149,6 +149,8 @@ button {
   margin: 0 auto;
   padding: 28px 20px 40px;
   display: grid;
+  /* Without the zero minimum, the chart widens the column past a phone screen */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
