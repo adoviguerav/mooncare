@@ -198,7 +198,7 @@ flowchart TD
     dashboard["Web dashboard (tablet)"]
     apps["Mobile apps"]
     sensors["Sensors and devices"]
-    ship["SHIP backend · SQLite · rules and alerts"]
+    ship["SHIP backend · PostgreSQL · rules and alerts"]
     ai["Onboard AI (only advises)"]
     ground["GROUND backend"]
     surgeon["Flight surgeon"]
@@ -213,7 +213,7 @@ flowchart TD
 | Part | What it does | Status |
 | :-- | :-- | :-- |
 | Web dashboard | The tablet app each astronaut uses | Built (MVP) |
-| SHIP backend | Stores the readings in one SQLite file, applies the rules and returns the alerts. Everything the crew needs runs here | Built (MVP) |
+| SHIP backend | Stores the readings in a PostgreSQL database, applies the rules and returns the alerts. Everything the crew needs runs here | Built (MVP) |
 | Mobile apps | The same panel on a phone | Planned |
 | Sensors and devices | Send readings on their own (Bio-Monitor shirt, wrist tracker, glucose monitor). Today the readings come from the datasets and the check-in | Planned |
 | Onboard AI | Guides emergencies by voice and explains alerts. It only advises (E1 to E6) | Planned (stretch) |

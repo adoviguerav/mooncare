@@ -1,10 +1,13 @@
-import sqlite3
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from typing import Annotated, get_args
 
 from fastapi import FastAPI, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import distinct_on, insert
+from sqlalchemy.orm import Session
 
-from app.db import Connection
+from app import models
+from app.db import DbSession
 from app.schemas import (
     BrokenRule,
     Checkin,
@@ -22,21 +25,32 @@ from app.schemas import (
     Source,
 )
 
-END_OF_DAY = "T23:59"
-START_OF_DAY = "T00:00"
 MOOD_IDS = get_args(MoodId)
+TAKEN_AT_FORMAT = "%Y-%m-%dT%H:%M"  # the contracts give taken_at as YYYY-MM-DDTHH:MM
 
 
-def require_crew_member(connection: sqlite3.Connection, crew_member_id: int) -> None:
-    row = connection.execute("SELECT 1 FROM crew_member WHERE id = ?", (crew_member_id,)).fetchone()
-    if row is None:
+def start_of(day: date) -> datetime:
+    return datetime.combine(day, time.min)
+
+
+def start_of_next_day(day: date) -> datetime:
+    """Readings up to the end of a day are the ones before the next day starts."""
+    return start_of(day + timedelta(days=1))
+
+
+def format_taken_at(taken_at: datetime) -> str:
+    return taken_at.strftime(TAKEN_AT_FORMAT)
+
+
+def require_crew_member(session: Session, crew_member_id: int) -> None:
+    if session.get(models.CrewMember, crew_member_id) is None:
         raise HTTPException(status_code=404, detail=f"Crew member {crew_member_id} not found")
 
 
-def get_rules_by_indicator(connection: sqlite3.Connection) -> dict[str, list[Rule]]:
+def get_rules_by_indicator(session: Session) -> dict[str, list[Rule]]:
     rules_by_indicator: dict[str, list[Rule]] = {}
-    for row in connection.execute("SELECT * FROM rule ORDER BY id"):
-        rules_by_indicator.setdefault(row["indicator_id"], []).append(Rule.model_validate(dict(row)))
+    for rule in session.scalars(select(models.Rule).order_by(models.Rule.id)):
+        rules_by_indicator.setdefault(rule.indicator_id, []).append(Rule.model_validate(rule, from_attributes=True))
     return rules_by_indicator
 
 
@@ -53,128 +67,123 @@ app = FastAPI(title="Real Telemetry API")
 
 
 @app.get("/api/crew")
-def get_crew(connection: Connection) -> CrewResponse:
-    rows = connection.execute("SELECT id, name FROM crew_member ORDER BY id").fetchall()
-    return CrewResponse(crew=[CrewMember.model_validate(dict(row)) for row in rows])
+def get_crew(session: DbSession) -> CrewResponse:
+    crew = session.scalars(select(models.CrewMember).order_by(models.CrewMember.id))
+    return CrewResponse(crew=[CrewMember(id=member.id, name=member.name) for member in crew])
 
 
 @app.get("/api/crew/{crew_member_id}/panel")
 def get_panel(
-    crew_member_id: int, connection: Connection, panel_date: Annotated[date, Query(alias="date")]
+    crew_member_id: int, session: DbSession, panel_date: Annotated[date, Query(alias="date")]
 ) -> PanelResponse:
-    require_crew_member(connection, crew_member_id)
-    rules_by_indicator = get_rules_by_indicator(connection)
-    rows = connection.execute(
-        """
-        SELECT indicator.id, indicator.name, indicator.unit, reading.taken_at, reading.value
-        FROM indicator
-        LEFT JOIN reading
-          ON reading.indicator_id = indicator.id
-         AND reading.crew_member_id = :crew_member_id
-         AND reading.taken_at = (
-               SELECT MAX(taken_at) FROM reading
-               WHERE indicator_id = indicator.id
-                 AND crew_member_id = :crew_member_id
-                 AND taken_at <= :end_of_day
-             )
-        ORDER BY indicator.rowid
-        """,
-        {"crew_member_id": crew_member_id, "end_of_day": panel_date.isoformat() + END_OF_DAY},
-    ).fetchall()
+    require_crew_member(session, crew_member_id)
+    rules_by_indicator = get_rules_by_indicator(session)
+    indicators = session.scalars(select(models.Indicator).order_by(models.Indicator.display_order)).all()
+    # DISTINCT ON keeps the first row of each indicator: its latest reading up to the end of the day
+    latest_readings = session.scalars(
+        select(models.Reading)
+        .where(
+            models.Reading.crew_member_id == crew_member_id,
+            models.Reading.taken_at < start_of_next_day(panel_date),
+        )
+        .order_by(models.Reading.indicator_id, models.Reading.taken_at.desc())
+        .ext(distinct_on(models.Reading.indicator_id))
+    )
+    latest_by_indicator = {reading.indicator_id: reading for reading in latest_readings}
 
-    indicators = []
-    for row in rows:
-        reading = None
+    panel_indicators = []
+    for indicator in indicators:
+        reading = latest_by_indicator.get(indicator.id)
+        panel_reading = None
         broken_rule = None
-        if row["taken_at"] is not None:
-            reading = PanelReading(taken_at=row["taken_at"], value=row["value"])
-            rule = find_broken_rule(rules_by_indicator.get(row["id"], []), row["value"])
+        if reading is not None:
+            panel_reading = PanelReading(taken_at=format_taken_at(reading.taken_at), value=reading.value)
+            rule = find_broken_rule(rules_by_indicator.get(indicator.id, []), reading.value)
             if rule is not None:
-                broken_rule = BrokenRule(
-                    id=rule.id, title=rule.title, explanation=rule.explanation, action=rule.action
-                )
-        indicators.append(
+                broken_rule = BrokenRule(id=rule.id, title=rule.title, explanation=rule.explanation, action=rule.action)
+        panel_indicators.append(
             PanelIndicator(
-                id=row["id"], name=row["name"], unit=row["unit"], reading=reading, broken_rule=broken_rule
+                id=indicator.id,
+                name=indicator.name,
+                unit=indicator.unit,
+                reading=panel_reading,
+                broken_rule=broken_rule,
             )
         )
-    return PanelResponse(date=panel_date, indicators=indicators)
+    return PanelResponse(date=panel_date, indicators=panel_indicators)
 
 
 @app.get("/api/crew/{crew_member_id}/indicators/{indicator_id}")
 def get_indicator(
     crew_member_id: int,
     indicator_id: str,
-    connection: Connection,
+    session: DbSession,
     from_date: Annotated[date, Query(alias="from")],
     to_date: Annotated[date, Query(alias="to")],
 ) -> IndicatorResponse:
-    require_crew_member(connection, crew_member_id)
-    indicator_row = connection.execute(
-        """
-        SELECT indicator.id, indicator.name, indicator.unit, indicator.how_to_measure,
-               indicator.why_it_matters, source.id AS source_id, source.name AS source_name,
-               source.url AS source_url, source.citation AS source_citation
-        FROM indicator JOIN source ON source.id = indicator.source_id
-        WHERE indicator.id = ?
-        """,
-        (indicator_id,),
-    ).fetchone()
-    if indicator_row is None:
+    require_crew_member(session, crew_member_id)
+    indicator = session.get(models.Indicator, indicator_id)
+    if indicator is None:
         raise HTTPException(status_code=404, detail=f"Indicator {indicator_id!r} not found")
 
-    rules = get_rules_by_indicator(connection).get(indicator_id, [])
-    reading_rows = connection.execute(
-        """
-        SELECT taken_at, value FROM reading
-        WHERE crew_member_id = ? AND indicator_id = ? AND taken_at >= ? AND taken_at <= ?
-        ORDER BY taken_at
-        """,
-        (crew_member_id, indicator_id, from_date.isoformat(), to_date.isoformat() + END_OF_DAY),
-    ).fetchall()
+    rules = get_rules_by_indicator(session).get(indicator_id, [])
+    readings = session.scalars(
+        select(models.Reading)
+        .where(
+            models.Reading.crew_member_id == crew_member_id,
+            models.Reading.indicator_id == indicator_id,
+            models.Reading.taken_at >= start_of(from_date),
+            models.Reading.taken_at < start_of_next_day(to_date),
+        )
+        .order_by(models.Reading.taken_at)
+    )
 
-    readings = []
-    for row in reading_rows:
-        broken_rule = find_broken_rule(rules, row["value"])
-        readings.append(
+    history = []
+    for reading in readings:
+        broken_rule = find_broken_rule(rules, reading.value)
+        history.append(
             HistoryReading(
-                taken_at=row["taken_at"],
-                value=row["value"],
+                taken_at=format_taken_at(reading.taken_at),
+                value=reading.value,
                 broken_rule_id=broken_rule.id if broken_rule is not None else None,
             )
         )
     return IndicatorResponse(
         indicator=Indicator(
-            id=indicator_row["id"],
-            name=indicator_row["name"],
-            unit=indicator_row["unit"],
-            how_to_measure=indicator_row["how_to_measure"],
-            why_it_matters=indicator_row["why_it_matters"],
-            source=Source(
-                id=indicator_row["source_id"],
-                name=indicator_row["source_name"],
-                url=indicator_row["source_url"],
-                citation=indicator_row["source_citation"],
-            ),
+            id=indicator.id,
+            name=indicator.name,
+            unit=indicator.unit,
+            how_to_measure=indicator.how_to_measure,
+            why_it_matters=indicator.why_it_matters,
+            source=Source.model_validate(indicator.source, from_attributes=True),
         ),
         rules=rules,
-        readings=readings,
+        readings=history,
     )
 
 
 @app.put("/api/crew/{crew_member_id}/checkins/{checkin_date}")
 def save_checkin(
-    crew_member_id: int, checkin_date: date, checkin: Checkin, connection: Connection
+    crew_member_id: int, checkin_date: date, checkin: Checkin, session: DbSession
 ) -> CheckinResponse:
-    require_crew_member(connection, crew_member_id)
+    require_crew_member(session, crew_member_id)
     chosen_moods = [mood_id for mood_id in MOOD_IDS if mood_id in checkin.moods]
-    taken_at = checkin_date.isoformat() + START_OF_DAY
-    with connection:
-        connection.executemany(
-            """
-            INSERT INTO reading (crew_member_id, indicator_id, taken_at, value) VALUES (?, ?, ?, ?)
-            ON CONFLICT (crew_member_id, indicator_id, taken_at) DO UPDATE SET value = excluded.value
-            """,
-            [(crew_member_id, mood_id, taken_at, float(mood_id in chosen_moods)) for mood_id in MOOD_IDS],
+    save_moods = insert(models.Reading).values(
+        [
+            {
+                "crew_member_id": crew_member_id,
+                "indicator_id": mood_id,
+                "taken_at": start_of(checkin_date),
+                "value": float(mood_id in chosen_moods),
+            }
+            for mood_id in MOOD_IDS
+        ]
+    )
+    session.execute(
+        save_moods.on_conflict_do_update(
+            index_elements=["crew_member_id", "indicator_id", "taken_at"],
+            set_={"value": save_moods.excluded.value},
         )
+    )
+    session.commit()
     return CheckinResponse(date=checkin_date, moods=chosen_moods)

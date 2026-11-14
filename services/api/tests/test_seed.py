@@ -1,9 +1,18 @@
-import sqlite3
+from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 
-from seed import CrewPairing, seed_database
+from seed import (
+    CrewPairing,
+    Reading,
+    read_daily_readings,
+    read_glucose_readings,
+    read_heart_rate_readings,
+    to_sql_literal,
+)
+from seed_content import RULES
 
 METABOLIC_PANEL_HEADER = (
     "Sample Name,glucose_value_milligram_per_deciliter,"
@@ -16,16 +25,10 @@ DAILY_HEADER = (
 )
 VOLUNTEER = "621e2f9167b776a240011ccb"
 OTHER_VOLUNTEER = "621e2fce67b776a240279baa"
+CREW = [CrewPairing("Crew 1", "C003", VOLUNTEER)]
 
-
-@pytest.fixture
-def database_path(tmp_path: Path) -> Path:
-    return tmp_path / "test.db"
-
-
-@pytest.fixture
-def empty_daily(tmp_path: Path) -> Path:
-    return write_csv(tmp_path / "daily.csv", DAILY_HEADER)
+LoadSeeds = Callable[[list[CrewPairing], Path, Path, Path], None]
+FetchAll = Callable[[str], list[tuple]]
 
 
 def write_csv(path: Path, content: str) -> Path:
@@ -33,16 +36,8 @@ def write_csv(path: Path, content: str) -> Path:
     return path
 
 
-def fetch_readings(database_path: Path, indicator_id: str) -> list[tuple[str, float]]:
-    with sqlite3.connect(database_path) as connection:
-        return connection.execute(
-            "SELECT taken_at, value FROM reading WHERE indicator_id = ? ORDER BY taken_at",
-            (indicator_id,),
-        ).fetchall()
-
-
 def test_stores_each_glucose_draw_on_its_calendar_date(
-    tmp_path: Path, database_path: Path, empty_daily: Path
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
 ) -> None:
     metabolic_panel = write_csv(
         tmp_path / "panel.csv",
@@ -58,62 +53,64 @@ def test_stores_each_glucose_draw_on_its_calendar_date(
     )
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, empty_daily)
+    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
 
-    assert fetch_readings(database_path, "glucose") == [
-        ("2021-06-16T00:00", 77.0),
-        ("2021-08-03T00:00", 62.0),
-        ("2021-09-13T00:00", 75.0),
-        ("2021-09-19T00:00", 103.0),
-        ("2021-11-02T00:00", 36.0),
-        ("2021-12-09T00:00", 80.0),
-        ("2022-03-31T00:00", 73.0),
+    assert fetch_all(
+        "SELECT taken_at, value FROM dat.reading WHERE indicator_id = 'glucose' ORDER BY taken_at"
+    ) == [
+        (datetime(2021, 6, 16), 77.0),
+        (datetime(2021, 8, 3), 62.0),
+        (datetime(2021, 9, 13), 75.0),
+        (datetime(2021, 9, 19), 103.0),
+        (datetime(2021, 11, 2), 36.0),
+        (datetime(2021, 12, 9), 80.0),
+        (datetime(2022, 3, 31), 73.0),
     ]
 
 
-def test_an_empty_glucose_cell_produces_no_reading(
-    tmp_path: Path, database_path: Path, empty_daily: Path
-) -> None:
+def test_an_empty_glucose_cell_produces_no_reading(tmp_path: Path) -> None:
     metabolic_panel = write_csv(
         tmp_path / "panel.csv",
         METABOLIC_PANEL_HEADER + "C003_serum_L-3,,65,99\n" + "C003_serum_R+45,36,65,99\n",
     )
-    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, empty_daily)
-
-    assert fetch_readings(database_path, "glucose") == [("2021-11-02T00:00", 36.0)]
+    assert read_glucose_readings(metabolic_panel, "C003") == [Reading("glucose", "2021-11-02T00:00", 36.0)]
 
 
-def test_rejects_a_sample_label_it_cannot_date(
-    tmp_path: Path, database_path: Path, empty_daily: Path
-) -> None:
-    metabolic_panel = write_csv(
-        tmp_path / "panel.csv", METABOLIC_PANEL_HEADER + "C003_serum_FD2,80,65,99\n"
-    )
-    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+def test_rejects_a_sample_label_it_cannot_date(tmp_path: Path) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER + "C003_serum_FD2,80,65,99\n")
 
     with pytest.raises(ValueError, match="Unknown sample label 'FD2'"):
-        seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, empty_daily)
+        read_glucose_readings(metabolic_panel, "C003")
 
 
 def test_loads_the_glucose_rule_with_the_limits_of_the_nasa_file(
-    tmp_path: Path, database_path: Path, empty_daily: Path
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
 ) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
 
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, empty_daily)
+    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
 
-    with sqlite3.connect(database_path) as connection:
-        rules = connection.execute("SELECT indicator_id, low, high FROM rule").fetchall()
-    assert rules == [("glucose", 65.0, 99.0)]
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule") == [(1, "glucose", 65.0, 99.0)]
 
 
-def test_stores_one_heart_rate_reading_per_hour_of_the_paired_volunteer(
-    tmp_path: Path, database_path: Path, empty_daily: Path
+def test_a_new_row_gets_the_next_id_after_the_seeded_ones(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
 ) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+    load_seeds(CREW, metabolic_panel, hourly, write_csv(tmp_path / "daily.csv", DAILY_HEADER))
+
+    new_ids = fetch_all(
+        "INSERT INTO cfg.rule (indicator_id, high, title, explanation, action, threshold_source) "
+        "VALUES ('heart_rate', 100, 't', 'e', 'a', 's') RETURNING id"
+    )
+
+    assert new_ids == [(len(RULES) + 1,)]
+
+
+def test_stores_one_heart_rate_reading_per_hour_of_the_paired_volunteer(tmp_path: Path) -> None:
     hourly = write_csv(
         tmp_path / "hourly.csv",
         HOURLY_HEADER
@@ -123,36 +120,21 @@ def test_stores_one_heart_rate_reading_per_hour_of_the_paired_volunteer(
         + f"{OTHER_VOLUNTEER},2021-11-02,15.0,70.0\n",
     )
 
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, empty_daily)
-
-    assert fetch_readings(database_path, "heart_rate") == [
-        ("2021-11-02T00:00", 61.5),
-        ("2021-11-02T13:00", 92.25),
+    assert read_heart_rate_readings(hourly, VOLUNTEER, offset_days=0) == [
+        Reading("heart_rate", "2021-11-02T00:00", 61.5),
+        Reading("heart_rate", "2021-11-02T13:00", 92.25),
     ]
 
 
-def test_shifts_the_volunteer_days_by_the_crew_offset(
-    tmp_path: Path, database_path: Path, empty_daily: Path
-) -> None:
-    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+def test_shifts_the_volunteer_days_by_the_crew_offset(tmp_path: Path) -> None:
     hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER + f"{VOLUNTEER},2021-10-31,23.0,64.0\n")
 
-    seed_database(
-        database_path,
-        [CrewPairing("Crew 1", "C003", VOLUNTEER, lifesnaps_offset_days=2)],
-        metabolic_panel,
-        hourly,
-        empty_daily,
-    )
-
-    assert fetch_readings(database_path, "heart_rate") == [("2021-11-02T23:00", 64.0)]
+    assert read_heart_rate_readings(hourly, VOLUNTEER, offset_days=2) == [
+        Reading("heart_rate", "2021-11-02T23:00", 64.0)
+    ]
 
 
-def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(
-    tmp_path: Path, database_path: Path
-) -> None:
-    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
-    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(tmp_path: Path) -> None:
     daily = write_csv(
         tmp_path / "daily.csv",
         DAILY_HEADER
@@ -161,34 +143,17 @@ def test_stores_the_six_moods_of_each_day_the_volunteer_logged_one(
         + f"{OTHER_VOLUNTEER},2021-10-30,,,,,,,0.0,0.0,0.0,0.0,1.0,0.0\n",
     )
 
-    seed_database(
-        database_path,
-        [CrewPairing("Crew 1", "C003", VOLUNTEER, lifesnaps_offset_days=2)],
-        metabolic_panel,
-        hourly,
-        daily,
-    )
-
-    with sqlite3.connect(database_path) as connection:
-        moods = connection.execute(
-            "SELECT indicator_id, taken_at, value FROM reading "
-            "WHERE indicator_id LIKE 'mood_%' ORDER BY indicator_id"
-        ).fetchall()
-    assert moods == [
-        ("mood_alert", "2021-11-01T00:00", 0.0),
-        ("mood_happy", "2021-11-01T00:00", 1.0),
-        ("mood_neutral", "2021-11-01T00:00", 0.0),
-        ("mood_rested", "2021-11-01T00:00", 1.0),
-        ("mood_sad", "2021-11-01T00:00", 0.0),
-        ("mood_tense", "2021-11-01T00:00", 0.0),
+    assert sorted(read_daily_readings(daily, VOLUNTEER, offset_days=2), key=lambda r: r.indicator_id) == [
+        Reading("mood_alert", "2021-11-01T00:00", 0.0),
+        Reading("mood_happy", "2021-11-01T00:00", 1.0),
+        Reading("mood_neutral", "2021-11-01T00:00", 0.0),
+        Reading("mood_rested", "2021-11-01T00:00", 1.0),
+        Reading("mood_sad", "2021-11-01T00:00", 0.0),
+        Reading("mood_tense", "2021-11-01T00:00", 0.0),
     ]
 
 
-def test_stores_the_daily_wearable_values_of_the_volunteer_on_the_shifted_day(
-    tmp_path: Path, database_path: Path
-) -> None:
-    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
-    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+def test_stores_the_daily_wearable_values_of_the_volunteer_on_the_shifted_day(tmp_path: Path) -> None:
     daily = write_csv(
         tmp_path / "daily.csv",
         DAILY_HEADER
@@ -197,28 +162,26 @@ def test_stores_the_daily_wearable_values_of_the_volunteer_on_the_shifted_day(
         + f"{OTHER_VOLUNTEER},2022-01-18,70.0,400.0,90.0,33.0,12,9000.0,,,,,,\n",
     )
 
-    seed_database(
-        database_path,
-        [CrewPairing("Crew 1", "C003", VOLUNTEER, lifesnaps_offset_days=-77)],
-        metabolic_panel,
-        hourly,
-        daily,
-    )
+    readings = read_daily_readings(daily, VOLUNTEER, offset_days=-77)
 
-    with sqlite3.connect(database_path) as connection:
-        readings = connection.execute(
-            "SELECT indicator_id, taken_at, value FROM reading ORDER BY taken_at, indicator_id"
-        ).fetchall()
-    assert readings == [
-        ("resting_heart_rate", "2021-11-02T00:00", 61.5),
-        ("skin_temperature", "2021-11-02T00:00", 31.25),
-        ("sleep_duration", "2021-11-02T00:00", 367.0),
-        ("sleep_efficiency", "2021-11-02T00:00", 98.0),
-        ("steps", "2021-11-02T00:00", 4958.0),
-        ("very_active_minutes", "2021-11-02T00:00", 0.0),
-        ("resting_heart_rate", "2021-11-03T00:00", 62.5),
-        ("sleep_duration", "2021-11-03T00:00", 134.0),
-        ("sleep_efficiency", "2021-11-03T00:00", 99.0),
-        ("steps", "2021-11-03T00:00", 3800.0),
-        ("very_active_minutes", "2021-11-03T00:00", 0.0),
+    assert sorted(readings, key=lambda r: (r.taken_at, r.indicator_id)) == [
+        Reading("resting_heart_rate", "2021-11-02T00:00", 61.5),
+        Reading("skin_temperature", "2021-11-02T00:00", 31.25),
+        Reading("sleep_duration", "2021-11-02T00:00", 367.0),
+        Reading("sleep_efficiency", "2021-11-02T00:00", 98.0),
+        Reading("steps", "2021-11-02T00:00", 4958.0),
+        Reading("very_active_minutes", "2021-11-02T00:00", 0.0),
+        Reading("resting_heart_rate", "2021-11-03T00:00", 62.5),
+        Reading("sleep_duration", "2021-11-03T00:00", 134.0),
+        Reading("sleep_efficiency", "2021-11-03T00:00", 99.0),
+        Reading("steps", "2021-11-03T00:00", 3800.0),
+        Reading("very_active_minutes", "2021-11-03T00:00", 0.0),
     ]
+
+
+@pytest.mark.parametrize(
+    ("value", "literal"),
+    [(None, "NULL"), (36.0, "36.0"), (3, "3"), ("it's", "'it''s'")],
+)
+def test_writes_values_as_sql_literals(value: str | int | float | None, literal: str) -> None:
+    assert to_sql_literal(value) == literal

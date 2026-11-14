@@ -43,7 +43,7 @@ Tick a task when its "done when" check passes. Each task names the requirement (
 
 Backend:
 
-- [ ] **D2. Move the database from SQLite to Postgres** (R7, R8). In progress, by the other backend person. Same five tables and same contracts. It changes `schema.sql`, `db.py`, the SQL in `main.py`, the seed script and the test setup. Why now: everything built after it is written once. Why Postgres: Railway and Supabase both run it.
+- [x] **D2. Move the database from SQLite to Postgres** (R7, R8). Same five tables and same contracts. Postgres runs in Docker on a laptop, and the same `.sql` files build the deployed one. How to run it is in the README and in `database/postgresql`.
     - Done when: the backend tests pass against Postgres, the panel of Crew 1 shows the same values as before, the README says how to run Postgres on a laptop, and the MVP architecture and the System_design, section 5, say Postgres.
 
 Frontend:
@@ -116,7 +116,7 @@ The jury opens the app from a link and uses it as if they were the astronauts (H
 
 Backend:
 
-- [ ] **D3. Backend and Postgres on Railway.** Create the account, a service from the repo with `services/api` as its folder, and a Postgres database next to it. The seed script runs once against it.
+- [ ] **D3. Backend and Postgres on Railway.** Create the account, a service from the repo with `services/api` as its folder, and a Postgres database next to it. `database/postgresql/scripts/apply.sh` runs once against it to create the tables and load the seeds.
     - Done when: `/api/crew` answers from the Railway address, and a check-in is still there after a restart.
 
 Frontend:

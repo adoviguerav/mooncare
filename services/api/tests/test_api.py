@@ -1,10 +1,16 @@
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import Engine
+from sqlalchemy.orm import Session
 
+from app.db import get_session
 from app.main import app
-from seed import CrewPairing, seed_database
+from seed import CrewPairing
+
+LoadSeeds = Callable[[list[CrewPairing], Path, Path, Path], None]
 
 VOLUNTEER = "621e2f9167b776a240011ccb"
 
@@ -42,23 +48,35 @@ DAILY_WEARABLE_IDS = [
 ]
 MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
 
-
-def build_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, metabolic_panel_rows: str) -> TestClient:
-    metabolic_panel = tmp_path / "panel.csv"
-    metabolic_panel.write_text(metabolic_panel_rows, encoding="utf-8")
-    hourly = tmp_path / "hourly.csv"
-    hourly.write_text(HOURLY, encoding="utf-8")
-    daily = tmp_path / "daily.csv"
-    daily.write_text(DAILY, encoding="utf-8")
-    database_path = tmp_path / "test.db"
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, daily)
-    monkeypatch.setenv("REAL_TELEMETRY_DB", str(database_path))
-    return TestClient(app)
+LoadClient = Callable[[str], TestClient]
 
 
 @pytest.fixture
-def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
-    return build_client(tmp_path, monkeypatch, METABOLIC_PANEL)
+def build_client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Iterator[LoadClient]:
+    """Seeds the test database from the given metabolic panel rows and returns a client of the API on it."""
+
+    def get_test_session() -> Iterator[Session]:
+        with Session(engine) as session:
+            yield session
+
+    def build(metabolic_panel_rows: str) -> TestClient:
+        metabolic_panel = tmp_path / "panel.csv"
+        metabolic_panel.write_text(metabolic_panel_rows, encoding="utf-8")
+        hourly = tmp_path / "hourly.csv"
+        hourly.write_text(HOURLY, encoding="utf-8")
+        daily = tmp_path / "daily.csv"
+        daily.write_text(DAILY, encoding="utf-8")
+        load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, daily)
+        return TestClient(app)
+
+    app.dependency_overrides[get_session] = get_test_session
+    yield build
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client(build_client: LoadClient) -> TestClient:
+    return build_client(METABOLIC_PANEL)
 
 
 def test_lists_the_crew(client: TestClient) -> None:
@@ -197,13 +215,9 @@ def test_unknown_crew_member_or_indicator_returns_404(
     assert response.json() == {"detail": detail}
 
 
-def test_a_reading_exactly_on_a_limit_does_not_break_the_rule(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_a_reading_exactly_on_a_limit_does_not_break_the_rule(build_client: LoadClient) -> None:
     header = METABOLIC_PANEL.splitlines()[0] + "\n"
-    client = build_client(
-        tmp_path, monkeypatch, header + "C003_serum_L-3,65,65,99\n" + "C003_serum_R+1,99,65,99\n"
-    )
+    client = build_client(header + "C003_serum_L-3,65,65,99\n" + "C003_serum_R+1,99,65,99\n")
 
     response = client.get(
         "/api/crew/1/indicators/glucose", params={"from": "2021-09-01", "to": "2021-09-30"}

@@ -14,27 +14,35 @@ apps/
   landing/    Empty for now
 services/
   api/        FastAPI backend
-    app/            main.py (routes), schemas.py, db.py, config.py
-    seed.py           Crew and the code that turns the CSV files into readings
+    app/            main.py (routes), schemas.py, models.py (SQLAlchemy), db.py, config.py
+    seed.py           Crew and the code that turns the CSV files into the INSERT files
     seed_content.py   Sources, indicators and rules, with their text
     download_data.py  tests/
 database/
-  sqlite/     schema.sql, and the SQLite file once seeded (not in git)
+  postgresql/ schema/ (CREATE), seeds/ (INSERT), docker-compose.yml. See its README
   datasets/   The raw dataset files, 85 MB
 docs/         Design documents
 ```
 
 ## Setup (once)
 
-You need [uv](https://docs.astral.sh/uv/) and Node 22.
+You need [uv](https://docs.astral.sh/uv/), Docker and Node 22.
+
+The backend uses PostgreSQL: a local one in Docker, or Supabase. Both are built from the same `.sql` files, and `DATABASE_PROVIDER` in `services/api/.env` picks one. Details in [database/postgresql](database/postgresql/README.md).
 
 ```sh
-cd services/api
-uv run python seed.py            # builds database/sqlite/real_telemetry.db; replaces it if it exists
+cd database/postgresql
+cp .env.example .env             # set POSTGRES_PASSWORD
+docker compose up -d             # creates the tables and loads the seeds on its first start
+
+cd ../../services/api
+cp .env.example .env             # DATABASE_PROVIDER=postgresql, and the same password in POSTGRESQL_URL
 
 cd ../../apps/web
 npm install
 ```
+
+After changing the crew, a text, a rule or the datasets, regenerate the INSERT files with `cd services/api && uv run python seed.py`, commit them, and rebuild the local database with `docker compose down -v && docker compose up -d`.
 
 ## Run
 
@@ -52,6 +60,8 @@ Each crew member is fictional: the blood values of one Inspiration4 astronaut an
 Open http://localhost:5173. "Today" is the demo date, 2021-11-02; add `?date=YYYY-MM-DD` to look at another day.
 
 ## Tests
+
+The backend tests create a throwaway database on the local PostgreSQL server and drop it at the end, so the Docker database must be running.
 
 ```sh
 cd services/api && uv run pytest
