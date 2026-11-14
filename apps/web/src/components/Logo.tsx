@@ -1,6 +1,10 @@
 import { useId } from 'react'
 import type { ReactElement } from 'react'
 
+// Two beats across the width of the name
+const HEARTBEAT =
+  'M70 490H236L248 490L260 464L276 514L290 480L298 490H430L442 490L454 458L472 520L486 476L494 490H690'
+
 // The Moon Care logo of the design prototype (apps/landing/index.html)
 export function Logo({ height = 56 }: { height?: number }): ReactElement {
   const id = useId()
@@ -24,7 +28,7 @@ export function Logo({ height = 56 }: { height?: number }): ReactElement {
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <circle cx="480" cy="150" r="150" fill={`url(#${glow})`} />
+      <circle className="logo-glow" cx="480" cy="150" r="150" fill={`url(#${glow})`} />
       <g fill="none" stroke={`url(#${ink})`} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M70 220V90L130 175L190 90V220" />
         <ellipse cx="310" cy="150" rx="55" ry="68" />
@@ -43,14 +47,11 @@ export function Logo({ height = 56 }: { height?: number }): ReactElement {
         <circle cx="448" cy="196" r="3" />
         <circle cx="433" cy="150" r="3" />
       </g>
-      <path
-        d="M215 490H318L334 490L346 462L362 514L376 478L384 490H535"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* The heartbeat under the name: a faint trace, and a bright pulse that runs along it */}
+      <g fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <path className="logo-trace" d={HEARTBEAT} />
+        <path className="logo-pulse" d={HEARTBEAT} pathLength={1} />
+      </g>
     </svg>
   )
 }

@@ -1,5 +1,5 @@
 import { Icon } from '../../components/Icon.tsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember, HistoryReading, Rule } from '../../lib/api.ts'
 import { HISTORY_DAYS, TODAY } from '../../lib/config.ts'
@@ -40,51 +40,73 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
     usefulRanges.find((range) => getReadingsOf(range.days).length >= MIN_READINGS_TO_START)?.days ?? HISTORY_DAYS
   const days = chosenDays ?? startDays
   const readings = getReadingsOf(days)
-  const origin = getGroupOf(indicatorId).origin
   const previous = allReadings[allReadings.length - 2]
   const brokenRule = detail?.rules.find((rule) => rule.id === latest?.broken_rule_id)
 
+  const fixedRule = detail?.rules.find((rule) => rule.baseline_direction === null)
+  const status = getStatus(latest, detail?.rules ?? [])
+
   return (
-    <main className="screen">
+    <main className="screen detail">
       <header className="detail-header">
         <button className="back" onClick={onBack} aria-label="Back to the panel">
           <Icon name="back" />
         </button>
         <div>
+          <p className="eyebrow">{getGroupOf(indicatorId).title}</p>
           <h1>{detail?.indicator.name ?? 'Loading'}</h1>
-          {origin !== '' && <p className="muted">{origin}</p>}
         </div>
       </header>
       {error !== null && <p role="alert">Could not load this indicator. {error}</p>}
       {detail === null && error === null && <div className="card skeleton skeleton-tall" aria-busy="true" />}
       {detail !== null && (
         <>
-          <section className="card">
+          <section className="card reading-card">
+            <p className="eyebrow">Your latest reading</p>
             {latest === undefined ? (
               <p className="muted">No readings yet.</p>
             ) : (
               <>
-                <p className={latest.broken_rule_id === null ? 'detail-value' : 'detail-value is-alert'}>
-                  {formatValue(latest.value, detail.indicator.unit)}
-                </p>
+                <div className="reading-top">
+                  <p className={latest.broken_rule_id === null ? 'detail-value' : 'detail-value is-alert'}>
+                    <CountUp value={latest.value} unit={detail.indicator.unit} />
+                  </p>
+                  <span className={`chip chip-${status.tone}`}>{status.label}</span>
+                </div>
                 <p className="muted">
                   Measured {formatAge(latest.taken_at, TODAY).toLowerCase()}, {formatTakenAt(latest.taken_at)}
                 </p>
-                <p className="detail-reading">{describeReading(latest, previous, detail.rules, detail.indicator.unit)}</p>
-                {brokenRule !== undefined && (
-                  <div className="alert-action">
-                    <strong>What to do</strong>
-                    {brokenRule.action}
-                  </div>
+                {fixedRule !== undefined && (
+                  <RangeBar rule={fixedRule} value={latest.value} unit={detail.indicator.unit} />
                 )}
               </>
             )}
-            <p className="detail-what">{detail.indicator.why_it_matters}</p>
+          </section>
+
+          <section className="card explain">
+            <div>
+              <h2>What it is</h2>
+              <p>{detail.indicator.why_it_matters}</p>
+            </div>
+            <div>
+              <h2>What is normal</h2>
+              <p>{describeNormal(detail.rules, detail.indicator.unit)}</p>
+            </div>
+            {latest !== undefined && (
+              <div>
+                <h2>What your reading means</h2>
+                <p>{describeReading(latest, previous, detail.rules, detail.indicator.unit)}</p>
+              </div>
+            )}
+            <div className={brokenRule === undefined ? undefined : 'explain-action'}>
+              <h2>What to do</h2>
+              <p>{describeAction(brokenRule, detail.rules)}</p>
+            </div>
           </section>
 
           <section className="card">
             <div className="card-heading">
-              <h2>History</h2>
+              <h2>How it has changed</h2>
               <div className="ranges" role="group" aria-label="Time shown in the chart">
                 {usefulRanges.map((range) => (
                   <button key={range.days} aria-pressed={range.days === days} onClick={() => setChosenDays(range.days)}>
@@ -97,6 +119,8 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
               <p className="muted">No readings in this time.</p>
             ) : (
               <HistoryChart
+                // A new chart for each range, so the line draws itself again
+                key={days}
                 name={detail.indicator.name}
                 unit={detail.indicator.unit}
                 readings={readings}
@@ -109,46 +133,126 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
             />
           </section>
 
-          <section className="card prose">
+          <section className="card explain">
             <div>
-              <h3>How it is measured</h3>
+              <h2>How it is measured</h2>
               <p>{detail.indicator.how_to_measure}</p>
             </div>
           </section>
 
           <details className="card group">
             <summary className="card-heading">
-              <h2>Limits and sources</h2>
+              <h2>Where the numbers come from</h2>
               <span className="group-chevron">
                 <Icon name="back" size={18} />
               </span>
             </summary>
-            {detail.rules.length === 0 && <p className="muted">This indicator has no alert rule yet.</p>}
-            {detail.rules.map((rule) => (
-              <div key={rule.id} className="rule">
-                <strong>{rule.title}</strong>
-                <p>Alert when the value is {describeLimits(rule, detail.indicator.unit)}.</p>
-                <p>{rule.explanation}</p>
-                <p>
-                  <strong>What to do:</strong> {rule.action}
-                </p>
-                <p className="muted">Where the limit comes from: {rule.threshold_source}</p>
-              </div>
-            ))}
             <div className="rule">
-              <h3>Where this data comes from</h3>
               <p>
-                <strong>{detail.indicator.source.name}</strong>
+                The readings on this screen are real, open data that stands in for this crew member. They come from:{' '}
+                <strong>{detail.indicator.source.name}</strong>.
               </p>
-              <p>{detail.indicator.source.citation}</p>
+              <p className="muted">{detail.indicator.source.citation}</p>
               <a className="source-link" href={detail.indicator.source.url} target="_blank" rel="noreferrer">
                 {detail.indicator.source.url}
               </a>
             </div>
+            {detail.rules.map((rule) => (
+              <div key={rule.id} className="rule">
+                <strong>Alert: {rule.title}</strong>
+                <p>It comes when the value is {describeLimits(rule, detail.indicator.unit)}.</p>
+                <p className="muted">Where the limit comes from: {rule.threshold_source}</p>
+              </div>
+            ))}
+            {detail.rules.length === 0 && <p className="muted">This indicator has no alert rule yet.</p>}
           </details>
         </>
       )}
     </main>
+  )
+}
+
+type Status = { label: string; tone: 'ok' | 'alert' | 'due' }
+
+// The latest reading in two or three words
+function getStatus(latest: HistoryReading | undefined, rules: Rule[]): Status {
+  if (latest?.broken_rule_id != null) {
+    const isFixed = rules.find((rule) => rule.id === latest.broken_rule_id)?.baseline_direction === null
+    return { label: isFixed ? 'Out of the normal range' : 'Far from your usual', tone: 'alert' }
+  }
+  if (rules.some((rule) => rule.baseline_direction === null)) return { label: 'In the normal range', tone: 'ok' }
+  if (rules.length > 0) return { label: 'Near your usual', tone: 'ok' }
+  return { label: 'No range to compare', tone: 'due' }
+}
+
+function describeNormal(rules: Rule[], unit: string | null): string {
+  const fixedRule = rules.find((rule) => rule.baseline_direction === null)
+  if (fixedRule !== undefined) return `A normal value is ${describeNormalRange(fixedRule, unit)}.`
+  if (rules.length > 0) {
+    return 'There is no fixed number for everyone. Your reading is compared with your own usual value of the last 4 weeks.'
+  }
+  return 'There is no agreed normal range for this. What matters is how it changes over time for you.'
+}
+
+function describeAction(brokenRule: Rule | undefined, rules: Rule[]): string {
+  if (brokenRule !== undefined) return brokenRule.action
+  if (rules.length === 0) return 'Nothing. Keep measuring it and watch how it changes.'
+  return `Nothing for now. If it leaves the normal range: ${rules[0].action}`
+}
+
+const COUNT_UP_MS = 700
+
+// The number climbs to its value when the screen opens
+function CountUp({ value, unit }: { value: number; unit: string | null }) {
+  const [shown, setShown] = useState(() =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? value : 0,
+  )
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const startedAt = performance.now()
+    let frame = requestAnimationFrame(function step(now) {
+      const progress = Math.min(1, (now - startedAt) / COUNT_UP_MS)
+      // Fast at the start, slow at the end
+      setShown(value * (1 - (1 - progress) ** 3))
+      if (progress < 1) frame = requestAnimationFrame(step)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [value])
+
+  return <>{formatValue(shown, unit)}</>
+}
+
+// How much room the bar leaves on each side of the normal range, as a share of that range
+const RANGE_BAR_MARGIN = 0.4
+// For a limit with one side only, how wide the bar draws the normal side, as a share of the limit
+const ONE_SIDED_SPAN = 0.5
+
+// Where the reading sits against the normal range: a green band, and a marker that slides to the value
+function RangeBar({ rule, value, unit }: { rule: Rule; value: number; unit: string | null }) {
+  const limit = rule.low ?? rule.high
+  if (limit === null) return null
+  const span = rule.low !== null && rule.high !== null ? rule.high - rule.low : Math.abs(limit) * ONE_SIDED_SPAN
+  const normalLow = rule.low ?? limit - span
+  const normalHigh = rule.high ?? limit + span
+  const barStart = Math.min(normalLow - span * RANGE_BAR_MARGIN, value)
+  const barEnd = Math.max(normalHigh + span * RANGE_BAR_MARGIN, value)
+  const toPercent = (amount: number) => ((amount - barStart) / (barEnd - barStart)) * 100
+  const bandStart = rule.low === null ? 0 : toPercent(rule.low)
+  const bandEnd = rule.high === null ? 100 : toPercent(rule.high)
+
+  return (
+    <div className="range-bar" role="img" aria-label={`Your reading against the normal range, ${describeNormalRange(rule, unit)}`}>
+      <div className="range-track">
+        <span className="range-band" style={{ left: `${bandStart}%`, width: `${bandEnd - bandStart}%` }} />
+        <span className="range-marker" style={{ left: `${toPercent(value)}%` }} />
+      </div>
+      <div className="range-labels">
+        {rule.low !== null && <span style={{ left: `${bandStart}%` }}>{formatValue(rule.low, null)}</span>}
+        {rule.high !== null && <span style={{ left: `${bandEnd}%` }}>{formatValue(rule.high, null)}</span>}
+      </div>
+      <p className="muted">The green band is the normal range. The marker is your reading.</p>
+    </div>
   )
 }
 
@@ -163,9 +267,9 @@ function describeReading(
   const fixedRule = rules.find((rule) => rule.baseline_direction === null)
   const sentences = []
   if (brokenRule !== undefined) sentences.push(brokenRule.explanation)
-  else if (fixedRule !== undefined) sentences.push(`This is inside the normal range (${describeNormalRange(fixedRule, unit)}).`)
+  else if (fixedRule !== undefined) sentences.push('It is inside the normal range.')
   else if (rules.length > 0) sentences.push('No alert: it is not far from your own usual value.')
-  else sentences.push('There is no normal range for this value. Compare it with your own earlier readings.')
+  else sentences.push('It has no normal range to compare with. Look at how it moves in the chart below.')
 
   if (previous !== undefined) {
     const days = countDaysSince(previous.taken_at, latest.taken_at.slice(0, 10))

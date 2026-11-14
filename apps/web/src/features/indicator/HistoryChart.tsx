@@ -108,7 +108,7 @@ export function HistoryChart({ name, unit, readings, rules }: Props) {
             {formatTime.format(tick)}
           </text>
         ))}
-        <polyline className="chart-line" points={points.map((point) => `${point.x},${point.y}`).join(' ')} />
+        <polyline className="chart-line" pathLength={1} points={points.map((point) => `${point.x},${point.y}`).join(' ')} />
         {points
           .filter((point) => showEveryDot || point.broken_rule_id !== null)
           .map((point) => (
