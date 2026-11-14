@@ -83,9 +83,10 @@ ASTRA-HEALTH defines 12 alerts that combine modules. One of them can be fired wi
 
 ## Two level systems
 
-- The four ASTRA-HEALTH levels say how serious an alert is. They set the colour on the panel.
+- The four ASTRA-HEALTH levels say how serious an alert is. Once they are decided, they set the colour on the panel.
 - The three levels in the System_design say who is told: only the astronaut, then the flight surgeon, then the crew.
 - They don't compete. One is severity, the other is who gets the message.
+- Neither is in the MVP. Alert levels are not decided (MVP architecture, section 1) and the `rule` table has no level, so the panel has two states: in range or out of range. Adding levels means a new column in `rule` and a new field in the contracts.
 
 ## Datasets
 

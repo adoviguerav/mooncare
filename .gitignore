@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Real Telemetry
+node_modules/
+database/datasets/
+*.db

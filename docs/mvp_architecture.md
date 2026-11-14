@@ -107,7 +107,9 @@ An empty cell produces no reading.
 
 Everything runs on board with no network calls at runtime. The frontend loads nothing from the internet.
 
-Stack: Python with FastAPI for the backend and seed script, React with Vite for the frontend. It is a starting choice. Change it if the frontend owner prefers something else.
+Stack: Python with FastAPI for the backend and seed script, React with Vite and TypeScript for the frontend. Confirmed on 14 Nov, the base is built with it. Where each part lives is in the README.
+
+The seed script is two files in `services/api`. `seed.py` holds the crew and the code that turns each CSV file into readings. `seed_content.py` holds the sources, the indicators and the rules, with their text.
 
 Endpoints:
 
@@ -128,6 +130,10 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
 - The panel returns one entry per indicator. A missing reading or rule is null, never an absent key.
 - Readings come ordered by taken_at, oldest first.
 - An unknown crew member or indicator returns 404 with {"detail": "..."}.
+- `date`, `from` and `to` are required. A missing or malformed one returns 422.
+- `from` and `to` are both inclusive. The history runs from the start of `from` to the end of `to`.
+- The panel lists the indicators in the order `seed_content.py` defines them.
+- A reading exactly on a limit does not break the rule.
 
 **`GET /api/crew`**
 
@@ -242,18 +248,18 @@ The MVP starts with these three rules. The sleep and heart rate limits are gener
 
 Steps 1 to 3 are the base. It already shows NASA data, a history and an alert. Once it runs, the data model (section 2) and the contracts (section 3) are fixed and the rest is built in parallel.
 
-- Data. Step 6. It touches only the seed script.
+- Data. Step 6. It touches `seed.py`, plus one new row per indicator in `seed_content.py`.
 - Frontend and design. Charts, look and gamification. It builds against the contracts.
 - Check-in. Step 4. Both sides build it against its contract in section 3.
-- Rules. Step 7. A limit and a source for each rule.
+- Rules. Step 7. A limit and a source for each rule. It touches only `seed_content.py`.
 - CPR flow. Step 5. Frontend only.
 
 Rules and the CPR flow do not depend on the base and can start now.
 
 ## Starting decisions
 
-- Rules. Three fixed-range rules to start with: glucose, sleep and resting heart rate (section 5). To change one, edit its row in the seed script. Personal baselines wait for step 2.
-- Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add a row to the rules in the seed script.
+- Rules. Three fixed-range rules to start with: glucose, sleep and resting heart rate (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
+- Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add an entry to the rules in `seed_content.py`.
 - Temperature. No rule for now, because no dataset has symptoms. The panel shows `skin_temperature`.
 - Dates. Readings keep the real dataset dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 needs no shift. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. To line up the other three crew members, change their offset.
 - Gamification. Streaks only, computed from the mood readings. Anything else waits for the design owner.
