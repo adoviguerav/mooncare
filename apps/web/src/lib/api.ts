@@ -41,6 +41,16 @@ export type HistoryReading = Reading & { broken_rule_id: number | null }
 
 export type IndicatorDetail = { indicator: Indicator; rules: Rule[]; readings: HistoryReading[] }
 
+export type MoodId =
+  | 'mood_happy'
+  | 'mood_sad'
+  | 'mood_tense'
+  | 'mood_alert'
+  | 'mood_rested'
+  | 'mood_neutral'
+
+export type Checkin = { date: string; moods: MoodId[] }
+
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path)
   if (!response.ok) {
@@ -65,4 +75,17 @@ export function fetchIndicatorDetail(
   to: string,
 ): Promise<IndicatorDetail> {
   return getJson(`/api/crew/${crewMemberId}/indicators/${indicatorId}?from=${from}&to=${to}`)
+}
+
+export async function saveCheckin(crewMemberId: number, date: string, moods: MoodId[]): Promise<Checkin> {
+  const path = `/api/crew/${crewMemberId}/checkins/${date}`
+  const response = await fetch(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ moods }),
+  })
+  if (!response.ok) {
+    throw new Error(`${path} returned ${response.status}`)
+  }
+  return (await response.json()) as Checkin
 }

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
@@ -11,7 +13,7 @@ type Props = {
 }
 
 export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Props) {
-  const { data: panel, error } = useApi(() => fetchPanel(crewMember.id, TODAY))
+  const [savedCheckins, setSavedCheckins] = useState(0)
 
   return (
     <main className="screen">
@@ -24,6 +26,24 @@ export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Pr
           Switch profile
         </button>
       </header>
+      <CheckinForm
+        crewMemberId={crewMember.id}
+        date={TODAY}
+        onSaved={() => setSavedCheckins(savedCheckins + 1)}
+      />
+      <PanelCards key={savedCheckins} crewMemberId={crewMember.id} onOpenIndicator={onOpenIndicator} />
+    </main>
+  )
+}
+
+type PanelCardsProps = { crewMemberId: number; onOpenIndicator: (indicatorId: string) => void }
+
+// Remounted with a new key after each saved check-in, so the panel is fetched again
+function PanelCards({ crewMemberId, onOpenIndicator }: PanelCardsProps) {
+  const { data: panel, error } = useApi(() => fetchPanel(crewMemberId, TODAY))
+
+  return (
+    <>
       {error !== null && <p role="alert">Could not load the panel. {error}</p>}
       <div className="cards">
         {panel?.indicators.map((indicator) => (
@@ -34,7 +54,7 @@ export function PanelScreen({ crewMember, onOpenIndicator, onSwitchProfile }: Pr
           />
         ))}
       </div>
-    </main>
+    </>
   )
 }
 
