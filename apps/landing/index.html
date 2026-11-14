@@ -631,9 +631,8 @@ const M=[
 const $=id=>document.getElementById(id);
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ENV={moon:{n:"Lunar Base Alpha",t:"Moon base",g:"0.17 g, about one sixth of Earth",delay:"about 1.3 seconds each way",ev:"the 14:00 EVA",rad:"No atmosphere or magnetic field, so flares reach the surface.",iso:"A small crew in a confined base.",cl:"A sealed base with recycled air and water."},
- station:{n:"Orbital Station",t:"Space station",g:"Microgravity",delay:"close to real time",ev:"the next spacewalk",rad:"Partly shielded by Earth’s magnetic field.",iso:"A small crew in a confined module.",cl:"Recycled air and water in a closed station."},
  rover:{n:"Pressurised rover",t:"Rover",g:"0.17 g on the Moon’s surface",delay:"about 1.3 seconds each way",ev:"the traverse",rad:"Limited shielding from the cabin walls.",iso:"Very close quarters on long drives.",cl:"A small sealed cabin with limited supplies."},
- mars:{n:"Mars transit",t:"Transit to Mars",g:"Microgravity during the flight",delay:"about 3 to 22 minutes each way",ev:"the next systems check",rad:"Outside Earth’s magnetic field for months.",iso:"Months with a small crew and a long delay home.",cl:"A sealed spacecraft with recycled air and water."}};
+ transit:{n:"Transit to the Moon",t:"Transit to the Moon",g:"Microgravity during the flight",delay:"up to about 1.3 seconds each way",ev:"the next systems check",rad:"Mostly outside Earth’s magnetic field, so only the spacecraft shields you.",iso:"A small crew in a small spacecraft for several days.",cl:"A sealed spacecraft with recycled air."}};
 let ENVK="moon";try{ENVK=localStorage.getItem("mooncare-env")||"moon";if(!ENV[ENVK])ENVK="moon"}catch(e){}
 const IC={
  bp:'<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/><path d="M4 16h2M18 16h2M12 8v2"/>',
