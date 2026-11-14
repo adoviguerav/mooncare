@@ -57,6 +57,16 @@ SOURCES = [
     ),
 ]
 
+# REVIEW: the mood names are drafts built from the LifeSnaps column names.
+MOOD_NAMES = {
+    "mood_happy": "Happy",
+    "mood_sad": "Sad",
+    "mood_tense": "Tense or anxious",
+    "mood_alert": "Alert",
+    "mood_rested": "Rested or relaxed",
+    "mood_neutral": "Neutral",
+}
+
 # REVIEW: how_to_measure and why_it_matters are drafts built from docs/parameters_and_datasets.md.
 INDICATORS = [
     Indicator(
@@ -85,6 +95,20 @@ INDICATORS = [
         ),
         source_id="lifesnaps",
     ),
+    *[
+        Indicator(
+            id=mood_id,
+            name=mood_name,
+            unit=None,
+            how_to_measure="In the daily check-in on the tablet.",
+            why_it_matters=(
+                "One of the six moods of the daily check-in. A change in the moods you report over time "
+                "can be a sign of a behavioural change. It is not a diagnosis."
+            ),
+            source_id="lifesnaps",
+        )
+        for mood_id, mood_name in MOOD_NAMES.items()
+    ],
 ]
 
 # REVIEW: title, explanation and action are drafts built from docs/parameters_and_datasets.md.

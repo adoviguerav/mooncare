@@ -1,17 +1,20 @@
 import sqlite3
 from datetime import date
-from typing import Annotated
+from typing import Annotated, get_args
 
 from fastapi import FastAPI, HTTPException, Query
 
 from app.db import Connection
 from app.schemas import (
     BrokenRule,
+    Checkin,
+    CheckinResponse,
     CrewMember,
     CrewResponse,
     HistoryReading,
     Indicator,
     IndicatorResponse,
+    MoodId,
     PanelIndicator,
     PanelReading,
     PanelResponse,
@@ -20,6 +23,8 @@ from app.schemas import (
 )
 
 END_OF_DAY = "T23:59"
+START_OF_DAY = "T00:00"
+MOOD_IDS = get_args(MoodId)
 
 
 def require_crew_member(connection: sqlite3.Connection, crew_member_id: int) -> None:
@@ -155,3 +160,21 @@ def get_indicator(
         rules=rules,
         readings=readings,
     )
+
+
+@app.put("/api/crew/{crew_member_id}/checkins/{checkin_date}")
+def save_checkin(
+    crew_member_id: int, checkin_date: date, checkin: Checkin, connection: Connection
+) -> CheckinResponse:
+    require_crew_member(connection, crew_member_id)
+    chosen_moods = [mood_id for mood_id in MOOD_IDS if mood_id in checkin.moods]
+    taken_at = checkin_date.isoformat() + START_OF_DAY
+    with connection:
+        connection.executemany(
+            """
+            INSERT INTO reading (crew_member_id, indicator_id, taken_at, value) VALUES (?, ?, ?, ?)
+            ON CONFLICT (crew_member_id, indicator_id, taken_at) DO UPDATE SET value = excluded.value
+            """,
+            [(crew_member_id, mood_id, taken_at, float(mood_id in chosen_moods)) for mood_id in MOOD_IDS],
+        )
+    return CheckinResponse(date=checkin_date, moods=chosen_moods)

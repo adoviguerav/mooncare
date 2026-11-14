@@ -8,7 +8,13 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from app.config import LIFESNAPS_HOURLY_CSV, METABOLIC_PANEL_CSV, SCHEMA_PATH, get_database_path
+from app.config import (
+    LIFESNAPS_DAILY_CSV,
+    LIFESNAPS_HOURLY_CSV,
+    METABOLIC_PANEL_CSV,
+    SCHEMA_PATH,
+    get_database_path,
+)
 from seed_content import INDICATORS, RULES, SOURCES
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
@@ -17,6 +23,14 @@ LANDING_DATE = date(2021, 9, 18)
 SAMPLE_LABEL_PATTERN = re.compile(r"([LR])[+-](\d+)")
 
 GLUCOSE_COLUMN = "glucose_value_milligram_per_deciliter"
+MOOD_COLUMNS = {
+    "mood_happy": "HAPPY",
+    "mood_sad": "SAD",
+    "mood_tense": "TENSE/ANXIOUS",
+    "mood_alert": "ALERT",
+    "mood_rested": "RESTED/RELAXED",
+    "mood_neutral": "NEUTRAL",
+}
 
 log = logging.getLogger("seed")
 
@@ -39,7 +53,13 @@ class Reading:
 
 
 CREW = [
-    CrewPairing("Crew 1", inspiration4_code="C003", lifesnaps_id="621e2f9167b776a240011ccb"),
+    # -77 days puts the volunteer's last mood entry (2022-01-17) on 2021-11-01, the day before the demo date.
+    CrewPairing(
+        "Crew 1",
+        inspiration4_code="C003",
+        lifesnaps_id="621e2f9167b776a240011ccb",
+        lifesnaps_offset_days=-77,
+    ),
 ]
 
 
@@ -75,11 +95,25 @@ def read_heart_rate_readings(hourly_csv: Path, lifesnaps_id: str, offset_days: i
     return readings
 
 
+def read_mood_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) -> list[Reading]:
+    readings = []
+    with daily_csv.open(newline="", encoding="utf-8-sig") as csv_file:
+        for row in csv.DictReader(csv_file):
+            if row["id"] != lifesnaps_id:
+                continue
+            day = datetime.fromisoformat(row["date"]).date() + timedelta(days=offset_days)
+            for indicator_id, column in MOOD_COLUMNS.items():
+                if row[column] != "":
+                    readings.append(Reading(indicator_id, f"{day.isoformat()}T00:00", float(row[column])))
+    return readings
+
+
 def seed_database(
     database_path: Path,
     crew: list[CrewPairing],
     metabolic_panel_csv: Path,
     hourly_csv: Path,
+    daily_csv: Path,
 ) -> None:
     database_path.unlink(missing_ok=True)
     connection = sqlite3.connect(database_path)
@@ -104,9 +138,11 @@ def seed_database(
             crew_member_id = connection.execute(
                 "INSERT INTO crew_member (name) VALUES (?)", (pairing.name,)
             ).lastrowid
-            readings = read_glucose_readings(
-                metabolic_panel_csv, pairing.inspiration4_code
-            ) + read_heart_rate_readings(hourly_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+            readings = (
+                read_glucose_readings(metabolic_panel_csv, pairing.inspiration4_code)
+                + read_heart_rate_readings(hourly_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+                + read_mood_readings(daily_csv, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
+            )
             connection.executemany(
                 "INSERT INTO reading VALUES (?, ?, ?, ?)",
                 [(crew_member_id, reading.indicator_id, reading.taken_at, reading.value) for reading in readings],
@@ -117,5 +153,5 @@ def seed_database(
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    seed_database(get_database_path(), CREW, METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV)
+    seed_database(get_database_path(), CREW, METABOLIC_PANEL_CSV, LIFESNAPS_HOURLY_CSV, LIFESNAPS_DAILY_CSV)
     log.info("Database ready at %s", get_database_path())

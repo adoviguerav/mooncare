@@ -191,7 +191,15 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
 }
 ```
 
-The numbers are examples. Text shown as "..." comes from the seed script. PUT /api/crew/{id}/checkins/{date} is not part of the base. Its body is { "moods": ["mood_happy", "mood_rested"] } and it returns what was saved.
+The numbers are examples. Text shown as "..." comes from the seed script. PUT /api/crew/{id}/checkins/{date} is not part of the base. Its body is { "moods": ["mood_happy", "mood_rested"] } and it returns what was saved:
+
+```json
+{ "date": "2021-11-02", "moods": ["mood_happy", "mood_rested"] }
+```
+
+- The returned moods come in the order of the check-in: happy, sad, tense, alert, rested, neutral.
+- An empty list is valid and saves the six as 0. A mood id that is not one of the six returns 422 and saves nothing.
+- The six readings are stored at T00:00 of the date in the path.
 
 ## 4. Flow
 
@@ -253,5 +261,5 @@ Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an
 - Rules. Three fixed-range rules to start with: glucose, sleep and resting heart rate (section 5). To change one, edit its entry in `seed_content.py`. Personal baselines wait for step 2.
 - Exercise. No rule for now. The panel shows `very_active_minutes` and `steps`. To add one, add an entry to the rules in `seed_content.py`.
 - Temperature. No rule for now, because no dataset has symptoms. The panel shows `skin_temperature`.
-- Dates. Readings keep the real dataset dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 needs no shift. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. To line up the other three crew members, change their offset.
+- Dates. The Inspiration4 readings keep their real dates. The seed script has one number per crew member, an offset in days (0 by default), that shifts their LifeSnaps data. Crew 1 is shifted by -77 days, so the last day with a mood entry (2022-01-17) falls on 2021-11-01, the day before the demo date. It is LifeSnaps volunteer 621e2f9167b776a240011ccb paired with Inspiration4 astronaut C003, whose glucose is 36 mg/dL on 2021-11-02. The demo date is 2021-11-02. To line up the other three crew members, change their offset.
 - Gamification. Streaks only, computed from the mood readings. Anything else waits for the design owner.

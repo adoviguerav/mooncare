@@ -26,6 +26,11 @@ HOURLY = (
     f"{VOLUNTEER},2021-11-02,23.0,64.25\n"
     f"{VOLUNTEER},2021-11-03,0.0,58.0\n"
 )
+DAILY = (
+    "id,date,ALERT,HAPPY,NEUTRAL,RESTED/RELAXED,SAD,TENSE/ANXIOUS\n"
+    f"{VOLUNTEER},2021-11-01,0.0,0.0,0.0,0.0,1.0,0.0\n"
+)
+MOOD_IDS = ["mood_happy", "mood_sad", "mood_tense", "mood_alert", "mood_rested", "mood_neutral"]
 
 
 def build_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, metabolic_panel_rows: str) -> TestClient:
@@ -33,8 +38,10 @@ def build_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, metabolic_pane
     metabolic_panel.write_text(metabolic_panel_rows, encoding="utf-8")
     hourly = tmp_path / "hourly.csv"
     hourly.write_text(HOURLY, encoding="utf-8")
+    daily = tmp_path / "daily.csv"
+    daily.write_text(DAILY, encoding="utf-8")
     database_path = tmp_path / "test.db"
-    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly)
+    seed_database(database_path, [CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, daily)
     monkeypatch.setenv("REAL_TELEMETRY_DB", str(database_path))
     return TestClient(app)
 
@@ -59,7 +66,8 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
     assert response.status_code == 200
     panel = response.json()
     assert panel["date"] == "2021-11-02"
-    glucose, heart_rate = panel["indicators"]
+    glucose, heart_rate, *moods = panel["indicators"]
+    assert [mood["id"] for mood in moods] == MOOD_IDS
     assert glucose == {
         "id": "glucose",
         "name": "Blood glucose",
@@ -88,6 +96,7 @@ def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) 
     assert [(i["id"], i["reading"], i["broken_rule"]) for i in response.json()["indicators"]] == [
         ("glucose", None, None),
         ("heart_rate", None, None),
+        *[(mood_id, None, None) for mood_id in MOOD_IDS],
     ]
 
 
@@ -195,3 +204,71 @@ def test_a_reading_exactly_on_a_limit_does_not_break_the_rule(
         {"taken_at": "2021-09-13T00:00", "value": 65.0, "broken_rule_id": None},
         {"taken_at": "2021-09-19T00:00", "value": 99.0, "broken_rule_id": None},
     ]
+
+
+def get_panel_moods(client: TestClient, date: str) -> dict[str, dict | None]:
+    panel = client.get("/api/crew/1/panel", params={"date": date}).json()
+    return {i["id"]: i["reading"] for i in panel["indicators"] if i["id"].startswith("mood_")}
+
+
+def test_saving_a_checkin_returns_what_was_saved_and_the_panel_of_that_day_shows_it(
+    client: TestClient,
+) -> None:
+    response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_rested", "mood_happy"]})
+
+    assert response.status_code == 200
+    assert response.json() == {"date": "2021-11-02", "moods": ["mood_happy", "mood_rested"]}
+    assert get_panel_moods(client, "2021-11-02") == {
+        "mood_happy": {"taken_at": "2021-11-02T00:00", "value": 1.0},
+        "mood_sad": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+        "mood_tense": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+        "mood_alert": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+        "mood_rested": {"taken_at": "2021-11-02T00:00", "value": 1.0},
+        "mood_neutral": {"taken_at": "2021-11-02T00:00", "value": 0.0},
+    }
+
+
+def test_saving_a_checkin_again_replaces_the_moods_of_that_day(client: TestClient) -> None:
+    client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_happy"]})
+
+    response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_tense"]})
+
+    assert response.json() == {"date": "2021-11-02", "moods": ["mood_tense"]}
+    moods = get_panel_moods(client, "2021-11-02")
+    assert moods["mood_happy"] == {"taken_at": "2021-11-02T00:00", "value": 0.0}
+    assert moods["mood_tense"] == {"taken_at": "2021-11-02T00:00", "value": 1.0}
+
+
+def test_a_checkin_leaves_the_moods_of_other_days_as_they_were(client: TestClient) -> None:
+    client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_happy"]})
+
+    moods = get_panel_moods(client, "2021-11-01")
+    assert moods["mood_sad"] == {"taken_at": "2021-11-01T00:00", "value": 1.0}
+    assert moods["mood_happy"] == {"taken_at": "2021-11-01T00:00", "value": 0.0}
+
+
+def test_a_checkin_with_an_unknown_mood_is_rejected_and_saves_nothing(client: TestClient) -> None:
+    response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": ["mood_happy", "glucose"]})
+
+    assert response.status_code == 422
+    assert get_panel_moods(client, "2021-11-02")["mood_happy"] == {
+        "taken_at": "2021-11-01T00:00",
+        "value": 0.0,
+    }
+
+
+def test_a_checkin_for_an_unknown_crew_member_returns_404(client: TestClient) -> None:
+    response = client.put("/api/crew/99/checkins/2021-11-02", json={"moods": ["mood_happy"]})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Crew member 99 not found"}
+
+
+def test_a_checkin_with_no_moods_saves_the_six_as_zero(client: TestClient) -> None:
+    response = client.put("/api/crew/1/checkins/2021-11-02", json={"moods": []})
+
+    assert response.status_code == 200
+    assert response.json() == {"date": "2021-11-02", "moods": []}
+    assert get_panel_moods(client, "2021-11-02") == {
+        mood_id: {"taken_at": "2021-11-02T00:00", "value": 0.0} for mood_id in MOOD_IDS
+    }
