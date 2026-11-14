@@ -1,3 +1,4 @@
+import { Icon } from '../../components/Icon.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { fetchCrew } from '../../lib/api.ts'
 import type { CrewMember, CrewRole } from '../../lib/api.ts'
@@ -12,6 +13,8 @@ const ROLE_NAMES: Record<CrewRole, string> = {
 // Who has the simulated cardiac event of the demo
 const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
+// Each profile card comes in a little after the one before it
+const PROFILE_STAGGER_MS = 60
 
 type Props = { onPick: (crewMember: CrewMember) => void }
 
@@ -23,19 +26,31 @@ export function ProfilePicker({ onPick }: Props) {
 
   return (
     <main className="screen picker">
-      <Logo height={132} />
+      <Logo height={200} />
       <p className="picker-tagline">A daily health panel for life beyond Earth</p>
       <section className="card picker-card">
-        <h1>Who is checking in?</h1>
-        <p className="muted">Choose your profile to open your own health panel.</p>
+        <div className="card-heading">
+          <span className="icon-badge">
+            <Icon name="users" />
+          </span>
+          <div>
+            <h1>Who is checking in?</h1>
+            <p className="muted">Choose your profile to open your own health panel.</p>
+          </div>
+        </div>
         {error !== null && <p role="alert">Could not load the crew. {error}</p>}
         <div className="profiles" aria-busy={loading}>
           {loading &&
             Array.from({ length: PLACEHOLDER_PROFILES }, (_, index) => (
               <div key={index} className="profile profile-placeholder" />
             ))}
-          {crew?.map((crewMember) => (
-            <button key={crewMember.id} className="profile" onClick={() => onPick(crewMember)}>
+          {crew?.map((crewMember, index) => (
+            <button
+              key={crewMember.id}
+              className="profile"
+              style={{ animationDelay: `${index * PROFILE_STAGGER_MS}ms` }}
+              onClick={() => onPick(crewMember)}
+            >
               <span className="avatar" aria-hidden="true">
                 {getInitials(crewMember.name)}
               </span>

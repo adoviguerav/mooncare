@@ -372,20 +372,17 @@ button {
 }
 
 .logo {
-  color: var(--ink);
-}
-
-.logo-moon-ring {
-  stroke: var(--accent);
-}
-
-.logo-moon {
-  fill: var(--accent);
+  max-width: 80vw;
+  overflow: visible;
 }
 
 .picker-tagline {
+  max-width: 30ch;
   margin-bottom: 20px;
   color: var(--mute);
+  font-size: 0.9375rem;
+  letter-spacing: 0.22em;
+  text-align: center;
 }
 
 .picker-card {
@@ -413,14 +410,31 @@ button {
   box-shadow: var(--tile-edge);
   text-align: left;
   transition:
-    transform 0.15s ease,
+    transform 0.2s ease,
     border-color 0.2s ease,
-    background 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
 .profile:hover {
+  transform: translateY(-2px);
   border-color: var(--accent);
-  background: rgb(47 216 255 / 0.08);
+  box-shadow:
+    var(--tile-edge),
+    0 0 22px rgb(47 216 255 / 0.25);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .picker-card,
+  button.profile {
+    animation: rise 0.6s both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 .profile-text {
@@ -439,9 +453,10 @@ button {
   width: 44px;
   height: 44px;
   flex: none;
+  border: 2px solid var(--accent);
   border-radius: 50%;
-  background: rgb(47 216 255 / 0.14);
-  color: var(--accent);
+  background: radial-gradient(circle at 30% 25%, #14395e, var(--surface));
+  font-size: 0.9375rem;
   font-weight: 700;
 }
 
