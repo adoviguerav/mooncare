@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Moon Care · Health monitoring for life beyond Earth</title>
 <meta name="description" content="Moon Care is a daily health panel that lets astronauts check, understand and act on their own health when Earth is too far away to help in time. NASA Space Apps Challenge 2026.">
+<meta name="theme-color" content="#050d1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23050d1a'/%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%232fd8ff' stroke-width='1.6'/%3E%3Cpath d='M12 3A9 9 0 0 0 12 21A3.8 9 0 0 1 12 3Z' fill='%23d8f6ff'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Moon Care · Health monitoring for life beyond Earth">
+<meta property="og:description" content="A daily health panel that lets astronauts check, understand and act on their own health when Earth is too far away to help. NASA Space Apps Challenge 2026.">
+<meta property="og:image" content="shots/home.webp">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -178,13 +185,13 @@ ul.ticks li::before{content:"";width:18px;height:18px;flex:none;margin-top:4px;b
 .try{text-align:center}
 .try .lead{margin:20px auto 0}
 .hints{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
-.hints span{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-size:14px;background:var(--gl-fill);border:1px solid var(--gl-line);box-shadow:var(--gl-hi)}
+.hints>span{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-size:14px;background:var(--gl-fill);border:1px solid var(--gl-line);box-shadow:var(--gl-hi)}
 .hints b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--cy);color:#04121f;font-size:12px}
 .bigdevice{margin:56px auto 0;width:min(100%,1100px);padding:18px;border-radius:44px;background:linear-gradient(145deg,#2a3c52,#0b1626 40%,#1a2a3e);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 2px 0 rgba(255,255,255,.18),0 50px 120px rgba(0,0,0,.6),0 0 120px rgba(47,216,255,.16)}
 .bigdevice .screen{position:relative;border-radius:28px;overflow:hidden;aspect-ratio:4/3;background:#050d1a}
 .bigdevice iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .poster{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:center top/cover no-repeat;cursor:pointer;border:0;width:100%;font:inherit;color:var(--ink)}
-.poster::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,13,26,.35),rgba(5,13,26,.85))}
+.poster::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,13,26,.82),rgba(5,13,26,.94) 70%);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .poster>*{position:relative}
 .poster .play{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(47,216,255,.95) 60%);box-shadow:0 0 0 12px rgba(47,216,255,.15),0 10px 40px rgba(47,216,255,.5);color:#04121f;transition:transform .2s}
 .poster:hover .play{transform:scale(1.06)}
@@ -204,11 +211,16 @@ footer .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-con
 footer a{color:var(--ink)}
 
 /* reveal */
-.rv{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
-.rv.in{opacity:1;transform:none}
+.anim .rv{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.anim .rv.in{opacity:1;transform:none}
 .rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
 
+.chal{display:flex;gap:14px;align-items:flex-start;padding:18px 22px;margin-bottom:56px;max-width:820px}
+.chal b{display:block;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--cy);font-weight:500;margin-bottom:4px}
+.chal span span{font-size:17px}
+.dsnote{margin-top:14px;font-size:14px;color:var(--mute);max-width:70ch}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
 /* language switcher */
 .lang{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--gl-fill);border:1px solid var(--gl-line);box-shadow:var(--gl-hi)}
 .lang button{font:inherit;font-size:12px;font-weight:600;letter-spacing:.06em;min-width:38px;min-height:32px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--mute);cursor:pointer;transition:background .2s,color .2s}
@@ -301,6 +313,7 @@ nav.top .lang{margin-left:4px}
 </head>
 <body>
 <div class="sky" aria-hidden="true"></div>
+<noscript><p style="position:relative;z-index:99;max-width:640px;margin:120px auto;padding:24px;text-align:center;font:18px/1.5 system-ui,sans-serif;color:#e6f1fb">Moon Care · A daily health panel for life beyond Earth. Please turn on JavaScript to see this page.</p></noscript>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -376,6 +389,7 @@ nav.top .lang{margin-left:4px}
 <!-- PROBLEM AND SOLUTION -->
 <section id="problem">
   <div class="wrap">
+    <div class="glass chal rv"><span class="pic"><svg class="ic"><use href="#i-globe"/></svg></span><span><b data-t="chal_label"></b><span data-t="chal_text"></span></span></div>
     <span class="eyebrow rv" data-t="prob_eyebrow"></span>
     <h2 class="rv" data-t="prob_h2"></h2>
     <p class="lead rv" data-t="prob_lead"></p>
@@ -512,14 +526,14 @@ nav.top .lang{margin-left:4px}
         <div class="flow">
           <div class="node"><span class="pic"><svg class="ic"><use href="#i-tablet"/></svg></span><div><b data-t="n_tablet"></b><span data-t="n_tablet_s"></span></div><span class="chip" data-t="chip_built"></span></div>
           <div class="link"><span data-t="l_local"></span></div>
-          <div class="node"><span class="pic"><svg class="ic"><use href="#i-server"/></svg></span><div><b data-t="n_api"></b><span data-t="n_api_s"></span></div><span class="chip" data-t="chip_built"></span></div>
-          <div class="link"><span data-t="l_sql"></span></div>
+          <div class="node"><span class="pic"><svg class="ic"><use href="#i-server"/></svg></span><div><b data-t="n_moon"></b><span data-t="n_moon_s"></span></div><span class="chip" data-t="chip_built"></span></div>
+          <div class="link"><span>SQL</span></div>
           <div class="node db"><span class="pic"><svg class="ic"><use href="#i-db"/></svg></span><div><b data-t="n_pg"></b><span data-t="n_pg_s"></span></div><span class="chip" data-t="chip_built"></span></div>
+          <div class="link dash"><span data-t="l_sync"></span></div>
+          <div class="node"><span class="pic"><svg class="ic"><use href="#i-antenna"/></svg></span><div><b data-t="n_earth"></b><span data-t="n_earth_s"></span></div><span class="chip" data-t="chip_built"></span></div>
           <div class="side">
             <div class="node plan"><span class="pic"><svg class="ic"><use href="#i-sensor"/></svg></span><div><b data-t="n_sensors"></b><span data-t="chip_planned"></span></div></div>
             <div class="node plan"><span class="pic"><svg class="ic"><use href="#i-spark"/></svg></span><div><b data-t="n_si"></b><span data-t="chip_planned"></span></div></div>
-            <div class="node plan"><span class="pic"><svg class="ic"><use href="#i-antenna"/></svg></span><div><b data-t="n_ground"></b><span data-t="n_ground_s"></span></div></div>
-            <div class="node plan"><span class="pic"><svg class="ic"><use href="#i-steth"/></svg></span><div><b data-t="n_surgeon"></b><span data-t="chip_planned"></span></div></div>
           </div>
         </div>
       </div>
@@ -529,13 +543,13 @@ nav.top .lang{margin-left:4px}
         <div class="flow">
           <div class="node"><span class="pic"><svg class="ic"><use href="#i-browser"/></svg></span><div><b data-t="n_browser"></b><span data-t="n_browser_s"></span></div></div>
           <div class="link"><span>HTTPS</span></div>
-          <div class="node"><span class="pic"><svg class="ic"><use href="#i-tablet"/></svg></span><div><b data-t="n_tablet"></b><span data-t="n_web_s"></span></div></div>
+          <div class="node"><span class="pic"><svg class="ic"><use href="#i-tablet"/></svg></span><div><b data-t="n_tablet"></b><span data-t="n_web_s"></span></div><span class="chip">Vercel</span></div>
           <div class="link"><span data-t="l_rest"></span></div>
           <div class="node"><span class="pic"><svg class="ic"><use href="#i-server"/></svg></span><div><b data-t="n_api"></b><span data-t="n_api2_s"></span></div></div>
-          <div class="link"><span data-t="l_sql"></span></div>
+          <div class="link"><span>SQL</span></div>
           <div class="node supa"><span class="pic"><svg class="ic"><use href="#i-db"/></svg></span><div><b>Supabase</b><span data-t="n_supa_s"></span></div></div>
         </div>
-        <div class="stack"><span>React</span><span>Vite</span><span>TypeScript</span><span>FastAPI</span><span>Python</span><span>PostgreSQL</span><span>Supabase</span></div>
+        <div class="stack"><span>React</span><span>Vite</span><span>TypeScript</span><span>Python</span><span>FastAPI</span><span>SQLAlchemy</span><span>PostgreSQL</span><span>Docker</span><span>Supabase</span><span>Vercel</span></div>
       </div>
     </div>
     <div class="glass archnote rv"><span class="pic"><svg class="ic"><use href="#i-code"/></svg></span><span data-t="ar_note"></span></div>
@@ -548,6 +562,7 @@ nav.top .lang{margin-left:4px}
     <span class="eyebrow rv" data-t="ds_eyebrow"></span>
     <h2 class="rv" data-t="ds_h2"></h2>
     <p class="lead rv" data-t="ds_lead"></p>
+    <p class="dsnote rv" data-t="ds_note"></p>
     <div class="ds">
       <div class="glass dcard rv d1"><div class="top"><span class="pic"><svg class="ic"><use href="#i-flask"/></svg></span><h3 data-t="ds1_h"></h3></div><p data-t="ds1_p"></p><div class="meta"><span>NASA OSDR · OSD-575</span><span data-t="tag_astro"></span></div><a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-575" rel="noopener" data-t="ds_link"></a></div>
       <div class="glass dcard rv d2"><div class="top"><span class="pic"><svg class="ic"><use href="#i-flask"/></svg></span><h3 data-t="ds2_h"></h3></div><p data-t="ds2_p"></p><div class="meta"><span>NASA OSDR · OSD-569</span><span data-t="tag_astro"></span></div><a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-569" rel="noopener" data-t="ds_link"></a></div>
@@ -631,7 +646,8 @@ nav.top .lang{margin-left:4px}
         </button>
       </div>
     </div>
-    <p class="alt rv"><span data-t="try_alt"></span> <a href="app.html" target="_blank" rel="noopener" data-t="try_alt_a"></a></p>
+    <div class="cta rv" style="justify-content:center;margin-top:26px"><a class="btn ghost" href="https://mooncare-ten.vercel.app" target="_blank" rel="noopener" data-t="try_live"></a></div>
+    <p class="alt rv"><span data-t="try_alt"></span> <a href="app.html" target="_blank" rel="noopener" data-t="try_alt_a"></a> · <span data-t="try_wake"></span></p>
   </div>
 </section>
 
@@ -721,14 +737,20 @@ nav.top .lang{margin-left:4px}
   var nav0 = (navigator.language || "en").slice(0,2).toLowerCase();
   apply(saved || (LANGS.indexOf(nav0) >= 0 ? nav0 : "en"));
 
-  // reveal on scroll
-  var els = document.querySelectorAll(".rv");
-  if (RM || !("IntersectionObserver" in window)) { els.forEach(function(e){ e.classList.add("in"); }); }
-  else {
+  // reveal on scroll. Content is visible by default; the fade-in is added only where it can work,
+  // with fallbacks so nothing can stay hidden (some embedded viewers do not report scrolling).
+  var els = [].slice.call(document.querySelectorAll(".rv"));
+  if (!RM && "IntersectionObserver" in window) {
+    document.documentElement.classList.add("anim");
+    var show = function(e){ e.classList.add("in"); };
     var io = new IntersectionObserver(function(es){
-      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, {threshold:.12, rootMargin:"0px 0px -6% 0px"});
+      es.forEach(function(e){ if (e.isIntersecting){ show(e.target); io.unobserve(e.target); } });
+    }, {threshold:.05});
     els.forEach(function(e){ io.observe(e); });
+    var check = function(){ var h = innerHeight || document.documentElement.clientHeight; els.forEach(function(e){ if (!e.classList.contains("in") && e.getBoundingClientRect().top < h) show(e); }); };
+    addEventListener("scroll", check, {passive:true}); addEventListener("resize", check);
+    setTimeout(check, 400);
+    setTimeout(function(){ els.forEach(show); }, 3000);   // failsafe: everything visible after 3 s
   }
 
   if (!RM && "IntersectionObserver" in window) {
