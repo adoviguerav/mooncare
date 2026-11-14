@@ -17,7 +17,7 @@ Reorganised on 14 Nov. Two decisions behind it:
 | 0 | The platform works with real data | Done |
 | 1 | The app is online | In progress |
 | 2 | The app looks like ours | To do |
-| 3 | One emergency without Earth | Scenario not chosen |
+| 3 | One emergency without Earth: chest pain and CPR | To do |
 | 4 | The landing page | To do |
 | 5 | If there is time | To do |
 | 6 | Show it | Sunday |
@@ -74,22 +74,32 @@ Done when: the four tasks are on the Vercel link.
 
 ## Milestone 3 · One emergency without Earth
 
-A reading sets off an alert on board, and the tablet guides the crew step by step, with no link. One scenario is built. The others are explained on the landing and in the pitch.
+The scenario of the challenge video: halfway to Mars, a crewmate feels a sharp pain in the chest and collapses. What is happening, and what should the others do? The tablet guides the crew step by step, with no link to Earth.
 
-- [ ] **E0. Choose the scenario.** It must be a real need, set off by data we have, with a limit and a procedure that both have a source. A research is running on 14 Nov. Looked at so far:
+Decided on 14 Nov: chest pain, then collapse, then CPR. Why: it is the emergency the challenge itself shows, and the procedure is NASA's own.
 
-    | Scenario | For | Against |
-    | :-- | :-- | :-- |
-    | Low glucose | Real NASA data already sets off the alert (Crew 1, 36 mg/dL) | No case in flight. The procedure has to come from Àngels |
-    | CPR | The clearest emergency | No case in space. It uses none of our data. The ISS crew already does it alone |
-    | Radiation storm | It happens: ISS crews take shelter, and the warning comes from the ground | No public limit in our units. The RadLab data shows no storm. No public procedure |
+- **The procedure** is the ISS Medical Checklist (JSC-48522-E4, 2001), sections "Chest pain - acute" and "Cardiopulmonary resuscitation: CPR". It is public: http://web.archive.org/web/20230519222418/https://www.nasa.gov/centers/johnson/pdf/163533main_ISS_Med_CL.pdf
+- **Why it shows the pain point.** The checklist tells the crew to contact the flight surgeon. Without a link, the tablet is what guides them.
+- **No invented data.** A tap opens the flow, not a reading.
+- **Its limits, said on screen.** The checklist is from 2001. No cardiac arrest in space is on record.
+
+Tasks:
 
 - [ ] **E1. Guided steps screen**: fixed steps, one per screen, with timers where the procedure has them. It works with the network off.
-    - Done when: one tap from the alert opens it and it can be followed to the last step with the network off.
-- [ ] **E2. The procedure of the chosen scenario**, with its source on screen. Nobody invents a step.
-- [ ] **E3. Update the documents**: R9 and the demo script (P8) name the CPR flow today.
+    - Done when: one tap from the panel opens it and it can be followed to the last step with the network off.
+- [ ] **E2. The steps of the two procedures**, copied from the checklist, each with its page. Nobody invents or rewrites a medical step. Àngels reads them before the demo.
+- [ ] **E3. Update the documents**: R9 in the System_design and the demo script (P8).
 
-Done when: on the Vercel link, the alert of the chosen scenario opens its guide and it can be followed to the end.
+Looked at and left for the landing and the pitch, as next steps:
+
+| Scenario | Why not now |
+| :-- | :-- |
+| Kidney stone, infection and early sepsis | NASA's worst case for the transit to Mars (HRP-48044), and the ISS checklist has its procedures. None of our data sets it off |
+| Low potassium and arrhythmia | Real data sets it off: Crew 1 has 3.0 mmol/L the day after landing, and Apollo 15 had arrhythmias blamed on low potassium. It is mild, a caution more than an emergency |
+| Radiation storm | It happens, and today the warning comes from the ground. No public limit in our units, the RadLab data shows no storm, and no public procedure |
+| Low glucose | Real NASA data sets off the alert. No case in flight, and the three low values come from the same blood draw, so they may be a sample problem. To ask Àngels |
+
+Done when: on the Vercel link, one tap opens the guide and it can be followed to the end.
 
 ## Milestone 4 · The landing page
 
@@ -103,7 +113,7 @@ Our letter of introduction to the NASA experts. It is the first page of the same
     - The team.
     - Datasets and who provides them.
     - How we used AI.
-    - Next steps: the link to the ground and the emergency scenarios we did not build.
+    - Next steps: the link to the ground and the emergency scenarios of milestone 3 that we did not build.
 - [ ] **L3. Languages.** English and Spanish, with a switch. Any other language is not decided.
 
 Done when: someone who does not know the project reads the landing, opens the app from it and understands what it is.
@@ -134,7 +144,7 @@ Sunday 15. Nobody adds features. We only fix what is broken. In this order:
 - [ ] **P4.** List of AI tools and outside resources. The form asks for it.
 - [ ] **P5.** Pick one global award category: Best Use of Science, Best Use of Technology or Best Mission Concept.
 - [ ] **P6.** Write the opening sentence: user, problem and result.
-- [ ] **P8.** Demo script: a normal day, then the alert, then the emergency flow of milestone 3.
+- [ ] **P8.** Demo script: a normal day, then the glucose alert, then the chest pain and CPR flow.
 - [ ] **P9.** Pitch of 3 minutes with the five pain points (System_design, section 7) and the five judging criteria. It ends with next steps: what we built first and what we left for later.
 - [ ] **P10.** Architecture slide: the target architecture with what is built marked (System_design, section 5).
 - [ ] **P11.** Record the video: 30 seconds at most, with English subtitles. Going over makes us ineligible.
