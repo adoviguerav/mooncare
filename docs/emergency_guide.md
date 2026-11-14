@@ -114,5 +114,5 @@ To add a procedure: write it in `procedures.ts`, add it to the table of alerts, 
 - The Kidney Stones procedure, where step 6 can lead, is not loaded.
 - The case lives in one browser. To see it from two profiles, open both on the same device. Nothing is stored in the database and the report is not sent anywhere.
 - The voice agent sends the conversation to ElevenLabs and to the language model behind it.
-- The endpoint that hands out voice sessions asks for no user, like the rest of the demo. A limit on calls is set in ElevenLabs, not in our code.
+- The endpoint that hands out voice sessions asks for no user, like the rest of the demo. It gives each caller 30 sessions an hour, counted in memory.
 - The simulated changes were chosen by us to look like an infection. A clinician has not signed off each one.

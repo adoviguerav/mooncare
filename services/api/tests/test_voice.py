@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings, get_settings
 from app.main import app
-from app.voice import get_elevenlabs_transport
+from app.voice import SessionLimiter, get_elevenlabs_transport, get_session_limiter
 
 SIGNED_URL = "wss://api.elevenlabs.io/v1/convai/conversation?agent_id=agent_1&conversation_signature=abc"
 
@@ -30,6 +30,9 @@ def settings_with(**voice_settings: str) -> Settings:
 
 @pytest.fixture
 def serve() -> Iterator[TestClient]:
+    # A limiter of its own for each test, so the sessions of one test do not count in the next
+    limiter = SessionLimiter(max_sessions=2, window_seconds=3600)
+    app.dependency_overrides[get_session_limiter] = lambda: limiter
     yield TestClient(app)
     app.dependency_overrides.clear()
 
@@ -71,3 +74,30 @@ def test_voice_session_hides_what_elevenlabs_answered_when_it_fails(serve: TestC
 
     assert response.status_code == 502
     assert response.json() == {"detail": "The voice agent could not be reached"}
+
+
+def test_voice_session_is_refused_after_too_many_from_the_same_caller(serve: TestClient) -> None:
+    elevenlabs = FakeElevenLabs()
+    app.dependency_overrides[get_settings] = lambda: settings_with(
+        elevenlabs_api_key="secret-key", elevenlabs_agent_id="agent_1"
+    )
+    app.dependency_overrides[get_elevenlabs_transport] = lambda: elevenlabs.transport
+    caller = {"X-Forwarded-For": "203.0.113.7, 10.0.0.1"}
+
+    first = serve.post("/api/emergency/voice-session", headers=caller)
+    second = serve.post("/api/emergency/voice-session", headers=caller)
+    third = serve.post("/api/emergency/voice-session", headers=caller)
+    other_caller = serve.post("/api/emergency/voice-session", headers={"X-Forwarded-For": "203.0.113.8"})
+
+    assert [first.status_code, second.status_code, third.status_code] == [200, 200, 429]
+    assert third.json() == {"detail": "Too many voice sessions. Try again later"}
+    assert other_caller.status_code == 200
+    assert len(elevenlabs.requests) == 3
+
+
+def test_session_limiter_lets_a_caller_in_again_when_the_window_has_passed() -> None:
+    limiter = SessionLimiter(max_sessions=1, window_seconds=60)
+
+    assert limiter.allow("caller", now=0.0) is True
+    assert limiter.allow("caller", now=59.0) is False
+    assert limiter.allow("caller", now=61.0) is True
