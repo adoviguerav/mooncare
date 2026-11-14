@@ -234,6 +234,19 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .plock{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px;color:var(--mute)}.plock svg{flex:none;margin-top:2px}
 #paramPage{max-width:1080px;margin:-4px auto 0;padding:0 16px 110px;position:relative;z-index:1}
 #crewApp{padding-bottom:0!important}#home{padding-bottom:110px}#paramPage{margin-top:0}
+
+.h2i{display:flex;align-items:center;gap:10px}.h2i .pic{width:34px;height:34px}
+.pic.sm{width:30px;height:30px;margin-right:2px}
+.q{align-items:center}
+.nova .pic{flex:none}
+.tl .top{display:flex;align-items:center;gap:10px;margin-bottom:6px}.tl .pn{font-size:13px;color:var(--mute)}.tiles .pic{color:var(--cy)}
+.tiles .tl:nth-child(1) .pic{color:var(--warn)}
+.stats .pic{margin:0 auto 6px;color:var(--cy);display:grid;width:34px;height:34px}
+.feat div{display:flex;gap:12px;align-items:flex-start;border-left:0;padding:12px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02));border:1px solid var(--gl-line)}.feat .pic{color:var(--cy)}
+.novabox{align-items:center}
+.panel .h2i .pic{flex:none}
+#cdPage .h2i,#gsPage .h2i{padding-right:52px}
+.feat div{background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02)),rgba(8,22,42,.6)}
 </style>
 </head>
 <body>
@@ -261,17 +274,17 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <p class="tag2">A daily health panel for life beyond Earth</p>
     <div class="pick">
       <div class="panel">
-        <h2>Who’s checking in?</h2>
+        <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M17 14c2.6 0 4.5 1.700 4.500 4.500"/></svg></span>Who’s checking in?</h2>
         <p class="sub">Choose your profile to open your own health panel.</p>
         <div class="cgrid" id="cgrid"></div>
       </div>
       <aside class="panel admp" aria-label="Admin access">
-        <div><h2>Mission control</h2><p class="sub" style="margin:0">For the onboard medical lead, not a crew profile.</p></div>
+        <div><h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span>Mission control</h2><p class="sub" style="margin:0">For the onboard medical lead, not a crew profile.</p></div>
         <ul><li>A short list of who needs attention</li><li>Crew-wide patterns, such as shared symptoms</li><li>A summary ready for the ground team</li></ul>
         <button class="gobtn" id="goAdmin" type="button">Open admin panel</button>
       </aside>
     </div>
-    <div class="feat"><div><b>Daily check-in</b>How you feel, in one tap</div><div><b>Live vitals</b>Heart, sleep, oxygen and more, against your own baseline</div><div><b>Alert action plan</b>What to do and how long you have</div><div><b>Private by design</b>Mood stays with you</div></div>
+    <div class="feat"><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></span><span><b>Daily check-in</b>How you feel, in one tap</span></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></span><span><b>Live vitals</b>Heart, sleep, oxygen and more, against your own baseline</span></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg></span><span><b>Alert action plan</b>What to do and how long you have</span></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span><b>Private by design</b>Mood stays with you</span></div></div>
   </div>
 </section>
 
@@ -301,14 +314,14 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   </header>
   <div class="tiles" id="aTiles"></div>
   <section class="card" style="margin-bottom:16px">
-    <h2>Needs you</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg></span>Needs you</h2>
     <div id="aQueue"></div>
   </section>
   <section class="two">
-    <div class="card"><h2>Crew-wide check</h2><div id="aWide"></div></div>
-    <div class="card"><h2>Review log</h2><div id="aLog"></div></div>
+    <div class="card"><h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M17 14c2.6 0 4.5 1.700 4.500 4.500"/></svg></span>Crew-wide check</h2><div id="aWide"></div></div>
+    <div class="card"><h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg></span>Review log</h2><div id="aLog"></div></div>
   </section>
-  <h2>All crew</h2>
+  <h3 class="sec">All crew</h3>
   <div class="chips" id="aChips" role="group" aria-label="Filter crew"></div>
   <div class="card scroll" style="padding:6px"><table class="ptab" id="aTable"></table></div>
   <details class="card" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center">Clinical parameter table (all 21)</summary><p class="note">Every monitored parameter with its module, priority and status. Demo values for the profile open on the crew side.</p><div class="scroll"><table class="ptab" id="aParams"></table></div></details>
@@ -329,7 +342,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <section id="gsPage" role="dialog" aria-modal="true" aria-label="Summary for the ground team" hidden>
   <div class="inc card">
     <button class="back x" id="gsX" type="button" aria-label="Close summary">×</button>
-    <h2>Summary for the ground team</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg></span>Summary for the ground team</h2>
     <p class="note">Plain text, ready to send when contact is available.</p>
     <textarea id="gsText" readonly rows="14" aria-label="Summary text" style="width:100%;font:inherit;font-size:14px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px"></textarea>
     <div class="acts"><button type="button" id="gsCopy">Copy text</button></div>
@@ -378,31 +391,31 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px"></div></div></div>
   </div>
   <div class="card">
-    <h2>How are you feeling today?</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></span>How are you feeling today?</h2>
     <div class="moods" id="moods"></div>
     <p id="moodMsg"></p>
   </div>
 </section>
 
 <section class="card nova">
-  <div style="font-size:28px" aria-hidden="true">🤖</div>
+  <span class="pic" style="width:44px;height:44px"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg></span>
   <div><b>Dr. Nova AI</b> <span class="note">· Flight Surgeon · just now</span>
   <p id="novaMsg" style="margin:4px 0 0"></p></div>
 </section>
 
-<h2>Morning telemetry</h2>
+<h3 class="sec">Morning telemetry</h3>
 <p class="note" id="sumline"></p>
 <div class="chips" id="chips" role="group" aria-label="Filter by body system"></div>
 <div class="grid" id="grid"></div>
 
 <section class="two">
   <div class="card">
-    <h2>Heart rate through the sol</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/></svg></span>Heart rate through the sol</h2>
     <div class="scroll"><svg id="hr" viewBox="0 0 440 150" role="img" aria-label="Hourly heart rate curve"></svg></div>
     <p class="note" id="hrNote">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
   </div>
   <div class="card">
-    <h2>Sleep architecture</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/></svg></span>Sleep architecture</h2>
     <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
       <svg id="donut" viewBox="0 0 120 120" width="140" role="img" aria-label="Sleep stage split"></svg>
       <ul class="legend" id="legend" style="flex:1;min-width:150px"></ul>
@@ -413,19 +426,19 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 
 <section class="two">
   <div class="card">
-    <h2>Daily checklist</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg></span>Daily checklist</h2>
     <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
     <div id="quests"></div>
   </div>
   <div class="card">
-    <h2>Life support</h2>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span>Life support</h2>
     <p class="note" hidden>Suit #MK-IV-A. Thermal regulators prepped for the 14:00 exterior walk.</p>
     <div class="eva" hidden>
       <div><b>4.3 PSI</b><span>Pressure, sealed</span></div>
       <div><b>98.2%</b><span>O2 tank</span></div>
       <div><b>21.5 °C</b><span>Thermal, nominal</span></div>
     </div>
-    <div class="grid" style="margin:12px 0 0;grid-template-columns:1fr 1fr"><div class="card m"><div class="top">SpO2</div><div class="val" style="font-size:26px">99<small> %</small></div><p class="note">Crisp lunar O2</p></div><div class="card m"><div class="top">Breathing rate</div><div class="val" style="font-size:26px">14<small> /min asleep</small></div><p class="note">No limit set yet.</p></div><div class="card m"><div class="top">Radiation today</div><div class="val" style="font-size:26px">0.14<small> mSv</small></div><p class="note">Nominal shielding</p></div><div class="card m"><div class="top">Total radiation dose</div><div class="val" style="font-size:26px">18.4<small> mSv</small></div><p class="note">Since arrival. No limit set yet.</p></div></div>
+    <div class="grid" style="margin:12px 0 0;grid-template-columns:1fr 1fr"><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></span><span class="pn">SpO2</span></div><div class="val" style="font-size:26px">99<small> %</small></div><p class="note">Crisp lunar O2</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span class="pn">Breathing rate</span></div><div class="val" style="font-size:26px">14<small> /min asleep</small></div><p class="note">No limit set yet.</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span class="pn">Radiation today</span></div><div class="val" style="font-size:26px">0.14<small> mSv</small></div><p class="note">Nominal shielding</p></div><div class="card m ptile"><div class="top"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span class="pn">Total radiation dose</span></div><div class="val" style="font-size:26px">18.4<small> mSv</small></div><p class="note">Since arrival. No limit set yet.</p></div></div>
     </div>
   </div>
 </section>
@@ -456,7 +469,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <div class="inc card">
     <button class="back x" id="back" type="button" aria-label="Close warning">×</button>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-right:52px"><span class="tag warn">Class X-2.4 solar flare</span><span class="tag" id="aPhase"></span></div>
-    <h2>Potential incident warning</h2>
+    <h2 class="h2i"><span class="pic" style="color:var(--warn)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/></svg></span>Potential incident warning</h2>
     <p class="note">Coronal mass ejection (CME) inbound</p>
     <div class="eta"><span>ETA impact window</span><b id="eta" role="timer">00:18:42</b></div>
     <div class="tlbar" aria-hidden="true"><i id="tlNeed"></i></div>
@@ -470,8 +483,8 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <div class="rate"><div><span class="note">Radiation at your position (demo)</span><div><b id="rate">0.14</b> <small>mSv/h</small></div><div class="note" id="rateWhere"></div></div><svg id="rateSp" viewBox="0 0 120 40" width="120" height="40" aria-hidden="true"></svg></div>
     <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span>Tracking</span></div>
     <svg viewBox="0 0 340 110" width="100%" role="img" aria-label="Solar shock wave moving toward the lunar base"><defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient></defs><g id="shock" fill="none" stroke="#ff9a3c" stroke-opacity=".6" style="transition:transform 1s linear"><path d="M85 25q22 30 0 60"/><path d="M105 18q30 37 0 74"/><path d="M125 11q38 44 0 88"/></g><circle cx="45" cy="55" r="30" fill="url(#sunG)"/><line x1="80" y1="55" x2="280" y2="55" stroke="#ffb84a" stroke-dasharray="4 4"/><rect x="150" y="45" width="70" height="20" rx="6" fill="#3a2a0a" stroke="#ffb84a"/><text x="185" y="59" text-anchor="middle" font-size="11" fill="#ffd27a">1,240 km/s</text><circle cx="300" cy="55" r="15" fill="#2fa8d8"/><circle cx="300" cy="55" r="22" fill="none" stroke="#2fd8ff" stroke-opacity=".5"/></svg></div>
-    <div class="stats"><div><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span>Shock speed</span><b>1,240 km/s</b></div><div><span>Bunker shield</span><b>99.45%</b></div><div><span>Outside dose rate</span><b id="telRate">0.14 mSv/h</b></div></div>
-    <div class="novabox"><span aria-hidden="true">🤖</span><span><b>Dr. Nova AI:</b> <span id="novaLine"></span></span></div>
+    <div class="stats"><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg></span><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span>Shock speed</span><b>1,240 km/s</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span>Bunker shield</span><b>99.45%</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span>Outside dose rate</span><b id="telRate">0.14 mSv/h</b></div></div>
+    <div class="novabox"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg></span><span><b>Dr. Nova AI:</b> <span id="novaLine"></span></span></div>
     <p class="note" style="margin-top:12px">Step times and radiation values are demo estimates.</p>
   </div>
 </section>
@@ -508,6 +521,31 @@ const M=[
 ];
 const $=id=>document.getElementById(id);
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const IC={
+ smile:'<circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>',
+ alert:'<path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17h.01"/>',
+ eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/>',
+ wifioff:'<path d="M3 3l18 18"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.5a10 10 0 0 1 3-2M19 12.5a10 10 0 0 0-5.500-3.200"/><path d="M12 20h.01"/>',
+ shield:'<path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>',
+ users:'<circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M17 14c2.6 0 4.5 1.700 4.500 4.500"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ spark:'<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+ heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
+ moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/>',
+ temp:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z"/><path d="M12 9v7"/>',
+ drop:'<path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
+ wind:'<path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/>',
+ bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/>',
+ batt:'<rect x="3" y="8" width="16" height="9" rx="2.5"/><path d="M21 11v3"/><path d="M7 12.5h4"/>',
+ rad:'<circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g>',
+ flask:'<path d="M9 3h6M10 3v6L5 18.5A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+ ok:'<circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/>',
+ chart:'<path d="M4 18 9 12l4 3 7-9"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
+};
+const ico=(k,s)=>`<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+
 const st={};const inc={ack:false,done:[true,false,false,false]};
 let ME=0;
 const PD=[
@@ -526,7 +564,7 @@ function HRS(t){const a=t.reduce((x,y)=>x+y)/t.length;$('hrStats').innerHTML=[['
 const TR={"Heart rate":[64,66,65,67,66,68,72],"Sleep duration":[7.1,6.8,7.4,7.9,7.2,7.6,8.25],"Body temperature":[36.5,36.6,36.5,36.7,36.6,36.5,36.6],"Exercise":[40,52,35,48,44,50,18],"Blood glucose":[91,97,88,102,95,93,94]};
 function spark(m){const t=SER(m.name,'5D');if(!t)return"";const mn=Math.min(...t),r=Math.max(...t)-mn||1,pts=t.map((v,i)=>i*118/(t.length-1)+","+(22-(v-mn)/r*20)).join(" "),d=t[t.length-1]-t.slice(0,-1).reduce((a,b)=>a+b)/(t.length-1);return `<div class="spark"><svg viewBox="0 0 120 24" width="120" height="24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg><span>${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(1)} vs 5D avg</span></div>`}
 const LIVE='<div class="live"><svg class="ecg" viewBox="0 0 120 28" width="120" height="28" aria-hidden="true"><path class="trk" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/><path pathLength="1" d="M0 14H28L34 14L38 4L44 24L48 14L54 14L60 10L66 14H88L94 14L98 4L104 24L108 14H120"/></svg><span><b id="liveHR">72</b> bpm live</span></div>';
-let filter="All";
+let filter="All";const MI={"Heart rate":"heart","Sleep duration":"moon","Mood":"smile","Body temperature":"temp","Exercise":"bolt","Blood glucose":"drop"},FR={"Sleep duration":"Last night","Mood":"Self-report today","Body temperature":"Overnight","Exercise":"Today","Blood glucose":"Last reading 06:40"};
 function render(){
   const alerts=M.filter(m=>m.test(m)&&!st[m.name]);
   const bad=M.filter(m=>m.test(m)).length;$("sumline").textContent=(M.length-bad)+" of "+M.length+" nominal, worst first. Tap a card to see its history.";
@@ -538,10 +576,10 @@ function render(){
     :"All readings look good. Let’s keep your routine steady before the 14:00 EVA.";
   $("grid").innerHTML=M.filter(m=>filter==="All"||m.mod===filter).sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
     const a=m.test(m);
-    return `<article class="card m" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span>${m.mod} · ${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
+    return `<article class="card m ptile${a?" w":""}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
     ${m.bar?`<div class="bar ${a?"warn":""}"><i style="width:${Math.min(100,Math.max(4,m.bar(m.val)*100))}%"></i></div>`:""}
-    <p class="note">${m.msg}</p>${spark(m)}${m.name==="Heart rate"?LIVE:""}
+    <p class="note">${m.msg}</p>${spark(m)}${m.name==="Heart rate"?LIVE:`<div class="fresh">${FR[m.name]}${BS[m.name]?'<span class="chv">'+ico("chart",16)+"</span>":""}</div>`}
     </article>`}).join("");
   const mods=["All",...new Set(M.map(m=>m.mod))];
   $("chips").innerHTML=mods.map(x=>`<button aria-pressed="${x===filter}" data-f="${x}">${x==="All"?"All systems":x}</button>`).join("");
@@ -601,13 +639,14 @@ drawDonut(PD[0]);
 
 // quests
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
+const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
 let xpLast=null;PD[0].ex=EX;
 function xpTo(cur){const el=$("xpNow");if(xpLast===null||RM||$("crewApp").hidden){xpLast=cur;el.textContent=cur.toLocaleString("en-US")+" XP";return}const from=xpLast;xpLast=cur;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/500);el.textContent=Math.round(from+(cur-from)*k).toLocaleString("en-US")+" XP";if(k<1)requestAnimationFrame(s)})(t0)}
 function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=al?"var(--warn)":(n===Q.length?"var(--ok)":"var(--cy)");$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent=al?al+" to review":"All clear";$("glance").setAttribute("aria-label","Today at a glance: "+n+" of "+Q.length+" tasks done, "+(al?al+" readings need attention":"nothing needs attention"))}
 function drawQ(){
   const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),d0=PD[ME],cur=d0.xp0+xp-d0.q.reduce((s,v,i)=>s+(v?Q[i][4]:0),0);xpTo(cur);$("xpLeft").textContent=Math.max(0,d0.nxt-cur)+" XP to Level "+(d0.lvl+1);$("xpBar").style.width=Math.min(100,cur/d0.nxt*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
   $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
-  $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div><span class="tag">${q[2]}</span></label>`).join("");
+  $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div><span class="tag">${q[2]}</span></label>`).join("");
   document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
   drawGlance();
 }
@@ -674,21 +713,6 @@ const P2=[
 ['Cardiovascular fitness','CARDIO','L3','VO2max 46 (estimated)','ok','Reduced cardiovascular fitness. Review conditioning and tolerance.','Wearable ECG or HR monitor in a standard exercise.','5 daily · filteredDemographicVO2Max (estimated by the watch). ASTRA-HEALTH defines this alert by HR and recovery in a standard exercise, which this estimate does not measure directly. Real, Earth.'],
 ['Anxiety and affect questionnaires','MIND','L3','Not due this week','ok','Anxiety symptoms. Rising scores. Confidential psychological support.','GAD-7 and PHQ-9 on the tablet, weekly or periodically.','5 surveys · stai_stress and positive_affect_score, negative_affect_score. Different questionnaires (STAI, PANAS), no depression score. Real, Earth.']];
 function tg(s){return s==='ok'?'<span class="tag ok">Nominal</span>':s==='warn'?'<span class="tag warn">Alert</span>':'<span class="tag" style="background:var(--line);color:var(--mute)">No alert defined</span>'}
-const IC={
- heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
- moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/>',
- temp:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z"/><path d="M12 9v7"/>',
- drop:'<path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
- wind:'<path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/>',
- bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/>',
- batt:'<rect x="3" y="8" width="16" height="9" rx="2.5"/><path d="M21 11v3"/><path d="M7 12.5h4"/>',
- rad:'<circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g>',
- flask:'<path d="M9 3h6M10 3v6L5 18.5A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.5L14 9V3"/><path d="M7.5 15h9"/>',
- ok:'<circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/>',
- chart:'<path d="M4 18 9 12l4 3 7-9"/>',
- lock:'<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
-};
-const ico=(k,s)=>`<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
 function dl(v,b,d){const x=v-b;return(x>0?"▲ ":x<0?"▼ ":"● ")+Math.abs(x).toFixed(d||0)+" vs your baseline"}
 function ptiles(){const d=PD[ME],c=CREW[ME],bs=d.bs;
   return[
@@ -802,7 +826,7 @@ function drawAdmin(){
   const rows=CREW.map(crow),n=rows.length;
   const queue=rows.map((c,i)=>[c,i]).filter(([c])=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b[0])-sev(a[0]));
   const unseen=queue.filter(([c])=>!seen[c.n]).length,nosync=rows.filter(c=>c.sm>60).length,sealed=rows.filter(c=>c.seal).length;
-  $("aTiles").innerHTML=[["Need you",queue.length,queue.length?"Ranked below":"All clear"],["New since last look",unseen,unseen?"Not opened yet":"All opened"],["Not syncing",nosync,nosync?"Over 1 hour without data":"Everyone is reporting"],["Habitats sealed",sealed+" of "+n,"Solar flare X-2.4"]].map(t=>`<div class="card"><span>${t[0]}</span><b>${t[1]}</b><span>${t[2]}</span></div>`).join("");
+  $("aTiles").innerHTML=[["Need you",queue.length,queue.length?"Ranked below":"All clear"],["New since last look",unseen,unseen?"Not opened yet":"All opened"],["Not syncing",nosync,nosync?"Over 1 hour without data":"Everyone is reporting"],["Habitats sealed",sealed+" of "+n,"Solar flare X-2.4"]].map((t,i)=>`<div class="card tl"><div class="top"><span class="pic">${ico(["alert","eye","wifioff","shield"][i])}</span><span class="pn">${t[0]}</span></div><b>${t[1]}</b><span>${t[2]}</span></div>`).join("");
   $("aQueue").innerHTML=queue.length?queue.map(([c,i])=>{const s=cstat(c);return`<div class="qi"><div><b>${c.n}</b> <span class="tag ${s[0]}">${s[1]}</span>${seen[c.n]?"":' <span class="tag" style="background:var(--cy);color:#04121f">New</span>'}<div class="note" style="margin:2px 0 0">${reason(c)}</div></div><span class="acts" style="margin:0"><button type="button" data-i="${i}">Open</button></span></div>`}).join(""):'<p class="note">Nothing needs review. Reviewed items stay in the log.</p>';
   const cnt=k=>rows.filter(c=>flags(c).some(x=>x[0]===k)).length,avg=k=>rows.reduce((s,c)=>s+c[k],0)/n,cums=rows.map(c=>c.cum);
   const pat=[["sleep","short sleep"],["temp","raised temperature"],["hr","high heart rate"],["act","low exercise"]].filter(p=>cnt(p[0])>=Math.ceil(n/2)).map(p=>p[1]);
@@ -818,10 +842,10 @@ function drawCD(){
   $("cdName").textContent=c.n;$("cdRole").textContent=c.r+" · last data "+age(c.sm);
   $("cdTag").className="tag "+s[0];$("cdTag").textContent=s[1];
   $("cdWhy").textContent=f.length?reason(c):"No flags. All readings are in range.";
-  const tr=[["hr","Heart rate","bpm","Flag above 74",0],["sleep","Sleep","h","Target 7 h",1],["temp","Skin temperature","°C","Flag at 37.3 or above",2],["act","Very active","min","Programme 45 min",0],["glu","Blood glucose","mg/dL","Target 70–140",0]];
-  const g=tr.map(t=>{const v=ser7(c,t[0]),d=c[t[0]]-c.b[t[0]],dd=t[0]==="temp"?2:1;return`<div class="card m"><div class="top"><span>${t[1]}</span>${fk.has(t[0])?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${c[t[0]]} <small>${t[2]}</small></div><div class="spark">${sp(v)}<span>7 days</span></div><p class="note">Own baseline ${c.b[t[0]]}, now ${d>=0?"+":""}${d.toFixed(dd)}. ${t[3]}.</p></div>`}).join("");
+  const tr=[["hr","Heart rate","bpm","Flag above 74",0],["sleep","Sleep","h","Target 7 h",1],["temp","Skin temperature","°C","Flag at 37.3 or above",2],["act","Very active","min","Programme 45 min",0],["glu","Blood glucose","mg/dL","Target 70–140",0]],TI={hr:"heart",sleep:"moon",temp:"temp",act:"bolt",glu:"drop"},OI=["drop","rad","rad","ok","clock"];
+  const g=tr.map(t=>{const v=ser7(c,t[0]),d=c[t[0]]-c.b[t[0]],dd=t[0]==="temp"?2:1;return`<div class="card m ptile"><div class="top"><span class="pic">${ico(TI[t[0]])}</span><span class="pn">${t[1]}</span>${fk.has(t[0])?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${c[t[0]]} <small>${t[2]}</small></div><div class="spark">${sp(v)}<span>7 days</span></div><p class="note">Own baseline ${c.b[t[0]]}, now ${d>=0?"+":""}${d.toFixed(dd)}. ${t[3]}.</p></div>`}).join("");
   const o=[["SpO2",c.spo2+"%","Flag below 95%",fk.has("spo2")],["Radiation today",c.dose+" mSv","Daily reading",0],["Total radiation dose",c.cum+" mSv","No limit set yet. Add one with its source.",0],["Checklist",c.chk+" of "+Q.length,"Done today",0],["Last data",age(c.sm),"Flag after 1 hour",fk.has("sync")]];
-  $("cdGrid").innerHTML=g+o.map(m=>`<div class="card m"><div class="top"><span>${m[0]}</span>${m[3]?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${m[1]}</div><p class="note">${m[2]}</p></div>`).join("");
+  $("cdGrid").innerHTML=g+o.map((m,i)=>`<div class="card m ptile"><div class="top"><span class="pic">${ico(OI[i])}</span><span class="pn">${m[0]}</span>${m[3]?'<span class="tag warn">Flag</span>':""}</div><div class="val" style="font-size:24px">${m[1]}</div><p class="note">${m[2]}</p></div>`).join("");
   $("cdSeal").textContent="Habitat sealed for the solar flare: "+(c.seal?"yes":"not yet")+". Mood is private to the crew member.";
   $("cdAct").innerHTML=f.length?(rvw[c.n]?'<button type="button" data-a="re">Reopen</button>':'<input id="cdNote" type="text" placeholder="Note (optional)" aria-label="Review note" style="font:inherit;min-height:44px;flex:1;min-width:160px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:transparent;color:var(--ink)"><button type="button" data-a="rv">Mark reviewed</button>'):"";
 }
