@@ -312,6 +312,42 @@ In the pitch, name each pain point and answer it, in this order, two lines each:
     - Problem: eyes, bone, heart and kidneys change over a long mission, and NASA rates them red for a long Mars mission.
     - Our answer: the panel tracks exercise, the main countermeasure, and heart rate, and keeps every history. The alerts for eyes and bone are defined and waiting for data.
 
+### Pitch: the story (draft, 15 Nov)
+
+A draft by Adolfo, in his own words, put in the order of a classic pitch. It is not final: he organises it on Sunday. The points he was not sure about are marked "Open".
+
+**1. Hook: a normal day on the way to Mars**
+
+- Imagine you are on your way to Mars, happily, and all thanks to our new app.
+- An app where you see how you wake up, how you train and how you feel. And you learn about your health every day.
+
+**2. The problem arrives**
+
+- One day you notice a small, mild symptom. For example, blood in your urine.
+- Suddenly something warns you in your system. A machine learning model has detected several anomalies, and it has told the doctor on board and the commander.
+
+**3. The solution, as the story goes on**
+
+- The doctor comes and wants to know what is wrong with you. He has nothing at hand to guide him, so he uses our AI system, which guides him by voice through the steps to take.
+- As it does, the AI collects the clear data of the conversation. It will send it, together with what the machine learning model found, when there is a connection to Earth.
+    - Open: maybe this goes earlier in the story.
+- Thanks to this the doctor can treat the patient in time and avoid an imminent sepsis.
+
+**4. How it works: what was behind the story**
+
+- All this was thanks to a system that starts by collecting all the data of the astronaut, from different sources, in one server on board.
+- Then, with several models that predict anomalies, and rules based on guidelines and scientific evidence, we can get ahead of health anomalies. The system always suggests that the doctor does a check, just in case. The models would also report a level of confidence.
+- And to help the doctor day to day, he can lean on these models for his tasks: an easy way to take medical notes, which matter for astronauts, and a guide through the procedures set by the ISS or by the official clinical guidelines.
+
+**5. To say at some point**
+
+Open: where each one goes. Maybe along the story.
+
+- The astronaut can look up more about each biomarker.
+- We use real NASA data, the data that is public.
+- The next steps.
+- The problems we want to solve, or that the crew will meet.
+
 ## 8. On-site research for the MVP design
 
 [image]
