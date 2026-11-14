@@ -1,3 +1,4 @@
+import { ConversationProvider } from '@elevenlabs/react'
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../../components/Icon.tsx'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
@@ -9,6 +10,8 @@ import { endEmergency, goToStep } from '../../lib/emergency.ts'
 import type { Emergency } from '../../lib/emergency.ts'
 import { PROCEDURE_BY_EVENT, getAudioPath, getNarration } from '../../lib/procedures.ts'
 import type { Procedure, ProcedureStep } from '../../lib/procedures.ts'
+import { useVoiceAgent } from './useVoiceAgent.ts'
+import type { VoiceAgentState } from './useVoiceAgent.ts'
 
 const PROCEDURE = PROCEDURE_BY_EVENT.cardiac
 // Alerts whose procedure is not in the app yet, so the screen is honest about what it covers
@@ -81,7 +84,9 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
         </button>
       </header>
       {crewMember.role === 'medical_officer' ? (
-        <Guide procedure={PROCEDURE} emergency={emergency} />
+        <ConversationProvider>
+          <Guide procedure={PROCEDURE} emergency={emergency} />
+        </ConversationProvider>
       ) : (
         <Status procedure={PROCEDURE} emergency={emergency} isCommander={crewMember.role === 'commander'} />
       )}
@@ -179,8 +184,11 @@ function findStep(procedure: Procedure, stepId: string | null): ProcedureStep {
 function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emergency }) {
   const step = findStep(procedure, emergency.stepId ?? procedure.firstStepId)
   const [voiceOn, setVoiceOn] = useState(true)
+  const agent = useVoiceAgent(procedure, step)
+  // The recorded voice and the spoken commands are the fallback: they work when the agent does not
+  const agentHasTheVoice = agent.state === 'live' || agent.state === 'starting'
   const { listening, heard, toggleListening, canListen } = useVoiceCommands(step)
-  const replay = useNarration(procedure, step, voiceOn)
+  const replay = useNarration(procedure, step, voiceOn && !agentHasTheVoice)
 
   // The first step starts when the guide opens
   useEffect(() => {
@@ -192,19 +200,29 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
       <div className="guide-top">
         <span className="chip chip-alert">{step.block}</span>
         <div className="guide-controls">
-          <button className="ghost" onClick={replay}>
-            Repeat
+          <button className="ghost" aria-pressed={agentHasTheVoice} onClick={agent.toggle}>
+            {agentHasTheVoice ? 'Stop talking' : 'Talk to the guide'}
           </button>
-          <button className="ghost" aria-pressed={voiceOn} onClick={() => setVoiceOn(!voiceOn)}>
-            Voice {voiceOn ? 'on' : 'off'}
-          </button>
-          {canListen && (
-            <button className="ghost" aria-pressed={listening} onClick={toggleListening}>
-              {listening ? 'Listening' : 'Voice commands'}
-            </button>
+          {!agentHasTheVoice && (
+            <>
+              <button className="ghost" onClick={replay}>
+                Repeat
+              </button>
+              <button className="ghost" aria-pressed={voiceOn} onClick={() => setVoiceOn(!voiceOn)}>
+                Voice {voiceOn ? 'on' : 'off'}
+              </button>
+              {canListen && (
+                <button className="ghost" aria-pressed={listening} onClick={toggleListening}>
+                  {listening ? 'Listening' : 'Voice commands'}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
+      <p className={`agent-status agent-status-${agent.state}`} role="status">
+        {describeAgent(agent.state, agent.isSpeaking)}
+      </p>
       <h2 className="guide-title">{step.title}</h2>
       <div className="guide-body">
         <ol className="guide-lines">
@@ -242,6 +260,13 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
       )}
     </section>
   )
+}
+
+function describeAgent(state: VoiceAgentState, isSpeaking: boolean): string {
+  if (state === 'starting') return 'Connecting the voice guide'
+  if (state === 'live') return isSpeaking ? 'The guide is speaking. Talk over it to interrupt.' : 'The guide is listening'
+  if (state === 'unavailable') return 'Voice guide not reachable. The recorded voice reads each step.'
+  return 'Voice guide off. The recorded voice reads each step.'
 }
 
 // Plays the recorded audio of the step. Without the file, the browser's own voice reads the same text.

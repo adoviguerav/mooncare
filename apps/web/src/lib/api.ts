@@ -99,3 +99,17 @@ export async function saveCheckin(crewMemberId: number, date: string, moods: Moo
   }
   return (await response.json()) as Checkin
 }
+
+// A signed URL that opens one conversation with the voice agent of the emergency guide.
+// It fails when the server has no agent set up or the network is slow or down.
+const VOICE_SESSION_TIMEOUT_MS = 5000
+
+export async function createVoiceSession(): Promise<string> {
+  const path = '/api/emergency/voice-session'
+  const response = await fetch(path, { method: 'POST', signal: AbortSignal.timeout(VOICE_SESSION_TIMEOUT_MS) })
+  if (!response.ok) {
+    throw new Error(`${path} returned ${response.status}`)
+  }
+  const { signed_url } = (await response.json()) as { signed_url: string }
+  return signed_url
+}

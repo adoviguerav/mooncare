@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     # Signing in still works. True makes every endpoint ask for a signed-in user
     auth_required: bool = False
 
+    # The voice agent of the emergency guide. Without both, the guide uses its recorded audio.
+    elevenlabs_api_key: str | None = None
+    elevenlabs_agent_id: str | None = None
+
     @model_validator(mode="after")
     def require_the_url_of_the_chosen_provider(self) -> "Settings":
         if self.database_url is None:

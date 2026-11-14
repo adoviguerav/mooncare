@@ -15,6 +15,7 @@ from app.baseline import BASELINE_WINDOW_DAYS, find_baseline_limit
 from app.db import DbSession
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.sync_routes import router as sync_router
+from app.voice import router as voice_router
 from app.schemas import (
     BrokenRule,
     Checkin,
@@ -136,6 +137,7 @@ app = FastAPI(title="Real Telemetry API")
 app.include_router(auth_router)  # /api/auth: sign-in. Every other endpoint needs a signed-in user
 app.include_router(sync_router)  # /api/node and /api/sync: moon-earth synchronisation
 app.include_router(daily_router)  # /api/crew/{id}/tasks: the daily checklist, XP, level and streak
+app.include_router(voice_router)  # /api/emergency/voice-session: the voice agent of the emergency guide
 
 
 @app.get("/api/crew")

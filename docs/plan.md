@@ -130,6 +130,7 @@ Tasks:
     - The voice: one audio file per step, written once with ElevenLabs by `apps/web/scripts/generate-emergency-audio.mjs` and kept in the repo, so the app needs no key and no network. Without the files, the browser's own voice reads the same text.
     - Done when: starting the simulation and opening the medical officer's profile leads from the alert to the last block.
 - [x] **E2. The steps**, copied word for word from NASA's Emergency Medical Procedures Manual for the ISS, procedure 1.102 AED ASSISTED CPR (09 APR 15, released under FOIA 16-JSC-F-00174), with its Figure 1. They are in `apps/web/src/lib/procedures.ts`. The manual Adolfo has is partial and has no chest pain procedure: the guide starts when the patient is unresponsive. Procedure 1.103 (ALS algorithm), where 1.102 hands over, is not loaded.
+- [ ] **E4. A voice agent the medical officer talks with.** Built on 14 Nov, not yet heard: the ElevenLabs key lacks the ElevenAgents permission, so the agent is not created. It replaces the recorded voice when there is a network: it talks in real time, can be interrupted, and moves the guide when she answers. Its instructions are built from `procedures.ts`. Without it, the recorded voice and the buttons work as before. To finish: give the key the permission, run `apps/web/scripts/create-emergency-agent.mjs`, set `ELEVENLABS_AGENT_ID`, and test it with a microphone.
 - [ ] **E3. Update the documents**: R9 in the System_design and the demo script (P8).
 
 Looked at and left for the landing and the pitch, as next steps:
