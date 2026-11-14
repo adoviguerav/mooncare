@@ -217,6 +217,23 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 #tabs button:active svg{transform:scale(.92)}
 #tabs button:focus-visible{outline-offset:-4px;border-radius:20px}
 #tabs{background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(8,22,42,.7)}
+
+.sec{margin:22px 0 10px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.ptiles{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:8px}
+@media(min-width:560px){.ptiles{grid-template-columns:repeat(2,1fr)}}@media(min-width:960px){.ptiles{grid-template-columns:repeat(4,1fr)}}
+.ptile .top{display:flex;align-items:center;gap:10px}.ptile .pn{flex:1;font-size:13px;color:var(--mute)}
+.pic{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;flex:none;color:var(--cy);background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.04));border:1px solid var(--gl-line);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(47,216,255,.15)}
+.ptile.w{border-color:var(--warn)}.ptile.w .pic{color:var(--warn);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(255,184,74,.3)}
+.ptile:hover{transform:translateY(-2px)}.ptile{transition:transform .2s,border-color .2s}
+.fresh{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mute);margin-top:6px}.fresh .chv{margin-left:auto;color:var(--cy)}
+.ld{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(59,224,160,.6);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(59,224,160,0)}100%{box-shadow:0 0 0 0 rgba(59,224,160,0)}}
+@media(prefers-reduced-motion:reduce){.ld{animation:none}}
+.lchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent)}.lchip.w{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent);border-color:var(--warn)}
+.pgl{display:flex;align-items:center;gap:12px;width:100%;font:inherit;color:var(--ink);cursor:pointer;min-height:56px;padding:8px 12px;border-radius:16px;border:1px solid var(--gl-line);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02))}.pgl .chv{color:var(--cy)}
+.plock{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px;color:var(--mute)}.plock svg{flex:none;margin-top:2px}
+#paramPage{max-width:1080px;margin:-4px auto 0;padding:0 16px 110px;position:relative;z-index:1}
+#crewApp{padding-bottom:0!important}#home{padding-bottom:110px}#paramPage{margin-top:0}
 </style>
 </head>
 <body>
@@ -294,6 +311,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <h2>All crew</h2>
   <div class="chips" id="aChips" role="group" aria-label="Filter crew"></div>
   <div class="card scroll" style="padding:6px"><table class="ptab" id="aTable"></table></div>
+  <details class="card" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center">Clinical parameter table (all 21)</summary><p class="note">Every monitored parameter with its module, priority and status. Demo values for the profile open on the crew side.</p><div class="scroll"><table class="ptab" id="aParams"></table></div></details>
   <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Eva’s and Dr. Mori’s rows are live from their crew dashboards; the other crew are demo data.</p>
 </div>
 <section id="cdPage" role="dialog" aria-modal="true" aria-label="Crew member detail" hidden>
@@ -426,11 +444,13 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   </div>
 </section>
 <section id="paramPage" hidden>
-  <h2>Health parameters</h2>
-  <p class="note" style="margin-top:-6px">Monitored parameters with their current readings and status. Priority runs from L1 (severe) to L4. Readings are demo values.</p>
-  <div class="chips" id="pchips"></div>
-  <div class="card scroll" style="margin-bottom:16px;padding:6px"><table class="ptab" id="ptable"></table></div>
-  <div class="grid" id="pcards"></div>
+  <h2>Your data</h2>
+  <p class="note" id="pSum" style="margin-top:-6px"></p>
+  <h3 class="sec">Today</h3>
+  <div class="ptiles" id="ptiles"></div>
+  <h3 class="sec">Periodic checks</h3>
+  <div class="card" id="plabs"></div>
+  <p class="note">Readings are demo values. Tap a tile with a chart icon to see its history.</p>
 </section>
 <section id="alertsPage" role="dialog" aria-modal="true" aria-label="Potential incident warning" hidden>
   <div class="inc card">
@@ -491,9 +511,9 @@ const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const st={};const inc={ack:false,done:[true,false,false,false]};
 let ME=0;
 const PD=[
- {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
+ {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
   bs:{"Heart rate":[66,72,4],"Sleep duration":[7.3,8.25,.6],"Body temperature":[36.6,36.6,.12],"Exercise":[44,18,12],"Blood glucose":[94,94,8]}},
- {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
+ {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
   bs:{"Heart rate":[62,62,3],"Sleep duration":[7.5,7.6,.5],"Body temperature":[36.5,36.5,.1],"Exercise":[50,52,8],"Blood glucose":[90,90,6]},
   ex:{'Heart rate':[['Resting HR','62 bpm'],['HRV (RMSSD)','56 ms'],['Recovery, 1 min','28 bpm drop'],['SpO2','99%'],['Breathing rate','13 /min'],['Baseline','62 bpm']],'Sleep duration':[['Efficiency','91%'],['Deep','18%'],['REM','22%'],['Awake','9%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.5 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','7,880'],['Very active','52 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','90 mg/dL'],['Target','70–140'],['Last reading','06:35']]}}
 ];
@@ -654,21 +674,57 @@ const P2=[
 ['Cardiovascular fitness','CARDIO','L3','VO2max 46 (estimated)','ok','Reduced cardiovascular fitness. Review conditioning and tolerance.','Wearable ECG or HR monitor in a standard exercise.','5 daily · filteredDemographicVO2Max (estimated by the watch). ASTRA-HEALTH defines this alert by HR and recovery in a standard exercise, which this estimate does not measure directly. Real, Earth.'],
 ['Anxiety and affect questionnaires','MIND','L3','Not due this week','ok','Anxiety symptoms. Rising scores. Confidential psychological support.','GAD-7 and PHQ-9 on the tablet, weekly or periodically.','5 surveys · stai_stress and positive_affect_score, negative_affect_score. Different questionnaires (STAI, PANAS), no depression score. Real, Earth.']];
 function tg(s){return s==='ok'?'<span class="tag ok">Nominal</span>':s==='warn'?'<span class="tag warn">Alert</span>':'<span class="tag" style="background:var(--line);color:var(--mute)">No alert defined</span>'}
-function drawMore(){
-  $('ptable').innerHTML='<tr><th>Parameter</th><th>Module</th><th>Priority</th><th>Reading</th><th>Status</th></tr>'+P2.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${tg(p[4])}</td></tr>`).join('');
-  $('pcards').innerHTML=P2.map(p=>`<article class="card m"><div class="top"><span>${p[1]} · priority ${p[2]}</span>${tg(p[4])}</div><h3>${p[0]}</h3><div class="val" style="font-size:20px">${p[3]}</div></article>`).join('');
-}
-$('pchips').onclick=e=>{const b=e.target.closest('button');if(b){pv=b.dataset.v;drawParams()}};
+const IC={
+ heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
+ moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><path d="M16 4v3M14.5 5.5h3"/>',
+ temp:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z"/><path d="M12 9v7"/>',
+ drop:'<path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
+ wind:'<path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/>',
+ bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/>',
+ batt:'<rect x="3" y="8" width="16" height="9" rx="2.5"/><path d="M21 11v3"/><path d="M7 12.5h4"/>',
+ rad:'<circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g>',
+ flask:'<path d="M9 3h6M10 3v6L5 18.5A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+ ok:'<circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/>',
+ chart:'<path d="M4 18 9 12l4 3 7-9"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
+};
+const ico=(k,s)=>`<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+function dl(v,b,d){const x=v-b;return(x>0?"▲ ":x<0?"▼ ":"● ")+Math.abs(x).toFixed(d||0)+" vs your baseline"}
+function ptiles(){const d=PD[ME],c=CREW[ME],bs=d.bs;
+  return[
+   {ic:"heart",n:"Heart rate",v:'<span data-live="hr">'+M[0].val+'</span>',u:"bpm",st:M[0].test(M[0])?"warn":"ok",sub:dl(M[0].val,M[0].base)+" · HRV "+d.hrv+" ms",fr:"live",i:0},
+   {ic:"moon",n:"Sleep",v:M[1].val,u:"h",st:M[1].test(M[1])?"warn":"ok",sub:"REM "+d.stages[0]+"% · Deep "+d.stages[1]+"% · Awake "+d.stages[3]+"%",fr:"Last night",i:1},
+   {ic:"temp",n:"Skin temperature",v:M[3].val,u:"°C",st:M[3].test(M[3])?"warn":"ok",sub:dl(M[3].val,bs["Body temperature"][0],2),fr:"Overnight",i:3},
+   {ic:"drop",n:"Blood oxygen",v:'<span data-live="spo2">'+d.spo2+'</span>',u:"%",st:d.spo2<95?"warn":"ok",sub:"Alert below 95%",fr:"live"},
+   {ic:"wind",n:"Breathing rate",v:'<span data-live="br">'+d.br+'</span>',u:"/min",st:"na",sub:"Measured asleep · no limit set yet",fr:"Overnight"},
+   {ic:"bolt",n:"Activity",v:M[4].val,u:"very active min",st:M[4].test(M[4])?"warn":"ok",sub:"Programme target 45 min",fr:"Today",i:4},
+   {ic:"batt",n:"Stress and fatigue",v:d.stress,u:"stress score",st:"na",sub:d.fat+" · no limit set yet",fr:"Today"},
+   {ic:"rad",n:"Radiation dose",v:d.dose.split(" ")[0],u:"mSv today",st:"na",sub:"Total "+c.cum+" mSv · no limit set yet",fr:"live"}
+  ]}
+const PST={ok:'<span class="tag ok">Nominal</span>',warn:'<span class="tag warn">Alert</span>',na:'<span class="tag" style="background:var(--line);color:var(--mute)">Tracked</span>'};
 function drawParams(){
-  $('pchips').innerHTML=[['core','Core 6'],['more','Labs and advanced (15)']].map(x=>`<button aria-pressed="${pv===x[0]}" data-v="${x[0]}">${x[1]}</button>`).join('');
-  if(pv==='core')drawCore();else drawMore();
-}
-function drawCore(){
-  $("ptable").innerHTML="<tr><th>Parameter</th><th>Module</th><th>Priority</th><th>Reading</th><th>Status</th></tr>"+M.map(m=>{const a=m.test(m);return `<tr><td>${m.name}</td><td>${m.mod}</td><td>${m.pri}</td><td>${m.val} ${m.unit}</td><td><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></td></tr>`}).join("");
-  $("pcards").innerHTML=M.map(m=>{const a=m.test(m);return `<article class="card m"><div class="top"><span>${m.mod} · priority ${m.pri}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div><h3>${m.name}</h3><div class="val">${m.val} <small>${m.unit}</small></div><p class="note">${m.msg}</p></article>`}).join("");
-}
+  const T=ptiles().sort((a,b)=>(b.st==="warn")-(a.st==="warn")),w=T.filter(t=>t.st==="warn").length,nom=T.filter(t=>t.st==="ok").length,na=T.filter(t=>t.st==="na").length;
+  $("pSum").textContent=w?w+" to review, "+nom+" nominal, "+na+" tracked without a limit. Worst first.":nom+" nominal, "+na+" tracked without a limit yet. Nothing to review.";
+  $("ptiles").innerHTML=T.map(t=>`<article class="card m ptile${t.st==="warn"?" w":""}" ${t.i!==undefined?`tabindex="0" role="button" data-i="${t.i}" aria-label="Open ${t.n} history" style="cursor:pointer"`:""}>
+    <div class="top"><span class="pic">${ico(t.ic)}</span><span class="pn">${t.n}</span>${PST[t.st]}</div>
+    <div class="val">${t.v} <small>${t.u}</small></div>
+    <p class="note">${t.sub}</p>
+    <div class="fresh">${t.fr==="live"?'<i class="ld"></i>Live':t.fr}${t.i!==undefined?'<span class="chv">'+ico("chart",16)+'</span>':""}</div></article>`).join("");
+  const g=M[5],gst=g.test(g);
+  const labs=[["Blood count",1],["Inflammation",2],["Electrolytes",3],["Kidney",4],["Nutrition",5]];
+  $("plabs").innerHTML=`<div class="top" style="display:flex;gap:10px;align-items:center"><span class="pic">${ico("flask")}</span><div><b>Blood tests</b><div class="note" style="margin:0">Last draw Sol 241 · next draw in 12 sols (demo)</div></div></div>
+   <div class="chips" style="margin:12px 0 4px">${labs.map(l=>`<span class="lchip ${P2[l[1]][4]==="ok"?"":"w"}">${ico("ok",16)}${l[0]}</span>`).join("")}</div>
+   <p class="note" style="margin:6px 0 12px">All panels in range. The values themselves stay with your flight surgeon, who will talk to you if anything needs action.</p>
+   <button class="pgl ptile" type="button" data-i="5" aria-label="Open blood glucose history"><span class="pic">${ico("drop")}</span><span style="flex:1;text-align:left"><b>Blood glucose</b><span class="note" style="display:block;margin:0">${g.val} mg/dL · target 70–140</span></span>${PST[gst?"warn":"ok"]}<span class="chv">${ico("chart",16)}</span></button>
+   <div class="plock">${ico("lock",16)}<span>Questionnaires: not due this week. Your answers are private and never shown to others.</span></div>`}
+function allParams(){
+  const r=[...M.map(m=>{const a=m.test(m);return[m.name,m.mod,m.pri,m.val+" "+m.unit,a?"warn":"ok"]}),...P2.map(p=>[p[0],p[1],p[2],p[3],p[4]])];
+  return"<tr><th>Parameter</th><th>Module</th><th>Priority</th><th>Reading</th><th>Status</th></tr>"+r.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${tg(x[4])}</td></tr>`).join("")}
+$("ptiles").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dataset.i)};$("plabs").onclick=e=>{const c=e.target.closest("[data-i]");if(c)openDet(+c.dataset.i)};
+$("ptiles").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest("[data-i]");if(c){e.preventDefault();openDet(+c.dataset.i)}}};
+setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME];document.querySelectorAll("[data-live]").forEach(e=>{const k=e.dataset.live;e.textContent=k==="hr"?M[0].val+Math.round(Math.sin(t/4000)*2+(Math.random()-.5)*2):k==="spo2"?d.spo2-(Math.sin(t/9000)>.85?1:0):d.br+(Math.sin(t/6000)>.6?1:0)})},3000);
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
-function route(){const v=view();$("tabs").hidden=v!=="crew";$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
+function route(){const v=view();$("tabs").hidden=v!=="crew";if(v!=="crew")$("paramPage").hidden=true;$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
   if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters";$("home").hidden=p;$("paramPage").hidden=!p;$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
@@ -742,6 +798,7 @@ function ser7(c,key){const b=c.b[key],cur=c[key];let h=0;for(const ch of c.n+key
   return[0,1,2,3,4,5,6].map(i=>{if(i===6)return cur;h=(h*131+7)%9973;return b+(cur-b)*Math.pow(i/6,1.6)+(h/9973-.5)*2*amp})}
 function sp(v){const mn=Math.min(...v),r=Math.max(...v)-mn||1;return`<svg viewBox="0 0 84 24" width="84" height="24" aria-hidden="true"><polyline points="${v.map((x,i)=>i*14+","+(22-(x-mn)/r*20)).join(" ")}" fill="none" stroke="var(--cy)" stroke-width="2"/></svg>`}
 function drawAdmin(){
+  $("aParams").innerHTML=allParams();
   const rows=CREW.map(crow),n=rows.length;
   const queue=rows.map((c,i)=>[c,i]).filter(([c])=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b[0])-sev(a[0]));
   const unseen=queue.filter(([c])=>!seen[c.n]).length,nosync=rows.filter(c=>c.sm>60).length,sealed=rows.filter(c=>c.seal).length;
