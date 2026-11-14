@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Icon } from '../../components/Icon.tsx'
 import type { IconName } from '../../components/Icon.tsx'
+import { MoodFace } from '../../components/MoodFace.tsx'
 import { Sparkline } from '../../components/Sparkline.tsx'
 import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
@@ -12,10 +13,11 @@ import {
   DAILY_VITAL_IDS,
   GROUPS,
   MOOD_DAY_COUNT_IDS,
+  MOOD_ORDER,
   MOOD_PREFIX,
   OTHER_GROUP,
   SPARKLINE_DAYS,
-  getGroupOf,
+  getIconOf,
 } from '../../lib/groups.ts'
 import type { Group } from '../../lib/groups.ts'
 import { useApi } from '../../hooks/useApi.ts'
@@ -70,7 +72,9 @@ function PanelContent({ crewMember, onOpenIndicator, onSwitchProfile, onCheckinS
   const indicators = panel?.indicators ?? []
   const isMoodDayCount = (indicator: PanelIndicator) => MOOD_DAY_COUNT_IDS.includes(indicator.id)
   const isMood = (indicator: PanelIndicator) => indicator.id.startsWith(MOOD_PREFIX) && !isMoodDayCount(indicator)
-  const moods = indicators.filter(isMood)
+  const moods = indicators
+    .filter(isMood)
+    .toSorted((a, b) => MOOD_ORDER.indexOf(a.id) - MOOD_ORDER.indexOf(b.id))
   const moodDayCounts = indicators.filter(isMoodDayCount)
   const measurements = indicators.filter((indicator) => !isMood(indicator) && !isMoodDayCount(indicator))
   const alerts = indicators.filter((indicator) => indicator.broken_rule !== null)
@@ -189,7 +193,15 @@ function TodayTab({
           />
         ) : (
           <div className="checkin-done">
-            <p className="checkin-answer">{chosenToday.map((mood) => mood.name).join(', ') || 'No mood chosen'}</p>
+            <div className="checkin-answer">
+              {chosenToday.length === 0 && <span>No mood chosen</span>}
+              {chosenToday.map((mood) => (
+                <span key={mood.id} className="checkin-mood">
+                  <MoodFace moodId={mood.id} size={36} />
+                  {mood.name}
+                </span>
+              ))}
+            </div>
             <button className="ghost" onClick={() => setEditingCheckin(true)}>
               Change
             </button>
@@ -368,7 +380,7 @@ function AlertsTab({ alerts, onOpenIndicator }: AlertsTabProps) {
         <button key={indicator.id} className="card alert-card" onClick={() => onOpenIndicator(indicator.id)}>
           <span className="card-heading">
             <span className="icon-badge icon-badge-alert">
-              <Icon name={getGroupOf(indicator.id).icon} />
+              <Icon name={getIconOf(indicator.id)} />
             </span>
             <span>
               <strong className="alert-title">{indicator.broken_rule?.title}</strong>
@@ -402,7 +414,13 @@ function IndicatorTile({ indicator, onOpen, children }: IndicatorTileProps) {
 
   return (
     <button className={brokenRule === null ? 'tile' : 'tile tile-alert'} onClick={onOpen}>
-      <span className="tile-name">{indicator.name}</span>
+      <span className="tile-head">
+        <span className="tile-icon">
+          <Icon name={getIconOf(indicator.id)} size={16} />
+        </span>
+        <span className="tile-name">{indicator.name}</span>
+        {brokenRule !== null && <span className="chip chip-alert">Out of range</span>}
+      </span>
       {reading === null ? (
         <span className="muted">No reading yet</span>
       ) : (
@@ -414,7 +432,6 @@ function IndicatorTile({ indicator, onOpen, children }: IndicatorTileProps) {
           <span className="tile-age">{formatAge(reading.taken_at, TODAY)}</span>
         </>
       )}
-      {brokenRule !== null && <span className="chip chip-alert">Out of range</span>}
       {children}
     </button>
   )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MoodFace } from '../../components/MoodFace.tsx'
 import { saveCheckin } from '../../lib/api.ts'
 import type { MoodId, PanelIndicator } from '../../lib/api.ts'
 
@@ -41,7 +42,8 @@ export function CheckinForm({ crewMemberId, date, moods, chosenToday, onSaved }:
             aria-pressed={chosen.includes(mood.id)}
             onClick={() => toggle(mood.id)}
           >
-            {mood.name}
+            <MoodFace moodId={mood.id} />
+            <span>{mood.name}</span>
           </button>
         ))}
       </div>

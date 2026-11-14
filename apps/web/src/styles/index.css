@@ -380,16 +380,22 @@ button {
 }
 
 .moods {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
 }
 
 .mood {
-  min-height: var(--tap);
-  padding: 8px 20px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 4px 12px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-tile);
+  font-size: 0.8125rem;
+  line-height: 1.25;
   background: rgb(255 255 255 / 0.04);
   transition:
     transform 0.15s ease,
@@ -404,8 +410,21 @@ button {
 .mood[aria-pressed='true'] {
   border-color: var(--accent);
   background: rgb(47 216 255 / 0.16);
-  color: var(--accent);
-  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.mood-face {
+  flex: none;
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.35));
+  transition: transform 0.2s ease;
+}
+
+.mood:not([aria-pressed='true']) .mood-face {
+  opacity: 0.85;
+}
+
+.mood[aria-pressed='true'] .mood-face {
+  transform: scale(1.08);
 }
 
 .checkin-done {
@@ -416,8 +435,17 @@ button {
 }
 
 .checkin-answer {
-  font-size: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 1.125rem;
   font-weight: 700;
+}
+
+.checkin-mood {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .streak {
@@ -518,8 +546,35 @@ button {
   border-color: rgb(255 184 74 / 0.5);
 }
 
+.tile-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.tile-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  background: rgb(47 216 255 / 0.1);
+  color: var(--accent);
+}
+
+.tile-alert .tile-icon {
+  background: rgb(255 184 74 / 0.12);
+  color: var(--alert);
+}
+
 .tile-name {
+  flex: 1;
+  min-width: 0;
   font-size: 0.8125rem;
+  line-height: 1.3;
   color: var(--mute);
 }
 
@@ -545,9 +600,6 @@ button {
   color: var(--mute);
 }
 
-.tile .chip {
-  margin-top: 6px;
-}
 
 .sparkline {
   width: 100%;
@@ -848,6 +900,14 @@ button {
 
   .tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .moods {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tile-head .chip {
+    display: none;
   }
 
   .status {
