@@ -111,6 +111,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 .wl{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.wl:first-child{border-top:0}
 .lg{padding:6px 0;border-top:1px solid var(--line);font-size:14px}.lg:first-child{border-top:0}
 #cdPage ul{margin:6px 0 0;padding-left:20px}
+#banner{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:45;width:48px;height:48px;min-height:48px;padding:0;border-radius:50%;font-size:24px;line-height:1;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#banner:not(.ok){animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--warn) 55%,transparent)}70%,100%{box-shadow:0 0 0 14px transparent}}
+@media(prefers-reduced-motion:reduce){#banner{animation:none!important}}
+#crewApp>header{padding-right:64px}
 </style>
 </head>
 <body>
@@ -346,7 +351,7 @@ function render(){
   const bad=M.filter(m=>m.test(m)).length;$("sumline").textContent=(M.length-bad)+" of "+M.length+" nominal, worst first. Tap a card to see its history.";
   const b=$("banner");
   b.className="banner"+(inc.ack?" ok":"");
-  b.textContent=inc.ack?"Incident acknowledged":"Caution: potential incident";
+  b.textContent=inc.ack?"✓":"!";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
   $("novaMsg").textContent=alerts.length
     ?"Your sleep was strong, but active minutes are below the prescribed programme. Let’s fit the flywheel workout in before the 14:00 EVA."
     :"All readings look good. Let’s keep your routine steady before the 14:00 EVA.";
@@ -431,7 +436,7 @@ function drawAlerts(){
 $("steps").onchange=e=>{inc.done[+e.target.dataset.i]=e.target.checked;drawAlerts();save()};
 let armed=0;$("seal").onclick=()=>{const b=$("seal");if(!armed){armed=setTimeout(()=>{armed=0;drawAlerts()},4000);b.textContent="Tap again to confirm seal";return}clearTimeout(armed);armed=0;inc.ack=true;inc.done[1]=true;drawAlerts();render();save()};
 $("tele").onclick=e=>{const t=$("telem");t.hidden=!t.hidden;e.currentTarget.setAttribute("aria-expanded",String(!t.hidden))};
-let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=inc.ack||!$("alertsPage").hidden}
+let eta=1122;function tick(){const p=v=>String(v).padStart(2,"0"),t=p(Math.floor(eta/3600))+":"+p(Math.floor(eta%3600/60))+":"+p(eta%60);$("eta").textContent=t;const bar=$("etaBar");bar.textContent="Solar flare impact in "+t+". Review warning";bar.hidden=true}
 setInterval(()=>{if(eta>0)eta--;tick()},1000);
 var pv='core';
 const P2=[
