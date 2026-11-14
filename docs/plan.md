@@ -10,16 +10,17 @@ What we do, milestone by milestone, until we submit. A milestone is finished bef
 Reorganised on 14 Nov. Two decisions behind it:
 
 - All the code is finished today, Saturday 14. Sunday is for the pitch, the video and the submission.
-- The demo is the base platform plus one extra flow: an emergency handled on board with no connection to Earth. That is the main pain point (System_design, section 1, number 2). Following the crew from the ground already exists on the ISS, so the link to the ground goes to the next steps.
+- The platform is finished first: data, backend and frontend. Then the nice to have. Then the emergency flow and the landing.
+- The demo is the base platform plus one extra flow: an emergency handled on board with no connection to Earth. That is the main pain point (System_design, section 1, number 2). Following the crew from the ground already exists on the ISS, so the link to the ground is built but is not the flow we show.
 
 | Milestone | What | State |
 | :-- | :-- | :-- |
 | 0 | The platform works with real data | Done |
 | 1 | The app is online | Done |
-| 2 | The app looks like ours | To do |
-| 3 | One emergency without Earth: chest pain and CPR | To do |
-| 4 | The landing page | To do |
-| 5 | If there is time | To do |
+| 2 | The platform, finished: every dataset loaded and shown, with our look | To do |
+| 3 | The other profiles: flight surgeon and commander | To do |
+| 4 | One emergency without Earth: chest pain and CPR | To do |
+| 5 | The landing page | To do |
 | 6 | Show it | Sunday |
 
 ## Teams
@@ -59,10 +60,33 @@ One link opens the real app. It is the link we give the jury (How to win, sectio
 
 Done when: the link works from a phone outside our network.
 
-## Milestone 2 · The app looks like ours
+## Milestone 2 · The platform, finished
 
-- [ ] **F3. Look of the app.** The design and the Moon Care logo of Becky's prototype (`apps/landing/index.html`), in the real app. Only the look: the prototype's values are invented and stay out.
-    - Done when: someone outside the team can tell at a glance which indicator has an alert.
+Everything the data document has data for is loaded and shown, in an app that looks like ours. Decided on 14 Nov: this comes before the emergency flow.
+
+Data and backend:
+
+- [ ] **N1. Merge the link to the ground of Ivan** (G1, G2). Review it, pass the tests, merge it into `main` and build the Render database again, because it changes the data model.
+    - Done when: the tests pass on `main` and the Vercel link still shows the panel of Crew 1.
+- [ ] **N2. Blood analytes of the Inspiration4 metabolic panel** (data document, Table 2): sodium, potassium, chloride, creatinine, urea, eGFR, albumin and calcium. Each one gets a rule with the normal range the NASA file gives for it, like glucose.
+    - Done when: the panel of Crew 1 on 2021-09-19 shows the potassium alert (3.0 mmol/L, range 3.5 to 5.3).
+- [ ] **N3. The other Inspiration4 blood files** (Table 2): white cells, lymphocytes and haemoglobin; IL-6, TNF-α, IL-1β and IFN-γ; CRP and fibrinogen. These files give no normal range, so they are shown with no rule.
+    - Done when: each one has its card and its history for the four crew members.
+- [ ] **N4. The other LifeSnaps indicators** (Table 2): SpO2, breathing rate, heart rate variability, stress score, fatigue, sleep stages and awakenings, VO2 max and the anxiety and affect questionnaires. Shown with no rule, except VO2 max.
+    - Done when: each one has its card and its history for the four crew members.
+- [ ] **N5. VO2 max rule.** The first rule with a NASA limit: in-mission VO2 max at or above 32.9 mL/kg/min (NASA-STD-3001, V1 4001). The data is the watch's estimate (data document, Reference values from NASA).
+    - Done when: a crew member under the limit shows the alert with its source.
+- [ ] **N6. Radiation dose** (Table 2), from the RadLab dosimeters of the ISS. It is a reading of the ship, not of a person, and the data model stores readings per crew member. To agree how to store it before building it.
+    - Done when: the panel shows the dose rate of the ship and its history.
+
+Frontend:
+
+- [ ] **F3. Look of the app.** The design of Becky's prototype (`apps/landing/index.html`) in the real app: theme, cards, icons, bottom bar and the Moon Care logo. Two rules for what goes in:
+    - What we have data for is shown with the real data. No invented value stays.
+    - What we have no dataset for, but the crew can record on the tablet, goes in as something to record. It starts empty.
+    - Done when: someone outside the team can tell at a glance which indicator has an alert, and no screen shows an invented value.
+- [ ] **F6. Order of the panel.** With about 40 indicators, the panel needs its groups and its order thought again.
+    - Done when: the alerts are first and any indicator is found in two taps.
 - [ ] **F5. History charts** with the limits of the rule drawn, readable on a tablet.
     - Done when: the glucose chart shows the 36 mg/dL reading below the line.
 - [ ] **F4. Mood alert inside the mood card**, not as a card of its own.
@@ -70,15 +94,30 @@ Done when: the link works from a phone outside our network.
 - [ ] **F2. Streak of check-ins**: the days in a row with a check-in, on the mood card.
     - Done when: a check-in today adds one to the streak and it is still there after reloading.
 
-Done when: the four tasks are on the Vercel link.
+Done when: every row of Tables 1 and 2 of the data document is on the Vercel link, with the new look.
 
-## Milestone 3 · One emergency without Earth
+## Milestone 3 · The other profiles
+
+- [ ] **G3. Flight surgeon screen.** It needs N1. The four crew members, who has an alert and when their last data arrived. A tap opens that crew member's full panel. The link switch, "Link with Earth: on or off", is on this screen.
+    - Done when: with the link off, the screen says since when it has no data, and the crew app works as before.
+- [ ] **C1. Commander view.** Decided on 14 Nov: the commander has a button that opens what each of the other crew members sees, read only. No check-in and no changes from there. It changes one line of the System_design, section 6: health data is private day to day, except for the commander.
+    - Done when: Crew 1 opens the panel of Crew 2 and cannot save a check-in for them. Crew 2 has no such button.
+
+What was decided for the link to the ground on 14 Nov:
+
+    - The flight surgeon sees the full panel of each crew member: indicators, history and alerts. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
+    - One way only, ship to ground. The ground looks and does not answer.
+    - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
+
+Done when: the two screens are on the Vercel link.
+
+## Milestone 4 · One emergency without Earth
 
 The scenario of the challenge video: halfway to Mars, a crewmate feels a sharp pain in the chest and collapses. What is happening, and what should the others do? The tablet guides the crew step by step, with no link to Earth.
 
 Decided on 14 Nov: chest pain, then collapse, then CPR. Why: it is the emergency the challenge itself shows, and the procedure is NASA's own.
 
-- **The procedure** is the ISS Medical Checklist (JSC-48522-E4, 2001), sections "Chest pain - acute" and "Cardiopulmonary resuscitation: CPR". It is public: http://web.archive.org/web/20230519222418/https://www.nasa.gov/centers/johnson/pdf/163533main_ISS_Med_CL.pdf
+- **The procedure** is the ISS emergency manual that Adolfo has. If it is not enough, the public ISS Medical Checklist (JSC-48522-E4, 2001), sections "Chest pain - acute" and "Cardiopulmonary resuscitation: CPR". It is public: http://web.archive.org/web/20230519222418/https://www.nasa.gov/centers/johnson/pdf/163533main_ISS_Med_CL.pdf
 - **Why it shows the pain point.** The checklist tells the crew to contact the flight surgeon. Without a link, the tablet is what guides them.
 - **No invented data.** A tap opens the flow, not a reading.
 - **Its limits, said on screen.** The checklist is from 2001. No cardiac arrest in space is on record.
@@ -101,7 +140,7 @@ Looked at and left for the landing and the pitch, as next steps:
 
 Done when: on the Vercel link, one tap opens the guide and it can be followed to the end.
 
-## Milestone 4 · The landing page
+## Milestone 5 · The landing page
 
 Our letter of introduction to the NASA experts. Decided on 14 Nov: two deploys. The app stays on Vercel, from `apps/web`. The landing goes on Netlify, from `apps/landing`, with a button that opens the app.
 
@@ -114,27 +153,10 @@ Our letter of introduction to the NASA experts. Decided on 14 Nov: two deploys. 
     - The team.
     - Datasets and who provides them.
     - How we used AI.
-    - Next steps: the link to the ground and the emergency scenarios of milestone 3 that we did not build.
+    - Next steps: the link to the ground and the emergency scenarios of milestone 4 that we did not build.
 - [ ] **L3. Languages.** English and Spanish, with a switch. Any other language is not decided.
 
 Done when: someone who does not know the project reads the landing, opens the app from it and understands what it is.
-
-## Milestone 5 · If there is time
-
-In this order.
-
-- [ ] **VO2 max rule.** The first rule with a NASA limit: in-mission VO2 max at or above 32.9 mL/kg/min (NASA-STD-3001, V1 4001). The data is the watch's estimate in LifeSnaps (data document, Reference values from NASA).
-- [ ] **Link to the ground** (Ivan). It is not part of the demo flow. If it is not finished, it goes on the architecture slide (P10) and in the next steps of the pitch (P9). Decided on 14 Nov:
-    - The flight surgeon sees the full panel of each crew member: indicators, history and alerts. They are the crew's doctor, as on the ISS. Privacy between crewmates on board does not change.
-    - One way only, ship to ground. The ground looks and does not answer.
-    - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
-    - [ ] **G1. Link switch and queue** (backend). With the link off, new readings are saved on board and wait in a queue. With the link on, the queue empties. Each sync is recorded in the `his` schema. It adds to the data model, so agree it first.
-        - Done when: with the link off, a check-in shows on the crew panel and not on the ground. After turning the link on, the ground shows it.
-    - [ ] **G2. Ground panel** (backend). The same panel and history, built only from what has reached the ground, plus when the last data arrived.
-        - Done when: the ground panel of Crew 1 shows the glucose alert and the time of the last data received.
-    - [ ] **G3. Flight surgeon screen** (frontend). The four crew members, who has an alert and when their last data arrived. A tap opens that crew member's full panel. The link switch is on this screen.
-        - Done when: with the link off, the screen says since when it has no data, and the crew app works as before.
-- [ ] **Commander screen.** The role exists. What the commander sees is not decided (System_design, section 2).
 
 After the hackathon: the onboard AI (E1 to E6 of the System_design), the mobile app and the other stretch goals.
 
