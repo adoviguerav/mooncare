@@ -187,7 +187,7 @@ Sunday 15. Nobody adds features. We only fix what is broken. In this order:
 - [ ] **P4.** List of AI tools and outside resources. The form asks for it.
 - [ ] **P5.** Pick one global award category: Best Use of Science, Best Use of Technology or Best Mission Concept.
 - [ ] **P6.** Write the opening sentence: user, problem and result.
-- [ ] **P8.** Demo script: a normal day, then the glucose alert, then the chest pain and CPR flow.
+- [ ] **P8.** Demo script: a normal day, then the glucose alert, then the possible infection closed with the voice guide and the report that waits for the link.
 - [ ] **P9.** Pitch of 3 minutes with the five pain points (System_design, section 7) and the five judging criteria. It ends with next steps: what we built first and what we left for later.
 - [ ] **P10.** Architecture slide: the target architecture with what is built marked (System_design, section 5).
 - [ ] **P11.** Record the video: 30 seconds at most, with English subtitles. Going over makes us ineligible.
