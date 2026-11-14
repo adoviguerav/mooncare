@@ -85,6 +85,83 @@ INDICATORS = [
         ),
         source_id="lifesnaps",
     ),
+    Indicator(
+        id="resting_heart_rate",
+        name="Resting heart rate",
+        unit="bpm",
+        how_to_measure=(
+            "A wrist tracker or smartwatch works it out once a day from your heart rate while you are still. "
+            "On the ISS, the Bio-Monitor shirt (CSA) records heart rate."
+        ),
+        why_it_matters=(
+            "Your heart rate when you are at rest. If it stays above your usual value, it can point to "
+            "dehydration, infection, stress or a cardiovascular problem."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="very_active_minutes",
+        name="Very active minutes",
+        unit="min",
+        how_to_measure=(
+            "A wrist tracker counts the minutes of intense activity each day. On a mission, the exercise "
+            "sessions are also logged on the tablet."
+        ),
+        why_it_matters=(
+            "Exercise is the main countermeasure against bone and muscle loss in space. This counts general "
+            "intense activity, not only resistance exercise."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="steps",
+        name="Steps",
+        unit="steps",
+        how_to_measure="A wrist tracker counts them each day.",
+        why_it_matters=(
+            "A simple measure of how much you move each day. In microgravity nobody walks, so on a mission "
+            "the exercise log would take its place."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="sleep_duration",
+        name="Sleep duration",
+        unit="min",
+        how_to_measure=(
+            "A wrist tracker measures it every night. On the ISS, astronauts wear NASA's Actiwatch for it."
+        ),
+        why_it_matters=(
+            "How long you were asleep, not how long you were in bed. Too little sleep, night after night, "
+            "lowers attention and mood."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="sleep_efficiency",
+        name="Sleep efficiency",
+        unit="%",
+        how_to_measure="A wrist tracker measures it every night, together with sleep duration.",
+        why_it_matters=(
+            "The share of your time in bed that you spent asleep. A low value means broken sleep, even when "
+            "you were in bed long enough."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="skin_temperature",
+        name="Skin temperature",
+        unit="°C",
+        how_to_measure=(
+            "A wrist tracker measures it during the night. On the ISS, the Bio-Monitor shirt also measures "
+            "skin temperature."
+        ),
+        why_it_matters=(
+            "A rise from your usual value, together with symptoms, can be an early sign of infection. Skin "
+            "temperature is lower than core body temperature, so compare it only with your own values."
+        ),
+        source_id="lifesnaps",
+    ),
 ]
 
 # REVIEW: title, explanation and action are drafts built from docs/parameters_and_datasets.md.

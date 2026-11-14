@@ -4,8 +4,16 @@ from pathlib import Path
 
 import pytest
 
-from seed import CrewPairing, Reading, read_glucose_readings, read_heart_rate_readings, to_sql_literal
-from seed_content import RULES
+from seed import (
+    DAILY_COLUMNS,
+    CrewPairing,
+    Reading,
+    read_daily_readings,
+    read_glucose_readings,
+    read_heart_rate_readings,
+    to_sql_literal,
+)
+from seed_content import INDICATORS, RULES
 
 METABOLIC_PANEL_HEADER = (
     "Sample Name,glucose_value_milligram_per_deciliter,"
@@ -121,6 +129,27 @@ def test_shifts_the_volunteer_days_by_the_crew_offset(tmp_path: Path) -> None:
     assert read_heart_rate_readings(hourly, VOLUNTEER, offset_days=2) == [
         Reading("heart_rate", "2021-11-02T23:00", 64.0)
     ]
+
+
+def test_stores_one_reading_per_day_and_daily_column_of_the_paired_volunteer(tmp_path: Path) -> None:
+    daily = write_csv(
+        tmp_path / "daily.csv",
+        "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
+        f"0,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,\n"
+        f"1,{OTHER_VOLUNTEER},2021-11-02,55.0,30,9000.0,480.0,95.0,33.0\n",
+    )
+
+    assert read_daily_readings(daily, VOLUNTEER, offset_days=1) == [
+        Reading("resting_heart_rate", "2021-11-03T00:00", 68.0),
+        Reading("very_active_minutes", "2021-11-03T00:00", 0.0),
+        Reading("steps", "2021-11-03T00:00", 8122.0),
+        Reading("sleep_duration", "2021-11-03T00:00", 355.0),
+        Reading("sleep_efficiency", "2021-11-03T00:00", 98.0),
+    ]
+
+
+def test_every_daily_indicator_has_its_text_and_source() -> None:
+    assert set(DAILY_COLUMNS) <= {indicator.id for indicator in INDICATORS}
 
 
 @pytest.mark.parametrize(

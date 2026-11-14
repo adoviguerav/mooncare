@@ -15,8 +15,9 @@ POSTGRESQL_DIR="${POSTGRESQL_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 for file in "$POSTGRESQL_DIR"/schema/*.sql "$POSTGRESQL_DIR"/seeds/*.sql; do
   echo "Applying $(basename "$(dirname "$file")")/$(basename "$file")"
   if [ -n "${DATABASE_URL:-}" ]; then
-    psql "$DATABASE_URL" --quiet --no-psqlrc -v ON_ERROR_STOP=1 -f "$file"
+    psql "$DATABASE_URL" --quiet --no-psqlrc --single-transaction -v ON_ERROR_STOP=1 -f "$file"
   else
-    psql --quiet --no-psqlrc -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f "$file"
+    psql --quiet --no-psqlrc --single-transaction -v ON_ERROR_STOP=1 \
+      --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f "$file"
   fi
 done

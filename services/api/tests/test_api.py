@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.main import app
-from seed import CrewPairing
+from seed import DAILY_COLUMNS, CrewPairing
+from seed_content import INDICATORS
 
-LoadSeeds = Callable[[list[CrewPairing], Path, Path], None]
+LoadSeeds = Callable[..., None]
 
 VOLUNTEER = "621e2f9167b776a240011ccb"
 
@@ -32,6 +33,13 @@ HOURLY = (
     f"{VOLUNTEER},2021-11-02,23.0,64.25\n"
     f"{VOLUNTEER},2021-11-03,0.0,58.0\n"
 )
+# Columns in the order of DAILY_COLUMNS: resting_hr, very_active_minutes, steps, minutesAsleep,
+# sleep_efficiency, nightly_temperature. The file starts with an unnamed index column.
+DAILY = (
+    "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
+    f"0,{VOLUNTEER},2021-11-01,68.9,0,7751.0,463.0,99.0,33.58\n"
+    f"1,{VOLUNTEER},2021-11-02,68.0,0,8122.0,355.0,98.0,\n"
+)
 
 LoadClient = Callable[[str], TestClient]
 
@@ -49,7 +57,9 @@ def build_client(tmp_path: Path, load_seeds: LoadSeeds, engine: Engine) -> Itera
         metabolic_panel.write_text(metabolic_panel_rows, encoding="utf-8")
         hourly = tmp_path / "hourly.csv"
         hourly.write_text(HOURLY, encoding="utf-8")
-        load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly)
+        daily = tmp_path / "daily.csv"
+        daily.write_text(DAILY, encoding="utf-8")
+        load_seeds([CrewPairing("Crew 1", "C003", VOLUNTEER)], metabolic_panel, hourly, daily)
         return TestClient(app)
 
     app.dependency_overrides[get_session] = get_test_session
@@ -77,7 +87,8 @@ def test_panel_shows_the_latest_reading_of_each_indicator_with_the_rule_it_break
     assert response.status_code == 200
     panel = response.json()
     assert panel["date"] == "2021-11-02"
-    glucose, heart_rate = panel["indicators"]
+    assert [indicator["id"] for indicator in panel["indicators"]] == [indicator.id for indicator in INDICATORS]
+    glucose, heart_rate = panel["indicators"][:2]
     assert glucose == {
         "id": "glucose",
         "name": "Blood glucose",
@@ -104,9 +115,19 @@ def test_panel_keeps_null_keys_when_there_is_no_reading_yet(client: TestClient) 
     response = client.get("/api/crew/1/panel", params={"date": "2021-01-01"})
 
     assert [(i["id"], i["reading"], i["broken_rule"]) for i in response.json()["indicators"]] == [
-        ("glucose", None, None),
-        ("heart_rate", None, None),
+        (indicator.id, None, None) for indicator in INDICATORS
     ]
+
+
+def test_panel_shows_the_daily_indicators_of_that_day(client: TestClient) -> None:
+    response = client.get("/api/crew/1/panel", params={"date": "2021-11-02"})
+
+    readings = {i["id"]: i["reading"] for i in response.json()["indicators"]}
+    assert readings["resting_heart_rate"] == {"taken_at": "2021-11-02T00:00", "value": 68.0}
+    assert readings["sleep_duration"] == {"taken_at": "2021-11-02T00:00", "value": 355.0}
+    assert readings["steps"] == {"taken_at": "2021-11-02T00:00", "value": 8122.0}
+    # An empty cell on 2021-11-02 leaves the reading of the day before
+    assert readings["skin_temperature"] == {"taken_at": "2021-11-01T00:00", "value": 33.58}
 
 
 def test_panel_carries_the_last_reading_forward_to_later_days(client: TestClient) -> None:
