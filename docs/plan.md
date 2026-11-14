@@ -81,17 +81,17 @@ Data and backend:
 
 Frontend:
 
-- [ ] **F3. Look of the app.** The design of Becky's prototype (`apps/landing/index.html`) in the real app: theme, cards, icons, bottom bar and the Moon Care logo. Two rules for what goes in:
+- [x] **F3. Look of the app.** The design of Becky's prototype (`apps/landing/index.html`) in the real app: theme, cards, icons, bottom bar and the Moon Care logo. Two rules for what goes in: Done on 14 Nov: night theme, glass cards, icons, Moon Care logo and a bottom bar with Today, Data and Alerts. Left out because we have no data for them: XP and levels, the Dr. Nova AI message, blood pressure, the body map, the solar flare alert and the task list. The crew now has names, two women and two men: Eva Lindqvist (commander), Mateo Vargas, Amara Okafor and Liam Novak, in the order of Crew 1 to Crew 4.
     - What we have data for is shown with the real data. No invented value stays.
     - What we have no dataset for, but the crew can record on the tablet, goes in as something to record. It starts empty.
     - Done when: someone outside the team can tell at a glance which indicator has an alert, and no screen shows an invented value.
-- [ ] **F6. Order of the panel.** With about 40 indicators, the panel needs its groups and its order thought again.
+- [x] **F6. Order of the panel.** With about 40 indicators, the panel needs its groups and its order thought again. Done: Today shows the check-in, one line for the alerts and six daily vitals with their last two weeks. Data has ten groups, closed unless one of their values is out of range, each with where its data comes from.
     - Done when: the alerts are first and any indicator is found in two taps.
-- [ ] **F5. History charts** with the limits of the rule drawn, readable on a tablet.
+- [x] **F5. History charts** with the limits of the rule drawn, readable on a tablet.
     - Done when: the glucose chart shows the 36 mg/dL reading below the line.
-- [ ] **F4. Mood alert inside the mood card**, not as a card of its own.
+- [x] **F4. Mood alert inside the mood card**, not as a card of its own.
     - Done when: the tense alert of Crew 2 shows on the mood card with what to do.
-- [ ] **F2. Streak of check-ins**: the days in a row with a check-in, on the mood card.
+- [x] **F2. Streak of check-ins**: the days in a row with a check-in, on the mood card.
     - Done when: a check-in today adds one to the streak and it is still there after reloading.
 
 Done when: every row of Tables 1 and 2 of the data document is on the Vercel link, with the new look.
@@ -139,6 +139,11 @@ Looked at and left for the landing and the pitch, as next steps:
 | Low glucose | Real NASA data sets off the alert. No case in flight, and the three low values come from the same blood draw, so they may be a sample problem. To ask Àngels |
 
 Done when: on the Vercel link, one tap opens the guide and it can be followed to the end.
+
+### If there is time after the emergency
+
+- [ ] **R1. Radiation module: solar flare alert.** Idea from Becky's prototype (`apps/landing/index.html`, the Alerts page): when a solar flare is on its way, the panel shows how far it is, a countdown and the steps to take shelter, different in the base, in the rover and in transit. We have no data for it: the RadLab dose rate shows no spike for the storm of 28 Oct 2021, and there is no public dose rate that triggers an action. It would be a simulated event, and the screen must say so.
+    - Done when: a simulated flare opens the alert with its countdown and its steps, labelled as a simulation.
 
 ## Milestone 5 · The landing page
 

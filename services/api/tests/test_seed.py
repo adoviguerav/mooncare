@@ -248,10 +248,10 @@ def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date(
     panels = [get_latest_values(read_crew_readings(pairing, DATASET_FILES), DEMO_DATE) for pairing in CREW]
 
     assert [(pairing.name, pairing.role) for pairing in CREW] == [
-        ("Crew 1", "commander"),
-        ("Crew 2", "crew_member"),
-        ("Crew 3", "crew_member"),
-        ("Crew 4", "crew_member"),
+        ("Eva Lindqvist", "commander"),
+        ("Mateo Vargas", "crew_member"),
+        ("Amara Okafor", "crew_member"),
+        ("Liam Novak", "crew_member"),
     ]
     for panel in panels:
         assert set(panel) == {indicator.id for indicator in INDICATORS}

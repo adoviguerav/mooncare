@@ -162,10 +162,11 @@ DATASET_FILES = DatasetFiles(
 )
 
 
+# Fictional names, two women and two men. The docs call them Crew 1 to Crew 4, in this order.
 CREW = [
     # -77 days puts the volunteer's last mood entry (2022-01-17) on 2021-11-01, the day before the demo date.
     CrewPairing(
-        "Crew 1",
+        "Eva Lindqvist",
         inspiration4_code="C003",
         lifesnaps_id="621e2f9167b776a240011ccb",
         lifesnaps_offset_days=-77,
@@ -173,19 +174,19 @@ CREW = [
     ),
     # +132 days puts the last day of this volunteer's tense fortnight (2021-06-23) on the demo date.
     CrewPairing(
-        "Crew 2",
+        "Mateo Vargas",
         inspiration4_code="C001",
         lifesnaps_id="621e2fce67b776a240279baa",
         lifesnaps_offset_days=132,
     ),
     CrewPairing(
-        "Crew 3",
+        "Amara Okafor",
         inspiration4_code="C002",
         lifesnaps_id="621e366567b776a24076a727",
         lifesnaps_offset_days=-75,
     ),
     CrewPairing(
-        "Crew 4",
+        "Liam Novak",
         inspiration4_code="C004",
         lifesnaps_id="621e337667b776a240ce78ab",
         lifesnaps_offset_days=98,

@@ -148,7 +148,7 @@ The exact JSON of the three endpoints the base needs. Frontend and backend build
 ```json
 {
   "crew": [
-    { "id": 1, "name": "Crew 1", "role": "commander" }
+    { "id": 1, "name": "Eva Lindqvist", "role": "commander" }
   ]
 }
 ```
@@ -282,8 +282,8 @@ Steps 1 to 3 are the base, and it is built. It shows NASA data, a history and an
 
     | Crew | Inspiration4 | LifeSnaps volunteer | Shift in days | On the demo date |
     | :-- | :-- | :-- | :-- | :-- |
-    | Crew 1 | C003 | 621e2f9167b776a240011ccb | -77 | Glucose 36 mg/dL and a 367-minute night. Check-in pending |
-    | Crew 2 | C001 | 621e2fce67b776a240279baa | +132 | Tense on 13 of the last 14 days. Glucose in range |
-    | Crew 3 | C002 | 621e366567b776a24076a727 | -75 | Glucose 44 mg/dL and a 372-minute night |
-    | Crew 4 | C004 | 621e337667b776a240ce78ab | +98 | Glucose 43 mg/dL. Check-in pending |
+    | Crew 1, Eva Lindqvist | C003 | 621e2f9167b776a240011ccb | -77 | Glucose 36 mg/dL and a 367-minute night. Check-in pending |
+    | Crew 2, Mateo Vargas | C001 | 621e2fce67b776a240279baa | +132 | Tense on 13 of the last 14 days. Glucose in range |
+    | Crew 3, Amara Okafor | C002 | 621e366567b776a24076a727 | -75 | Glucose 44 mg/dL and a 372-minute night |
+    | Crew 4, Liam Novak | C004 | 621e337667b776a240ce78ab | +98 | Glucose 43 mg/dL. Check-in pending |
 - Gamification. Streaks only, computed from the mood readings. Anything else waits for the design owner.

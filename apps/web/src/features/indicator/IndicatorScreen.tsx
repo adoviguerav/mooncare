@@ -1,7 +1,9 @@
+import { Icon } from '../../components/Icon.tsx'
 import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember, Rule } from '../../lib/api.ts'
 import { HISTORY_DAYS, TODAY } from '../../lib/config.ts'
-import { addDays, formatTakenAt, formatValue } from '../../lib/format.ts'
+import { addDays, formatAge, formatTakenAt, formatValue } from '../../lib/format.ts'
+import { getGroupOf } from '../../lib/groups.ts'
 import { HistoryChart } from './HistoryChart.tsx'
 import { useApi } from '../../hooks/useApi.ts'
 
@@ -12,24 +14,40 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
     fetchIndicatorDetail(crewMember.id, indicatorId, addDays(TODAY, -HISTORY_DAYS), TODAY),
   )
 
+  const latest = detail?.readings[detail.readings.length - 1]
+  const origin = getGroupOf(indicatorId).origin
+
   return (
     <main className="screen">
-      <button className="link-button" onClick={onBack}>
-        ← Back to the panel
-      </button>
+      <header className="detail-header">
+        <button className="back" onClick={onBack} aria-label="Back to the panel">
+          <Icon name="back" />
+        </button>
+        <div>
+          <h1>{detail?.indicator.name ?? 'Loading'}</h1>
+          {origin !== '' && <p className="muted">{origin}</p>}
+        </div>
+      </header>
       {error !== null && <p role="alert">Could not load this indicator. {error}</p>}
+      {detail === null && error === null && <div className="card skeleton skeleton-tall" aria-busy="true" />}
       {detail !== null && (
         <>
-          <h1>{detail.indicator.name}</h1>
-
-          <section>
-            <h2>Why it matters</h2>
-            <p>{detail.indicator.why_it_matters}</p>
-            <h2>How to measure it</h2>
-            <p>{detail.indicator.how_to_measure}</p>
+          <section className="card">
+            {latest === undefined ? (
+              <p className="muted">No readings yet.</p>
+            ) : (
+              <>
+                <p className={latest.broken_rule_id === null ? 'detail-value' : 'detail-value is-alert'}>
+                  {formatValue(latest.value, detail.indicator.unit)}
+                </p>
+                <p className="muted">
+                  {formatAge(latest.taken_at, TODAY)}, {formatTakenAt(latest.taken_at)}
+                </p>
+              </>
+            )}
           </section>
 
-          <section>
+          <section className="card">
             <h2>History</h2>
             {detail.readings.length === 0 ? (
               <p className="muted">No readings yet.</p>
@@ -47,8 +65,21 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
             />
           </section>
 
-          <section>
-            <h2>Rules</h2>
+          <section className="card prose">
+            <div>
+              <h3>Why it matters</h3>
+              <p>{detail.indicator.why_it_matters}</p>
+            </div>
+            <div>
+              <h3>How it is measured</h3>
+              <p>{detail.indicator.how_to_measure}</p>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="card-heading">
+              <h2>When it alerts</h2>
+            </div>
             {detail.rules.length === 0 && <p className="muted">This indicator has no alert rule yet.</p>}
             {detail.rules.map((rule) => (
               <div key={rule.id} className="rule">
@@ -63,13 +94,17 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
             ))}
           </section>
 
-          <section>
-            <h2>Data source</h2>
-            <p>
-              <strong>{detail.indicator.source.name}</strong>
-            </p>
-            <p>{detail.indicator.source.citation}</p>
-            <p className="muted">{detail.indicator.source.url}</p>
+          <section className="card prose">
+            <div>
+              <h3>Where this data comes from</h3>
+              <p>
+                <strong>{detail.indicator.source.name}</strong>
+              </p>
+              <p>{detail.indicator.source.citation}</p>
+              <a className="source-link" href={detail.indicator.source.url} target="_blank" rel="noreferrer">
+                {detail.indicator.source.url}
+              </a>
+            </div>
           </section>
         </>
       )}

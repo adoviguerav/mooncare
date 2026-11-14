@@ -9,7 +9,7 @@ const MAX_READINGS_WITH_DOTS = 40
 
 type Props = { name: string; unit: string | null; readings: HistoryReading[]; rules: Rule[] }
 
-// shortcut: a bare SVG line so the base shows a history; replace it when the design picks a chart library.
+// A plain SVG line with the limits of the rules: no chart library.
 export function HistoryChart({ name, unit, readings, rules }: Props) {
   const times = readings.map((reading) => new Date(reading.taken_at).getTime())
   const limits = rules.flatMap((rule) => [rule.low, rule.high]).filter((limit) => limit !== null)
@@ -38,6 +38,14 @@ export function HistoryChart({ name, unit, readings, rules }: Props) {
       role="img"
       aria-label={`${name} history: ${readings.length} readings, ${outOfRangeCount} out of range`}
     >
+      {rules.map((rule) => {
+        // The band of normal values: between the two limits, or from the one limit to the edge of the plot
+        const top = rule.high === null ? MARGIN.top : toY(rule.high)
+        const bottom = rule.low === null ? MARGIN.top + plotHeight : toY(rule.low)
+        return (
+          <rect key={rule.id} className="chart-band" x={MARGIN.left} y={top} width={plotWidth} height={bottom - top} />
+        )
+      })}
       {limits.map((limit) => (
         <g key={limit}>
           <line className="chart-limit" x1={MARGIN.left} x2={WIDTH - MARGIN.right} y1={toY(limit)} y2={toY(limit)} />
