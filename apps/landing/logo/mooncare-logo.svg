@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 540" width="1500" height="1080" role="img" aria-label="Moon Care logo">
+  <rect width="750" height="540" fill="#0b0b0f"/>
+  <g fill="none" stroke="#f4f6fa" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- row 1: M O (moon) N -->
+    <path d="M60 220V80L125 175L190 80V220"/>
+    <ellipse cx="310" cy="150" rx="58" ry="70"/>
+    <circle cx="480" cy="150" r="62" stroke-width="3"/>
+    <path d="M600 220V80L690 220V80"/>
+    <!-- row 2: C A R E -->
+    <path d="M168 338A62 70 0 1 0 168 402"/>
+    <path d="M245 440L295 300L345 440M262 400H328"/>
+    <path d="M440 440V300H490A38 38 0 0 1 490 376H440M490 376L525 440"/>
+    <path d="M680 300H610V440H680M610 370H670"/>
+    <!-- divider -->
+    <path d="M300 500H430" stroke-width="2"/>
+    <path d="M442 490V510M432 500H452" stroke-width="2"/>
+  </g>
+  <!-- lit half of the moon -->
+  <path d="M480 88A62 62 0 0 0 480 212Z" fill="#f4f6fa"/>
+  <g fill="#0b0b0f">
+    <circle cx="452" cy="126" r="9"/>
+    <circle cx="470" cy="106" r="4"/>
+    <circle cx="460" cy="172" r="7"/>
+    <circle cx="444" cy="196" r="4"/>
+    <circle cx="470" cy="148" r="3"/>
+  </g>
+</svg>
