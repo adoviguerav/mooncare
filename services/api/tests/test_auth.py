@@ -24,7 +24,9 @@ Client = Callable[[str], TestClient]
 
 
 def settings_for(role: str) -> Settings:
-    return Settings(_env_file=None, database_provider="postgresql", postgresql_url="unused", node_role=role)  # type: ignore[call-arg]
+    return Settings(  # type: ignore[call-arg]
+        _env_file=None, database_provider="postgresql", postgresql_url="unused", node_role=role, auth_required=True
+    )
 
 
 @pytest.fixture
@@ -225,3 +227,52 @@ def test_the_earth_administrator_sees_the_whole_crew_on_earth(users: dict[str, i
     assert client.get("/api/crew").status_code == 200
     assert client.get("/api/crew/1/panel", params={"date": "2021-11-02"}).status_code == 200
     assert client.put("/api/crew/1/checkins/2021-11-02", json={"moods": []}).status_code == 403
+
+
+# --- The demo, with sign-in not required ---
+
+
+def open_client(client_on: Client) -> TestClient:
+    """The moon server with AUTH_REQUIRED=false, as the public demo runs."""
+    client = client_on("moon")
+    app.dependency_overrides[get_settings] = lambda: Settings(  # type: ignore[call-arg]
+        _env_file=None, database_provider="postgresql", postgresql_url="unused", node_role="moon", auth_required=False
+    )
+    return client
+
+
+def test_without_required_sign_in_anyone_opens_any_panel_and_saves_a_check_in(
+    users: dict[str, int], client_on: Client
+) -> None:
+    client = open_client(client_on)
+
+    assert client.get("/api/crew").status_code == 200
+    assert client.get("/api/crew/2/panel", params={"date": "2021-11-02"}).status_code == 200
+    assert client.put("/api/crew/2/checkins/2021-11-02", json={"moods": ["mood_happy"]}).status_code == 200
+    assert client.get("/api/sync/history").status_code == 200
+
+
+def test_without_required_sign_in_nobody_is_signed_in_until_they_use_their_pin(
+    users: dict[str, int], client_on: Client
+) -> None:
+    client = open_client(client_on)
+
+    not_signed_in = client.get("/api/auth/me")
+    sign_in(client, users["crew"], CREW_PIN)
+    signed_in = client.get("/api/auth/me")
+
+    assert not_signed_in.status_code == 401
+    assert not_signed_in.json() == {"detail": "Not signed in"}
+    assert signed_in.json()["display_name"] == "Crew 2"
+
+
+def test_without_required_sign_in_a_signed_in_crew_member_keeps_their_own_limits(
+    users: dict[str, int], client_on: Client
+) -> None:
+    client = open_client(client_on)
+    sign_in(client, users["crew"], CREW_PIN)
+
+    other_panel = client.get("/api/crew/1/panel", params={"date": "2021-11-02"})
+
+    assert other_panel.status_code == 403
+    assert other_panel.json() == {"detail": "You can only see your own health data"}

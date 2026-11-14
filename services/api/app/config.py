@@ -48,6 +48,9 @@ class Settings(BaseSettings):
 
     # The session cookie is sent over HTTPS only. False for http://localhost, true when deployed
     cookie_secure: bool = False
+    # False opens every endpoint to a caller with no session: the web app of the demo has no sign-in screen.
+    # Signing in still works. True makes every endpoint ask for a signed-in user
+    auth_required: bool = False
 
     @model_validator(mode="after")
     def require_the_url_of_the_chosen_provider(self) -> "Settings":

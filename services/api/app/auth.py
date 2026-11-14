@@ -41,6 +41,8 @@ ROLES_BY_NODE: dict[NodeRole, set[str]] = {
 # member in charge of health on board (System_design, section 1)
 CREW_WIDE_ROLES = {"commander", "medical_officer", "earth_admin"}
 WRONG_PIN = "Wrong name or PIN"
+# The role of a caller with no session when AUTH_REQUIRED is false. Never stored: no user has it
+OPEN_ACCESS_ROLE = "open_access"
 
 _hasher = PasswordHasher()
 
@@ -177,7 +179,7 @@ def set_session_cookie(response: Response, token: str, settings: Settings) -> No
 # --- Who is calling ---
 
 
-def get_current_user(
+def get_signed_in_user(
     session: DbSession,
     settings: SettingsDependency,
     session_cookie: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
@@ -199,12 +201,30 @@ def get_current_user(
     return user_session.user
 
 
+SignedInUser = Annotated[models.AppUser, Depends(get_signed_in_user)]
+
+
+def get_current_user(
+    session: DbSession,
+    settings: SettingsDependency,
+    session_cookie: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
+    authorization: Annotated[str | None, Header()] = None,
+) -> models.AppUser:
+    """The signed-in user or, when sign-in is not required and there is no session, an open-access caller."""
+    try:
+        return get_signed_in_user(session, settings, session_cookie, authorization)
+    except HTTPException:
+        if settings.auth_required:
+            raise
+        return models.AppUser(display_name="Open access", role=OPEN_ACCESS_ROLE, pin_hash="", is_active=True)
+
+
 CurrentUser = Annotated[models.AppUser, Depends(get_current_user)]
 
 
 def require_crew_wide(user: CurrentUser) -> models.AppUser:
     """Commanders on the moon and the earth administrator: the dashboard and the sync."""
-    if user.role not in CREW_WIDE_ROLES:
+    if user.role not in CREW_WIDE_ROLES | {OPEN_ACCESS_ROLE}:
         raise HTTPException(status_code=403, detail="Only the commander, the medical officer or the earth administrator can do this")
     return user
 
@@ -213,14 +233,14 @@ CrewWideUser = Annotated[models.AppUser, Depends(require_crew_wide)]
 
 
 def require_access_to_crew_member(user: models.AppUser, crew_member_id: int) -> None:
-    if user.role in CREW_WIDE_ROLES or user.crew_member_id == crew_member_id:
+    if user.role in CREW_WIDE_ROLES | {OPEN_ACCESS_ROLE} or user.crew_member_id == crew_member_id:
         return
     raise HTTPException(status_code=403, detail="You can only see your own health data")
 
 
 def require_own_crew_member(user: models.AppUser, crew_member_id: int) -> None:
     """Writing a check-in: only the crew member themselves, never on their behalf."""
-    if user.crew_member_id != crew_member_id:
+    if user.role != OPEN_ACCESS_ROLE and user.crew_member_id != crew_member_id:
         raise HTTPException(status_code=403, detail="You can only check in for yourself")
 
 
@@ -270,7 +290,7 @@ def login(request: LoginRequest, response: Response, session: DbSession, setting
 def logout(
     response: Response,
     session: DbSession,
-    user: CurrentUser,
+    user: SignedInUser,
     session_cookie: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
     authorization: Annotated[str | None, Header()] = None,
 ) -> None:
@@ -284,5 +304,5 @@ def logout(
 
 
 @router.get("/me")
-def get_me(user: CurrentUser, settings: SettingsDependency) -> Me:
+def get_me(user: SignedInUser, settings: SettingsDependency) -> Me:
     return to_me(user, settings)
