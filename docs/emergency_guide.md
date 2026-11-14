@@ -68,6 +68,7 @@ node --env-file=../../services/api/.env scripts/generate-emergency-audio.mjs
 | :-- | :-- |
 | Steps and figure | Real, from the NASA manual |
 | Voice | Real audio, recorded ahead |
+| The heart rate chart of the alert | The last 24 hours are the real readings of that crew member. The abnormal readings after them are invented, drawn dashed and labelled as simulated |
 | The event and its detection | Simulated, and the screen says so. A model that detects it from in-flight heart data is not built: there is no open dataset to train it |
 
 ## Where it is in the code

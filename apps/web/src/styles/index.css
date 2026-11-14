@@ -1060,6 +1060,45 @@ button {
   }
 }
 
+.detection-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 4px;
+}
+
+.detection-chart polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.detection-real {
+  stroke: var(--accent);
+}
+
+.detection-simulated {
+  stroke: var(--danger);
+  stroke-dasharray: 6 5;
+}
+
+.detection-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin-top: 8px;
+  font-size: 0.8125rem;
+}
+
+.legend-real {
+  color: var(--accent);
+}
+
+.legend-simulated {
+  color: var(--danger);
+}
+
 .guide {
   display: grid;
   gap: 16px;
@@ -1108,6 +1147,13 @@ button {
   gap: 12px;
   font-size: 1.1875rem;
   line-height: 1.45;
+}
+
+.guide-task {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 1.1875rem;
 }
 
 .guide-figure {

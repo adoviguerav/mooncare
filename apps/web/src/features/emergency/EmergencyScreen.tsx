@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../../components/Icon.tsx'
+import { fetchIndicatorDetail } from '../../lib/api.ts'
 import type { CrewMember } from '../../lib/api.ts'
+import { TODAY } from '../../lib/config.ts'
+import { addDays } from '../../lib/format.ts'
+import { useApi } from '../../hooks/useApi.ts'
 import { endEmergency, goToStep } from '../../lib/emergency.ts'
 import type { Emergency } from '../../lib/emergency.ts'
 import { PROCEDURE_BY_EVENT, getAudioPath, getNarration } from '../../lib/procedures.ts'
@@ -12,6 +16,10 @@ const NOT_LOADED_PROTOCOLS = ['Low glucose', 'Potassium out of range', 'Radiatio
 // The same pace as the recorded audio, which is generated at 1.2 times normal speech
 const FALLBACK_VOICE_RATE = 1.2
 const MS_PER_SECOND = 1000
+// The invented part of the demo: the heart rate the model would have seen, in bpm, after the real readings.
+// It is drawn dashed and labelled as simulated. The real readings before it come from LifeSnaps.
+const SIMULATED_HEART_RATES = [118, 164, 41, 172, 38]
+const DETECTION_CHART = { width: 640, height: 150, padding: 12 }
 const SECONDS_PER_MINUTE = 60
 
 type Props = { crewMember: CrewMember; emergency: Emergency; onOpenPanel: () => void }
@@ -77,17 +85,19 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
       ) : (
         <Status procedure={PROCEDURE} emergency={emergency} isCommander={crewMember.role === 'commander'} />
       )}
+      <Detection emergency={emergency} />
       <details className="card group">
         <summary className="card-heading">
-          <h2>What raised this alert</h2>
+          <h2>About this simulation</h2>
           <span className="group-chevron">
             <Icon name="back" size={18} />
           </span>
         </summary>
         <div className="prose">
           <p>
-            This event is simulated. On a mission, a model trained on in-flight heart data would raise it from the
-            crew member's own readings. That model is not built: there is no open in-flight dataset to train it on.
+            On a mission, a model trained on in-flight heart data would raise this alert from the crew member's own
+            readings. That model is not built: there is no open in-flight dataset to train it on. Here the event is
+            started by hand and the abnormal readings are invented.
           </p>
           <p>
             A heart alert opens {PROCEDURE.title}. Not loaded yet: {NOT_LOADED_PROTOCOLS.join(', ')}.
@@ -96,6 +106,58 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
         </div>
       </details>
     </main>
+  )
+}
+
+// What the model saw: the real heart rate of the last day, then the simulated abnormal readings
+function Detection({ emergency }: { emergency: Emergency }) {
+  const { data: detail } = useApi(() =>
+    fetchIndicatorDetail(emergency.patientId, 'heart_rate', addDays(TODAY, -1), TODAY),
+  )
+  const realRates = detail?.readings.map((reading) => reading.value) ?? []
+  if (realRates.length < 2) return null
+
+  const usualRate = Math.round(realRates.toSorted((a, b) => a - b)[Math.floor(realRates.length / 2)])
+  const rates = [...realRates, ...SIMULATED_HEART_RATES]
+  const lowest = Math.min(...rates)
+  const span = Math.max(...rates) - lowest || 1
+  const { width, height, padding } = DETECTION_CHART
+  const toPoint = (rate: number, index: number) => {
+    const x = padding + (index / (rates.length - 1)) * (width - 2 * padding)
+    const y = height - padding - ((rate - lowest) / span) * (height - 2 * padding)
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }
+  const points = rates.map(toPoint)
+  const firstSimulated = realRates.length - 1
+  const detectedAt = new Date(emergency.startedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+  return (
+    <section className="card">
+      <div className="card-heading">
+        <span className="icon-badge icon-badge-alert">
+          <Icon name="heart" />
+        </span>
+        <div>
+          <h2>What the heart model saw</h2>
+          <p className="origin">Detected at {detectedAt}. Simulated detection.</p>
+        </div>
+      </div>
+      <svg
+        className="detection-chart"
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label={`Heart rate of ${emergency.patientName}: the real readings of the last day, then simulated abnormal readings`}
+      >
+        <polyline className="detection-real" points={points.slice(0, firstSimulated + 1).join(' ')} />
+        <polyline className="detection-simulated" points={points.slice(firstSimulated).join(' ')} />
+      </svg>
+      <p className="detection-legend">
+        <span className="legend-real">Real readings, last 24 hours. Usual value {usualRate} bpm.</span>
+        <span className="legend-simulated">
+          Simulated: swings between {Math.min(...SIMULATED_HEART_RATES)} and {Math.max(...SIMULATED_HEART_RATES)} bpm.
+        </span>
+      </p>
+    </section>
   )
 }
 
@@ -349,11 +411,11 @@ function Status({ procedure, emergency, isCommander }: StatusProps) {
           <div className="card-heading">
             <h2>Your task</h2>
           </div>
-          <ol className="guide-lines">
+          <div className="guide-task">
             {procedure.secondRescuer.map((line) => (
-              <li key={line}>{line}</li>
+              <p key={line}>{line}</p>
             ))}
-          </ol>
+          </div>
           <p className="guide-note">Procedure 1.103 is not loaded in this demo.</p>
         </section>
       )}

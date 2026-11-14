@@ -150,6 +150,8 @@ Done when: on the Vercel link, one tap opens the guide and it can be followed to
 
 ### If there is time after the emergency
 
+- [ ] **A1. Assistant on board, for the crew member** (next step, not for this hackathon). A local model the astronaut can ask about their own panel: what a value is, why an alert came, what the rule says. It answers only from the record of that indicator and from that person's readings, and says where each answer comes from. It is for the astronaut looking at their data, not for the medical officer during an emergency: there the steps are fixed and come from the manual.
+
 - [ ] **R1. Radiation module: solar flare alert.** Idea from Becky's prototype (`apps/landing/index.html`, the Alerts page): when a solar flare is on its way, the panel shows how far it is, a countdown and the steps to take shelter, different in the base, in the rover and in transit. We have no data for it: the RadLab dose rate shows no spike for the storm of 28 Oct 2021, and there is no public dose rate that triggers an action. It would be a simulated event, and the screen must say so.
     - Done when: a simulated flare opens the alert with its countdown and its steps, labelled as a simulation.
 
