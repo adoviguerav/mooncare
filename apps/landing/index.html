@@ -248,7 +248,7 @@ button:active{transform:scale(.97)}
   <h2>All crew</h2>
   <div class="chips" id="aChips" role="group" aria-label="Filter crew"></div>
   <div class="card scroll" style="padding:6px"><table class="ptab" id="aTable"></table></div>
-  <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Eva’s row is live from the crew dashboard; the other crew are demo data.</p>
+  <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Eva’s and Dr. Mori’s rows are live from their crew dashboards; the other crew are demo data.</p>
 </div>
 <section id="cdPage" role="dialog" aria-modal="true" aria-label="Crew member detail" hidden>
   <div class="inc card">
@@ -306,9 +306,9 @@ button:active{transform:scale(.97)}
 <main id="home">
 <section class="hero">
   <div class="card">
-    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2>Good morning, Cmdr. Eva</h2>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2 id="greet">Good morning, Cmdr. Eva</h2>
     <p class="note" style="margin-top:-6px">Lunar dawn cycle initialized. Sol 248 mission readiness starting.</p>
-    <div class="row"><span>14-sol streak</span><span>Level 8 astronaut</span></div>
+    <div class="row"><span id="stk">14-sol streak</span><span id="lvl">Level 8 astronaut</span></div>
     <div class="xp"><i id="xpBar"></i></div>
     <div class="row"><span id="xpNow">2,450 XP</span><span id="xpLeft">350 XP to Level 9</span></div></div>
     <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px"></div></div></div>
@@ -335,7 +335,7 @@ button:active{transform:scale(.97)}
   <div class="card">
     <h2>Heart rate through the sol</h2>
     <div class="scroll"><svg id="hr" viewBox="0 0 440 150" role="img" aria-label="Hourly heart rate curve"></svg></div>
-    <p class="note">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
+    <p class="note" id="hrNote">Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline (66 bpm). The shaded band is the normal range, 60 to 80 bpm.</p>
   </div>
   <div class="card">
     <h2>Sleep architecture</h2>
@@ -343,7 +343,7 @@ button:active{transform:scale(.97)}
       <svg id="donut" viewBox="0 0 120 120" width="140" role="img" aria-label="Sleep stage split"></svg>
       <ul class="legend" id="legend" style="flex:1;min-width:150px"></ul>
     </div>
-    <p class="note">Circadian phase: synchronized. Rest score 94.</p>
+    <p class="note" id="restNote">Circadian phase: synchronized. Rest score 94.</p>
   </div>
 </section>
 
@@ -445,9 +445,18 @@ const M=[
 const $=id=>document.getElementById(id);
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const st={};const inc={ack:false,done:[true,false,false,false]};
+let ME=0;
+const PD=[
+ {name:"Cmdr. Eva",greet:"Good morning, Cmdr. Eva",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
+  bs:{"Heart rate":[66,72,4],"Sleep duration":[7.3,8.25,.6],"Body temperature":[36.6,36.6,.12],"Exercise":[44,18,12],"Blood glucose":[94,94,8]}},
+ {name:"Dr. Kenji Mori",greet:"Good morning, Dr. Mori",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",rm:1,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
+  bs:{"Heart rate":[62,62,3],"Sleep duration":[7.5,7.6,.5],"Body temperature":[36.5,36.5,.1],"Exercise":[50,52,8],"Blood glucose":[90,90,6]},
+  ex:{'Heart rate':[['Resting HR','62 bpm'],['HRV (RMSSD)','56 ms'],['Recovery, 1 min','28 bpm drop'],['SpO2','99%'],['Breathing rate','13 /min'],['Baseline','62 bpm']],'Sleep duration':[['Efficiency','91%'],['Deep','18%'],['REM','22%'],['Awake','9%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.5 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','7,880'],['Very active','52 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','90 mg/dL'],['Target','70–140'],['Last reading','06:35']]}}
+];
+const P=PD.map(d=>({mood:d.rm,q:d.q.map(Boolean),inc:{ack:d.inc.ack,done:d.inc.done.slice()},v:{hr:d.hr,sleep:d.sleep,temp:d.temp,act:d.act,glu:d.glu}}));
 var rg='1D';const HL={'1D':'24 h ago','5D':'5 days ago','1M':'30 days ago','Total':'Sol 1'},RL={'1D':'1D','5D':'5D','1M':'1M','Total':'total'},RN={'1D':24,'5D':20,'1M':30,'Total':40},BS={'Heart rate':[66,72,4],'Sleep duration':[7.3,8.25,.6],'Body temperature':[36.6,36.6,.12],'Exercise':[44,18,12],'Blood glucose':[94,94,8]};
 function SER(nm,r){r=r||rg;const b=BS[nm];if(!b)return null;const n=RN[r],t=[];for(let i=0;i<n;i++){const x=Math.sin((i+1)*12.9898+nm.length*78.233)*43758.5453;t.push(b[0]+((x-Math.floor(x))-.5)*2*b[2]*(r==='Total'?1.4:1))}t[n-1]=b[1];return t}
-const EX={'Heart rate':[['Resting HR','72 bpm'],['HRV (RMSSD)','48 ms'],['Recovery, 1 min','24 bpm drop'],['SpO2','99%'],['Breathing rate','14 /min'],['Baseline','66 bpm']],'Sleep duration':[['Efficiency','94%'],['Deep','17%'],['REM','20%'],['Awake','8%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.6 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','6,420'],['Very active','18 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','94 mg/dL'],['Target','70–140'],['Last reading','06:40']]};
+let EX={'Heart rate':[['Resting HR','72 bpm'],['HRV (RMSSD)','48 ms'],['Recovery, 1 min','24 bpm drop'],['SpO2','99%'],['Breathing rate','14 /min'],['Baseline','66 bpm']],'Sleep duration':[['Efficiency','94%'],['Deep','17%'],['REM','20%'],['Awake','8%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.6 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','6,420'],['Very active','18 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','94 mg/dL'],['Target','70–140'],['Last reading','06:40']]};
 function meas(m){if(!BS[m.name])return'';const t=SER(m.name,'5D'),d=m.name==='Body temperature'?2:1,a=t.reduce((x,y)=>x+y)/t.length;return `<div class="note">5D avg ${a.toFixed(d)} · low ${Math.min(...t).toFixed(d)} · high ${Math.max(...t).toFixed(d)}</div>`+(m.name==='Heart rate'?`<div class="note">${EX[m.name].slice(0,3).map(x=>x[0]+' '+x[1]).join(' · ')}</div>`:'')}
 function HRS(t){const a=t.reduce((x,y)=>x+y)/t.length;$('hrStats').innerHTML=[['Now',t[t.length-1].toFixed(0)+' bpm'],['Average',a.toFixed(0)+' bpm'],['Low',Math.min(...t).toFixed(0)+' bpm'],['High',Math.max(...t).toFixed(0)+' bpm'],['Resting','72 bpm'],['HRV','48 ms']].map(s=>`<div><span>${s[0]}</span><b style="font-size:16px">${s[1]}</b></div>`).join('')}
 const TR={"Heart rate":[64,66,65,67,66,68,72],"Sleep duration":[7.1,6.8,7.4,7.9,7.2,7.6,8.25],"Body temperature":[36.5,36.6,36.5,36.7,36.6,36.5,36.6],"Exercise":[40,52,35,48,44,50,18],"Blood glucose":[91,97,88,102,95,93,94]};
@@ -460,7 +469,7 @@ function render(){
   const b=$("banner");
   b.className="banner"+(inc.ack?" ok":"");
   b.textContent=inc.ack?"Sealed":"Alert";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
-  $("novaMsg").textContent=alerts.length
+  $("novaMsg").textContent=PD[ME].surgeon?surgeonMsg():alerts.length
     ?"Your sleep was strong, but active minutes are below the prescribed programme. Let’s fit the flywheel workout in before the 14:00 EVA."
     :"All readings look good. Let’s keep your routine steady before the 14:00 EVA.";
   $("grid").innerHTML=M.filter(m=>filter==="All"||m.mod===filter).sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
@@ -509,34 +518,40 @@ function drawHR(){
   const W=440,H=150,p=24,mx=90,mn=50;
   const x=i=>p+i*(W-2*p)/(bpm2.length-1),y=v=>H-p-(v-mn)/(mx-mn)*(H-2*p);
   const bpm2=SER("Heart rate","1D"),pts=bpm2.map((v,i)=>x(i)+","+y(v)).join(" ");
-  $("hr").innerHTML=`<rect x="${p}" y="${y(80)}" width="${W-2*p}" height="${y(60)-y(80)}" fill="var(--cy)" opacity=".08"/>${[50,60,70,80,90].map(v=>`<line x1="${p}" x2="${W-p}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p-5}" y="${y(v)+3}" text-anchor="end" font-size="10" fill="var(--mute)">${v}</text>`).join("")}<line x1="${p}" x2="${W-p}" y1="${y(66)}" y2="${y(66)}" stroke="var(--mute)" stroke-dasharray="4 4"/>
+  $("hr").innerHTML=`<rect x="${p}" y="${y(80)}" width="${W-2*p}" height="${y(60)-y(80)}" fill="var(--cy)" opacity=".08"/>${[50,60,70,80,90].map(v=>`<line x1="${p}" x2="${W-p}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p-5}" y="${y(v)+3}" text-anchor="end" font-size="10" fill="var(--mute)">${v}</text>`).join("")}<line x1="${p}" x2="${W-p}" y1="${y(M[0].base)}" y2="${y(M[0].base)}" stroke="var(--mute)" stroke-dasharray="4 4"/>
   <path class="drawin" pathLength="1" stroke-dasharray="1" d="M${pts.split(" ").join(" L")}" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linejoin="round"/>
   <text x="${p}" y="${H-6}" font-size="11" fill="var(--mute)">24 h ago</text><text x="${W-p}" y="${H-6}" font-size="11" text-anchor="end" fill="var(--mute)">now</text>
   <text x="${x(5.75)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">18 h</text><text x="${x(11.5)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">12 h</text><text x="${x(17.25)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mute)">6 h</text>`;
 }drawHR();
 
 // sleep donut
-(function(){
-  const s=[["REM",20,"var(--cy)"],["Deep",17,"#3b82f6"],["Light",55,"#7c9cc4"],["Wake",8,"var(--line)"]];
+function drawDonut(d){
+  const C=["var(--cy)","#3b82f6","#7c9cc4","var(--line)"],N=["REM","Deep","Light","Wake"],s=d.stages.map((v,i)=>[N[i],v,C[i]]);
   const r=46,c=2*Math.PI*r;let off=0,h="";
   s.forEach(a=>{const l=c*a[1]/100;h+=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${a[2]}" stroke-width="14" stroke-dasharray="${l} ${c-l}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=l});
-  $("donut").innerHTML='<defs><mask id="dm"><circle class="dmask" cx="60" cy="60" r="46" fill="none" stroke="#fff" stroke-width="18" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></mask></defs><g mask="url(#dm)">'+h+'</g>'+`<text x="60" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">8h 15m</text>`;
+  $("donut").innerHTML='<defs><mask id="dm"><circle class="dmask" cx="60" cy="60" r="46" fill="none" stroke="#fff" stroke-width="18" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></mask></defs><g mask="url(#dm)">'+h+'</g>'+`<text x="60" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">${d.slp}</text>`;
   $("legend").innerHTML=s.map(a=>`<li><span><i class="dot" style="background:${a[2]}"></i>${a[0]}</span><b>${a[1]}%</b></li>`).join("");
-})();
+  $("restNote").textContent="Circadian phase: synchronized. Rest score "+d.rest+".";
+}
+drawDonut(PD[0]);
 
 // quests
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
-let xpLast=null;
+let xpLast=null;PD[0].ex=EX;
 function xpTo(cur){const el=$("xpNow");if(xpLast===null||RM||$("crewApp").hidden){xpLast=cur;el.textContent=cur.toLocaleString("en-US")+" XP";return}const from=xpLast;xpLast=cur;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/500);el.textContent=Math.round(from+(cur-from)*k).toLocaleString("en-US")+" XP";if(k<1)requestAnimationFrame(s)})(t0)}
 function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=al?"var(--warn)":(n===Q.length?"var(--ok)":"var(--cy)");$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent=al?al+" to review":"All clear";$("glance").setAttribute("aria-label","Today at a glance: "+n+" of "+Q.length+" tasks done, "+(al?al+" readings need attention":"nothing needs attention"))}
 function drawQ(){
-  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),cur=2450+xp-55;xpTo(cur);$("xpLeft").textContent=Math.max(0,2800-cur)+" XP to Level 9";$("xpBar").style.width=Math.min(100,cur/2800*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
+  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),d0=PD[ME],cur=d0.xp0+xp-d0.q.reduce((s,v,i)=>s+(v?Q[i][4]:0),0);xpTo(cur);$("xpLeft").textContent=Math.max(0,d0.nxt-cur)+" XP to Level "+(d0.lvl+1);$("xpBar").style.width=Math.min(100,cur/d0.nxt*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
   $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
   $("quests").innerHTML=Q.map((q,i)=>`<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div><span class="tag">${q[2]}</span></label>`).join("");
   document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
   drawGlance();
 }
 drawQ();
+function others(){return CREW.map((c,i)=>[crow(c,i),i]).filter(([c,i])=>i!==ME)}
+function surgeonMsg(){const q=others().filter(([c])=>flags(c).length&&!rvw[c.n]).sort((a,b)=>sev(b[0])-sev(a[0]));
+  if(!q.length)return"Your readings are steady and no crew flags are open. Keep an eye on the flare updates.";
+  const t=q[0][0];return"Your readings are steady. "+q.length+" crew flag"+(q.length>1?"s":"")+" open. Top of the list: "+t.n+". "+reason(t)+" Open Mission control to review."}
 // incident page
 const STEPS=[["Immediate EVA recall","Abort lunar surface operations and return to airlock"],["Airlock seal and magnetic deflector","Lock primary habitat hatch and charge coil array"],["Move to regolith storm shelter","Crew report to Sub-Surface Bunker Level 3"],["Biometric sync and dosimeter calibration","Telemetry streaming to Alpha Station AI"]];
 const DUR=[4,2,5,1],WHY=["Every minute outside adds to your dose, and the flux is still climbing.","Seals the hatch and charges the magnetic deflector against charged particles.","The bunker’s regolith cover gives the most shielding on the base.","Lets Dr. Nova and the ground team follow your dose while you shelter."];
@@ -549,7 +564,7 @@ function drawAlerts(){
   const k=inc.done.findIndex(d=>!d);
   $("stepper").innerHTML=inc.done.map((d,i)=>`<i class="${d?"d":i===k?"c":""}"></i>`).join("");
   const nx=$("next");nx.className="next"+(k<0?" ok":"");
-  nx.innerHTML=k<0?`<span class="tag ok">All steps done</span><h3>Ready to seal the habitat</h3><p class="note">Confirm below, then stay in the shelter until the all-clear.</p>`:`<span class="tag warn">Step ${k+1} of 4 · about ${DUR[k]} min</span><h3>${STEPS[k][0]}</h3><p>${STEPS[k][1]}</p><p class="note">${WHY[k]}</p><button class="primary" id="nextDone" type="button" style="margin-top:10px">Mark step done</button>`;
+  nx.innerHTML=k<0?(inc.ack?`<span class="tag ok">Sealed</span><h3>Habitat sealed</h3><p class="note">Stay in the shelter until the all-clear.</p>`:`<span class="tag ok">All steps done</span><h3>Ready to seal the habitat</h3><p class="note">Confirm below, then stay in the shelter until the all-clear.</p>`):`<span class="tag warn">Step ${k+1} of 4 · about ${DUR[k]} min</span><h3>${STEPS[k][0]}</h3><p>${STEPS[k][1]}</p><p class="note">${WHY[k]}</p><button class="primary" id="nextDone" type="button" style="margin-top:10px">Mark step done</button>`;
   $("steps").innerHTML=STEPS.map((s,i)=>`<label class="${inc.done[i]?"done":""}"><input type="checkbox" data-i="${i}" ${inc.done[i]?"checked":""}><span><b>${s[0]}</b><span class="note">${s[1]}</span></span></label>`).join("");
   const sb=$("seal");sb.disabled=inc.ack;sb.textContent=inc.ack?"Habitat sealed and incident acknowledged":"Acknowledge and seal habitat";
   drawLive();
@@ -567,9 +582,10 @@ function drawLive(){
   $("tlNeed").style.width=Math.min(100,need/Math.max(win,.05)*100)+"%";$("tlNeed").style.background=spare<2?"var(--bad)":"var(--warn)";
   $("tlNeedT").textContent=need?"You need about "+need+" min":"All steps done";
   $("tlSpareT").textContent=eta<=0?"Stay in the shelter":spare>=0?"Spare time about "+Math.floor(spare)+" min":"Short by about "+Math.ceil(-spare)+" min: go straight to the shelter";
-  let ok=0;const rows=CREW.map((c,i)=>{let st;if(i===0)st=sh?["ok","In shelter"]:["warn","Moving"];else if(c.sm>60)st=["bad","No signal for "+age(c.sm).replace(" ago","")];else if(c.seal)st=["ok","In shelter"];else st=["warn","Moving · "+mmss(mEta)];if(st[0]==="ok")ok++;return`<div class="accr"><span>${i===0?"You":c.n}</span><span class="tag ${st[0]}">${st[1]}</span></div>`});
+  let ok=0;const rows=CREW.map((c,i)=>{let st;const ii=c.live?(i===ME?inc:P[i].inc):null;if(c.live)st=(ii.done[2]||ii.ack)?["ok","In shelter"]:["warn","Moving"];else if(c.sm>60)st=["bad","No signal for "+age(c.sm).replace(" ago","")];else if(c.seal)st=["ok","In shelter"];else st=["warn","Moving · "+mmss(mEta)];if(st[0]==="ok")ok++;return`<div class="accr"><span>${i===ME?"You":c.n}</span><span class="tag ${st[0]}">${st[1]}</span></div>`});
   $("crewList").innerHTML=rows.join("");$("crewSum").textContent=ok+" of "+CREW.length+" in shelter";
-  $("novaLine").textContent=inc.ack?"Habitat sealed. Stay in the shelter. I will message you when the dose rate drops and the ground team clears you to leave.":sh?"You are in the shelter. Finish the last steps, then confirm the seal.":"Eva, solar magnetic flux is spiking rapidly. You have about "+Math.max(0,Math.floor(win))+" minutes before impact and need about "+need+". Take your rad-mitigation pack and move to the shelter."
+  const nm=PD[ME].name.replace(/^(Cmdr\.|Dr\.)\s*/,"").split(" ")[0],wait=others().filter(([c,i])=>c.live?!(P[i].inc.done[2]||P[i].inc.ack):!(c.sm<=60&&c.seal)).map(([c])=>c.n+(c.sm>60?" (no signal)":""));
+  $("novaLine").textContent=PD[ME].surgeon&&inc.ack?"Habitat sealed. You are in the shelter. As flight surgeon, check on "+(wait.length?wait.join(" and "):"the crew")+" and watch their doses. I will tell you when the rate drops.":inc.ack?"Habitat sealed. Stay in the shelter. I will message you when the dose rate drops and the ground team clears you to leave.":sh?"You are in the shelter. Finish the last steps, then confirm the seal.":nm+", solar magnetic flux is spiking rapidly. You have about "+Math.max(0,Math.floor(win))+" minutes before impact and need about "+need+". Take your rad-mitigation pack and move to the shelter."
 }
 $("next").onclick=e=>{if(e.target.id!=="nextDone")return;const k=inc.done.findIndex(d=>!d);if(k<0)return;inc.done[k]=true;buzz(30);drawAlerts();save()};
 $("steps").onchange=e=>{inc.done[+e.target.dataset.i]=e.target.checked;drawAlerts();save()};
@@ -617,8 +633,10 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew")loc
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
 window.addEventListener("hashchange",route);
-var ready=false;function save(){if(!ready)return;try{localStorage.setItem("mooncare-v1",JSON.stringify({mood,ack:inc.ack,done:inc.done,q:Q.map(q=>q[3])}))}catch(e){}}
-try{const s=JSON.parse(localStorage.getItem("mooncare-v1")||"null");if(s){mood=s.mood;inc.ack=s.ack;inc.done=s.done;s.q.forEach((v,i)=>{Q[i][3]=v});M[2].val=moods[mood][0];drawMoods();drawQ();render()}}catch(e){}
+var ready=false;
+function stash(){const s=P[ME];s.mood=mood;s.q=Q.map(q=>q[3]);s.inc={ack:inc.ack,done:inc.done.slice()};s.v={hr:M[0].val,sleep:M[1].val,temp:M[3].val,act:M[4].val,glu:M[5].val}}
+function save(){if(!ready)return;stash();try{localStorage.setItem("mooncare-v2",JSON.stringify(P.map(s=>({mood:s.mood,q:s.q,inc:s.inc}))))}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem("mooncare-v2")||"null");if(s)s.forEach((x,i)=>{if(P[i]&&x&&x.q&&x.inc){P[i].mood=x.mood;P[i].q=x.q;P[i].inc=x.inc}})}catch(e){}
 ready=true;
 var di=-1;
 function drawDet(){const m=M[di],t=SER(m.name),mn=Math.min(...t),mx=Math.max(...t),av=t.reduce((a,b)=>a+b)/t.length,W=440,H=180,p=28,y=v=>H-p-(v-mn)/((mx-mn)||1)*(H-2*p),x=i=>p+i*(W-2*p)/(t.length-1),f=v=>v.toFixed(m.name==="Body temperature"?2:1);
@@ -649,7 +667,7 @@ $("admHome").onclick=()=>{location.hash="landing"};
 // admin: all crew data
 const CREW=[
  {n:"Cmdr. Eva",r:"Mission commander",live:true,spo2:99,dose:.14,cum:18.4,sm:0,b:{hr:66,sleep:7.3,temp:36.6,act:44,glu:94}},
- {n:"Dr. Kenji Mori",r:"Flight surgeon",hr:62,spo2:99,sleep:7.6,temp:36.5,act:52,glu:90,dose:.12,cum:17.9,chk:7,seal:true,sm:1,b:{hr:62,sleep:7.5,temp:36.5,act:50,glu:90}},
+ {n:"Dr. Kenji Mori",r:"Flight surgeon",live:true,hr:62,spo2:99,sleep:7.6,temp:36.5,act:52,glu:90,dose:.12,cum:17.9,chk:7,seal:true,sm:0,b:{hr:62,sleep:7.5,temp:36.5,act:50,glu:90}},
  {n:"Amara Okafor",r:"Geologist",hr:66,spo2:98,sleep:7.2,temp:36.6,act:58,glu:96,dose:.19,cum:19.6,chk:6,seal:true,sm:3,b:{hr:65,sleep:7.3,temp:36.6,act:56,glu:95}},
  {n:"Mateo Vargas",r:"Systems engineer",hr:78,spo2:96,sleep:6.4,temp:37.5,act:47,glu:101,dose:.16,cum:18.1,chk:3,seal:false,sm:2,b:{hr:64,sleep:7.2,temp:36.6,act:52,glu:98}},
  {n:"Ingrid Solheim",r:"Biologist",hr:70,spo2:98,sleep:5.9,temp:36.7,act:30,glu:92,dose:.13,cum:17.5,chk:4,seal:true,sm:190,b:{hr:68,sleep:7.4,temp:36.6,act:48,glu:93}},
@@ -658,10 +676,10 @@ const CREW=[
 const rvw={},seen={},LOG=[];let cf="All",cdi=-1;
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 $("cgrid").innerHTML=CREW.map((c,i)=>{const ini=c.n.replace(/^(Cmdr\.|Dr\.)\s*/,"").split(" ").map(w=>w[0]).join("").slice(0,2);return`<button class="cm${c.live?" me":""}" type="button" data-i="${i}" style="animation-delay:${.1+i*.06}s" ${c.live?"":"disabled"}><span class="av" aria-hidden="true">${ini}</span><span><b>${esc(c.n)}</b><small>${esc(c.r)}</small>${c.live?'<br><span class="live">Live demo</span>':'<br><small>Opens with real data</small>'}</span></button>`}).join("");
-$("cgrid").onclick=e=>{const b=e.target.closest(".cm");if(b&&!b.disabled)location.hash="crew"};
+$("cgrid").onclick=e=>{const b=e.target.closest(".cm");if(b&&!b.disabled){applyProfile(+b.dataset.i);location.hash="crew"}};
 const nowT=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 function age(m){if(m<1)return"just now";if(m<60)return m+" min ago";const h=Math.floor(m/60),r=m%60;return h+" h"+(r?" "+r+" min":"")+" ago"}
-function crow(c){return c.live?Object.assign({},c,{hr:M[0].val,sleep:M[1].val,temp:M[3].val,act:M[4].val,glu:M[5].val,chk:Q.filter(q=>q[3]).length,seal:inc.ack}):c}
+function crow(c,i){if(!c.live)return c;if(i===ME)return Object.assign({},c,{hr:M[0].val,sleep:M[1].val,temp:M[3].val,act:M[4].val,glu:M[5].val,chk:Q.filter(q=>q[3]).length,seal:inc.ack});const s=P[i];return Object.assign({},c,s.v,{chk:s.q.filter(Boolean).length,seal:s.inc.ack})}
 function flags(c){const f=[];
   if(c.hr>74)f.push(["hr","Heart rate above the personal baseline",0]);
   if(c.spo2<95)f.push(["spo2","SpO2 below 95%",1]);
@@ -696,7 +714,7 @@ function drawAdmin(){
   $("aTable").innerHTML="<tr><th>Crew member</th><th>Status</th><th>Heart rate</th><th>SpO2</th><th>Sleep</th><th>Skin temp</th><th>Active min</th><th>Glucose</th><th>Dose today</th><th>Total dose</th><th>Checklist</th><th>Last data</th></tr>"+(sh.length?sh.map(([c,i])=>{const s=cstat(c);return`<tr class="cr" tabindex="0" data-i="${i}"><td><b>${c.n}</b><div class="note" style="margin:0">${c.r}</div></td><td><span class="tag ${s[0]}">${s[1]}</span></td>${fc(c,"hr",c.hr+" bpm")}${fc(c,"spo2",c.spo2+"%")}${fc(c,"sleep",c.sleep+" h")}${fc(c,"temp",c.temp+" °C")}${fc(c,"act",c.act)}${fc(c,"glu",c.glu)}<td>${c.dose} mSv</td><td>${c.cum} mSv</td><td>${c.chk} of ${Q.length}</td>${fc(c,"sync",age(c.sm))}</tr>`}).join(""):'<tr><td colspan="12">No crew match this filter.</td></tr>');
 }
 function drawCD(){
-  const c=crow(CREW[cdi]),f=flags(c),s=cstat(c),fk=new Set(f.map(x=>x[0]));
+  const c=crow(CREW[cdi],cdi),f=flags(c),s=cstat(c),fk=new Set(f.map(x=>x[0]));
   $("cdName").textContent=c.n;$("cdRole").textContent=c.r+" · last data "+age(c.sm);
   $("cdTag").className="tag "+s[0];$("cdTag").textContent=s[1];
   $("cdWhy").textContent=f.length?reason(c):"No flags. All readings are in range.";
@@ -728,6 +746,23 @@ $("aTable").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const r=e.target.clos
 $("cdAct").onclick=e=>{const b=e.target.closest("button");if(!b)return;const n=CREW[cdi].n;if(b.dataset.a==="rv"){const nt=$("cdNote").value.trim();rvw[n]=true;LOG.unshift({t:nowT(),a:"Reviewed "+n,note:nt})}else{delete rvw[n];LOG.unshift({t:nowT(),a:"Reopened "+n})}drawCD();drawAdmin()};
 $("cdX").onclick=closeCD;$("cdPage").onclick=e=>{if(e.target.id==="cdPage")closeCD()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("gsPage").hidden)closeGS();else if(!$("cdPage").hidden)closeCD()});
+function applyProfile(i,first){
+  if(!first)stash();
+  ME=i;const d=PD[i],s=P[i];
+  mood=s.mood;Q.forEach((q,k)=>{q[3]=!!s.q[k]});inc.ack=s.inc.ack;inc.done=s.inc.done.slice();
+  Q[5]=d.surgeon?["Review the crew flags","Check Mission control before the 14:00 EVA briefing","VITAL",false,10]:["Log exercise on the tablet","Record sets and reps after training","BONE",false,10];Q[5][3]=!!s.q[5];
+  M[0].val=s.v.hr;M[0].base=d.base;M[0].msg="Baseline "+d.base+" bpm";
+  M[1].val=s.v.sleep;M[1].unit="h (efficiency "+d.eff+"%)";
+  M[3].val=s.v.temp;M[4].val=s.v.act;M[5].val=s.v.glu;
+  M[2].val=moods[mood][0];M[2].test=()=>false;
+  Object.assign(BS,d.bs);EX=d.ex||EX;
+  P2[0][3]=d.dose;P2[9][3]="RMSSD "+d.hrv+" ms";P2[12][3]="REM "+d.stages[0]+"%, deep "+d.stages[1]+"%, wake "+d.stages[3]+"%";P2[7][3]="99%";
+  $("greet").textContent=d.greet;$("stk").textContent=d.stk+"-sol streak";$("lvl").textContent="Level "+d.lvl+" astronaut";
+  $("hrNote").textContent="Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline ("+d.base+" bpm). The shaded band is the normal range, 60 to 80 bpm.";
+  $("liveHR").textContent=M[0].val;
+  xpLast=null;drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];
+}
+applyProfile(0,true);
 route();tick();
 </script>
 </body>
