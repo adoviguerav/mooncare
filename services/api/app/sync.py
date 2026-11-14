@@ -32,6 +32,7 @@ EARTH_TABLES: list[Table] = [
     models.Indicator.__table__,  # type: ignore[list-item]
     models.Rule.__table__,  # type: ignore[list-item]
     models.CrewMember.__table__,  # type: ignore[list-item]
+    models.AppUser.__table__,  # type: ignore[list-item]  # users and PIN hashes: the crew signs in with no link
 ]
 # Written on the moon and sent to earth
 MOON_TABLES: list[Table] = [models.Reading.__table__]  # type: ignore[list-item]

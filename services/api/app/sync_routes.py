@@ -4,8 +4,8 @@ On both servers:  GET  /api/node, GET /api/sync/history
 Moon only:        POST /api/sync          the crew or the dashboard asks the moon to sync with earth now
 Earth only:       POST /api/sync/push     the moon sends its rows
                   GET  /api/sync/pull     the moon downloads earth's rows
-The two earth endpoints need the shared SYNC_TOKEN. The others will need a signed-in user once
-authentication exists.
+The two earth endpoints need the shared SYNC_TOKEN. The node status needs a signed-in user; the history and
+POST /api/sync need a commander or the earth administrator.
 """
 
 import secrets
@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 
 from app import models
+from app.auth import CrewWideUser, CurrentUser
 from app.config import NodeRole, Settings, get_settings
 from app.db import DbSession
 from app.sync import (
@@ -135,7 +136,7 @@ def to_contract(operation: models.SyncOperation | None) -> SyncOperation | None:
 
 
 @router.get("/node")
-def get_node_status(session: DbSession, settings: SettingsDependency) -> NodeStatus:
+def get_node_status(session: DbSession, settings: SettingsDependency, user: CurrentUser) -> NodeStatus:
     is_moon = settings.node_role == "moon"
     return NodeStatus(
         role=settings.node_role,
@@ -148,7 +149,9 @@ def get_node_status(session: DbSession, settings: SettingsDependency) -> NodeSta
 
 
 @router.get("/sync/history")
-def get_sync_history(session: DbSession, limit: Annotated[int, Query(ge=1, le=200)] = 20) -> list[SyncOperation]:
+def get_sync_history(
+    session: DbSession, user: CrewWideUser, limit: Annotated[int, Query(ge=1, le=200)] = 20
+) -> list[SyncOperation]:
     operations = session.scalars(select(models.SyncOperation).order_by(models.SyncOperation.id.desc()).limit(limit))
     return [SyncOperation.model_validate(operation) for operation in operations]
 
@@ -158,7 +161,10 @@ def get_sync_history(session: DbSession, limit: Annotated[int, Query(ge=1, le=20
 
 @router.post("/sync")
 def sync_with_earth(
-    session: DbSession, earth: Annotated[EarthServer, Depends(get_earth_server)], request: SyncRequest | None = None
+    session: DbSession,
+    user: CrewWideUser,
+    earth: Annotated[EarthServer, Depends(get_earth_server)],
+    request: SyncRequest | None = None,
 ) -> SyncResult:
     """Sends the moon's new rows to earth, then downloads earth's new rows. Failures are in the result."""
     request = request or SyncRequest()

@@ -26,6 +26,7 @@ from app.sync import (
 )
 from app.sync_client import HttpEarthServer
 from app.sync_routes import get_earth_server
+from app.auth import get_current_user, hash_pin, verify_pin
 from app.config import get_settings
 from seed import DAILY_COLUMNS, CrewPairing, DatasetFiles, build_seed_files
 from tests.conftest import run_sql
@@ -297,6 +298,11 @@ def serve(moon: Node, earth: Node) -> Iterator[Callable[[Node, Settings], TestCl
 
         app.dependency_overrides[get_session] = get_node_session
         app.dependency_overrides[get_settings] = lambda: settings
+        role = "commander" if settings.node_role == "moon" else "earth_admin"
+        app.dependency_overrides[get_current_user] = lambda: models.AppUser(
+            id=1, display_name="Test", role=role, crew_member_id=1 if role == "commander" else None,
+            pin_hash="", is_active=True,
+        )
         return TestClient(app)
 
     yield use
@@ -374,3 +380,27 @@ def test_moon_sync_endpoint_does_not_exist_on_earth(earth: Node, serve: Callable
     client = serve(earth, settings_for("earth", sync_token=SYNC_TOKEN))
 
     assert client.post("/api/sync").status_code == 404
+
+
+def test_a_user_created_on_earth_can_sign_in_on_the_moon_after_a_pull_even_with_the_link_down(
+    moon: Node, earth: Node, earth_link: InProcessEarth
+) -> None:
+    with earth.sessions() as session:
+        session.add(models.AppUser(display_name="Crew 1", role="commander", crew_member_id=1, pin_hash=hash_pin("424242")))
+        session.commit()
+
+    with moon.sessions() as session:
+        pull_from_earth(session, earth_link)
+    earth_link.online = False
+
+    with moon.sessions() as session:
+        user = session.scalars(select(models.AppUser)).one()
+    assert (user.display_name, user.role) == ("Crew 1", "commander")
+    assert verify_pin(user.pin_hash, "424242")
+
+
+def test_sessions_and_sign_in_events_never_leave_their_server() -> None:
+    synchronised = {sync.table_key(table) for table in sync.EARTH_TABLES + sync.MOON_TABLES}
+
+    assert "dat.session" not in synchronised
+    assert "his.auth_event" not in synchronised

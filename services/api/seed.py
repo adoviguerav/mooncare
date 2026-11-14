@@ -39,6 +39,12 @@ DAILY_COLUMNS = {
     "mood_alert": "ALERT",
     "mood_rested": "RESTED/RELAXED",
     "mood_neutral": "NEUTRAL",
+    # Added last, so test files that list the columns by position keep their order
+    "minutes_awake": "minutesAwake",
+    "spo2": "spo2",  # measured during sleep
+    "breathing_rate": "full_sleep_breathing_rate",  # breaths per minute, during sleep
+    # sleep_deep_ratio, sleep_light_ratio and sleep_rem_ratio are left out: they do not add up to one night,
+    # so they are not the share of each sleep stage and cannot be shown as one
 }
 
 ROWS_PER_INSERT = 1000
@@ -149,8 +155,9 @@ def read_daily_readings(daily_csv: Path, lifesnaps_id: str, offset_days: int) ->
             day = datetime.fromisoformat(row["date"]).date() + timedelta(days=offset_days)
             taken_at = f"{day.isoformat()}T00:00"
             for indicator_id, column in DAILY_COLUMNS.items():
-                if row[column] != "":
-                    readings.append(Reading(indicator_id, taken_at, float(row[column])))
+                cell = row.get(column)  # None when a short row leaves the column out: the same as an empty cell
+                if cell not in (None, ""):
+                    readings.append(Reading(indicator_id, taken_at, float(cell)))
     return readings
 
 

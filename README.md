@@ -10,7 +10,7 @@ apps/
     src/features/   One folder per screen: profile, panel, indicator
     src/lib/        API client (the contracts as types), formatting, config
     src/hooks/  src/styles/
-  mobile/     Empty for now
+  mobile/     Crew app for the phone (PWA): React + Vite + TypeScript, connected to the moon server. See its README
   landing/    Empty for now
 services/
   api/        FastAPI backend
@@ -23,6 +23,8 @@ services/
 database/
   postgresql/ schema/ (CREATE), seeds/ (INSERT), docker-compose.yml. See its README
   datasets/   The raw dataset files, 85 MB
+packages/
+  api-client/ The backend's contracts as TypeScript types, and a fetch wrapper. Shared by apps/mobile and apps/web
 docs/         Design documents
 ```
 
@@ -52,6 +54,7 @@ The datasets are in the repo. `uv run python download_data.py` fetches them agai
 ```sh
 cd services/api && uv run uvicorn app.main:app --port 8000
 cd apps/web && npm run dev
+cd apps/mobile && npm run dev   # the crew app (PWA) on http://localhost:5174, connected to the moon server
 ```
 
 Each crew member is fictional: the blood values of one Inspiration4 astronaut and the wearable and mood data of one LifeSnaps volunteer. The values are real. The LifeSnaps dates are shifted by a fixed number of days so they line up with the mission dates.

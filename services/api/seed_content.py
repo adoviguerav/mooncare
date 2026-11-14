@@ -174,6 +174,42 @@ INDICATORS = [
         ),
         source_id="lifesnaps",
     ),
+    Indicator(
+        id="minutes_awake",
+        name="Time awake in bed",
+        unit="min",
+        how_to_measure="A wrist tracker measures it every night, together with sleep duration.",
+        why_it_matters=(
+            "The minutes you spent awake between falling asleep and getting up. Waking often breaks sleep "
+            "even when the total time in bed looks long enough."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="spo2",
+        name="Blood oxygen (SpO2)",
+        unit="%",
+        how_to_measure=(
+            "A pulse oximeter or a wrist tracker, here measured during the night. On the ISS, the Bio-Monitor "
+            "shirt measures it."
+        ),
+        why_it_matters=(
+            "How much of your blood's haemoglobin carries oxygen. A value falling from your usual one can be an "
+            "early sign of a breathing or circulation problem."
+        ),
+        source_id="lifesnaps",
+    ),
+    Indicator(
+        id="breathing_rate",
+        name="Breathing rate",
+        unit="breaths/min",
+        how_to_measure="A wrist tracker estimates it while you sleep. On the ISS, the Bio-Monitor shirt measures it.",
+        why_it_matters=(
+            "How many breaths you take each minute at rest. A clear change from your usual value can point to "
+            "an infection, stress or a breathing problem."
+        ),
+        source_id="lifesnaps",
+    ),
     *[
         Indicator(
             id=mood_id,

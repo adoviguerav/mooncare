@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Mooncare">
+  <defs>
+    <radialGradient id="bg" cx=".5" cy=".35" r=".85">
+      <stop offset="0" stop-color="#0d2745"/>
+      <stop offset="1" stop-color="#050d1a"/>
+    </radialGradient>
+    <radialGradient id="moon" cx=".35" cy=".3" r=".9">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#9fe9ff"/>
+    </radialGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#2fd8ff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="230" r="190" fill="url(#glow)"/>
+  <circle cx="256" cy="230" r="128" fill="none" stroke="#2fd8ff" stroke-width="8"/>
+  <path d="M256 102A128 128 0 0 0 256 358A54 128 0 0 1 256 102Z" fill="url(#moon)"/>
+  <g fill="#0d2745"><circle cx="168" cy="178" r="12"/><circle cx="188" cy="140" r="6"/><circle cx="170" cy="274" r="10"/><circle cx="190" cy="320" r="6"/><circle cx="160" cy="226" r="6"/></g>
+  <path d="M96 430H214L230 430L246 396L266 462L284 414L296 430H416" fill="none" stroke="#2fd8ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -20,7 +20,9 @@ from app.config import API_DIR, SCHEMA_DIR, Settings
 from app.db import build_engine
 from seed import DAILY_COLUMNS, CrewPairing, DatasetFiles, build_seed_files
 
-SEEDED_TABLES = "dat.reading, dat.crew_member, cfg.rule, cfg.indicator, cfg.source"
+SEEDED_TABLES = (
+    "his.auth_event, dat.session, dat.app_user, dat.reading, dat.crew_member, cfg.rule, cfg.indicator, cfg.source"
+)
 # The LifeSnaps daily file starts with an unnamed index column
 DAILY_HEADER = "," + ",".join(["id", "date", *DAILY_COLUMNS.values()]) + "\n"
 
