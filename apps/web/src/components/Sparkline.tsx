@@ -16,7 +16,7 @@ export function Sparkline({ values }: { values: number[] }) {
 
   return (
     <svg className="sparkline" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-hidden="true">
-      <polyline points={points.join(' ')} />
+      <polyline pathLength="1" points={points.join(' ')} />
     </svg>
   )
 }

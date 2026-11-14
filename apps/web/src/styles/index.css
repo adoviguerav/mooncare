@@ -23,6 +23,8 @@
   --button: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05));
   --button-edge: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px rgb(0 0 0 / 0.25);
   --button-edge-hover: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 6px 20px rgb(47 216 255 / 0.25);
+  --badge-edge: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 16px rgb(47 216 255 / 0.15);
+  --badge-edge-alert: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 16px rgb(255 184 74 / 0.3);
   --radius-card: 24px;
   --radius-tile: 18px;
   --radius-pill: 999px;
@@ -170,6 +172,8 @@ button {
   margin: 8px 4px 12px;
   font-size: 0.8125rem;
   font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--mute);
 }
 
@@ -237,12 +241,13 @@ button {
   flex: none;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgb(47 216 255 / 0.1);
+  background: var(--button);
+  box-shadow: var(--badge-edge);
   color: var(--accent);
 }
 
 .icon-badge-alert {
-  background: rgb(255 184 74 / 0.12);
+  box-shadow: var(--badge-edge-alert);
   color: var(--alert);
 }
 
@@ -322,12 +327,8 @@ button {
   cursor: default;
 }
 
-.ghost:active,
-.primary:active,
-.tile:active,
-.profile:active,
-.mood:active {
-  transform: scale(0.98);
+button:active {
+  transform: scale(0.97);
 }
 
 /* --- Chips --- */
@@ -437,6 +438,53 @@ button {
   }
 }
 
+/* The cards of the panel come in one after another */
+@media (prefers-reduced-motion: no-preference) {
+  /* backwards, not both: a finished animation that still applies would stop the glass of the tiles inside */
+  .with-tabs > :not(header) {
+    animation: rise 0.5s backwards;
+  }
+
+  .with-tabs > :nth-child(3) {
+    animation-delay: 60ms;
+  }
+
+  .with-tabs > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .with-tabs > :nth-child(n + 5) {
+    animation-delay: 180ms;
+  }
+
+  /* The lines draw themselves. Both carry pathLength="1". */
+  .sparkline polyline,
+  .chart-line {
+    stroke-dasharray: 1;
+    animation: draw-in 1.4s ease-out;
+  }
+
+  .tab-count {
+    animation: alert-pulse 2.2s ease-out infinite;
+  }
+}
+
+@keyframes draw-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes alert-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 184 74 / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
 .profile-text {
   display: grid;
   min-width: 0;
@@ -490,7 +538,7 @@ button {
   transition:
     transform 0.15s ease,
     border-color 0.2s ease,
-    background 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
 .mood:hover {
@@ -499,8 +547,10 @@ button {
 
 .mood[aria-pressed='true'] {
   border-color: var(--accent);
-  background: rgb(47 216 255 / 0.16);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  background: linear-gradient(180deg, rgb(47 216 255 / 0.3), rgb(47 216 255 / 0.08));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 0 24px rgb(47 216 255 / 0.35);
 }
 
 .mood-face {
@@ -693,8 +743,8 @@ button {
 }
 
 .tile:hover {
+  transform: translateY(-2px);
   border-color: rgb(47 216 255 / 0.5);
-  background: rgb(47 216 255 / 0.06);
 }
 
 .tile-alert {
@@ -712,16 +762,18 @@ button {
 .tile-icon {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex: none;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgb(47 216 255 / 0.1);
+  background: var(--button);
+  box-shadow: var(--badge-edge);
   color: var(--accent);
 }
 
 .tile-alert .tile-icon {
-  background: rgb(255 184 74 / 0.12);
+  box-shadow: var(--badge-edge-alert);
   color: var(--alert);
 }
 
@@ -734,7 +786,7 @@ button {
 }
 
 .tile-value {
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
@@ -854,6 +906,23 @@ button {
 
 .tabs button:hover {
   color: var(--ink);
+}
+
+.tabs .icon {
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+.tabs button:hover .icon,
+.tabs button:focus-visible .icon {
+  transform: translateY(-2px) scale(1.1);
+  filter: drop-shadow(0 0 8px rgb(47 216 255 / 0.6));
+}
+
+/* The Alerts tab stays amber while something needs a look */
+.tabs button:has(.tab-count):not([aria-current='page']) {
+  color: var(--alert);
 }
 
 .tabs button[aria-current='page'] {
