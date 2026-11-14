@@ -388,7 +388,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
   <div class="chips" id="aChips" role="group" aria-label="Filter crew"></div>
   <div class="card scroll" style="padding:6px"><table class="ptab" id="aTable"></table></div>
   <details class="card" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center">Clinical parameter table (all 21)</summary><p class="note">Every monitored parameter with its module, priority and status. Demo values for the profile open on the crew side.</p><div class="scroll"><table class="ptab" id="aParams"></table></div></details>
-  <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Becky’s and Dr. Adolfo’s rows are live from their crew dashboards; the other crew are demo data.</p>
+  <p class="note">Amber values are outside the alert thresholds. Mood is a private self-report, so it is not shown here. Radiation has no limit set yet: a limit needs its source before it can raise a flag. Adolfo’s and Dr. Ángels’ rows are live from their crew dashboards; the other crew are demo data.</p>
 </div>
 <section id="cdPage" role="dialog" aria-modal="true" aria-label="Crew member detail" hidden>
   <div class="inc card">
@@ -446,7 +446,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <main id="home">
 <section class="hero">
   <div class="card">
-    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2 id="greet">Good morning, Cmdr. Becky</h2>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2 id="greet">Good morning, Cmdr. Adolfo</h2>
     <p class="note" style="margin-top:-6px">Lunar dawn cycle initialized. Sol 248 mission readiness starting.</p>
     <div class="row"><span id="stk">14-sol streak</span><span id="lvl">Level 8 astronaut</span></div>
     <div class="xp"><i id="xpBar"></i></div>
@@ -677,9 +677,9 @@ const ico=(k,s)=>`<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fi
 const st={};const inc={ack:false,done:[true,false,false,false]};
 let ME=0;
 const PD=[
- {name:"Cmdr. Becky",greet:"Good morning, Cmdr. Becky",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,bps:118,bpd:76,sex:"F",age:38,ht:168,wt:61,mm:[[2.4,2.5],[2.3,2.4],[21.0,21.6],[7.6,7.9],[7.4,7.8]],rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
+ {name:"Cmdr. Adolfo",greet:"Good morning, Cmdr. Adolfo",lvl:8,stk:14,xp0:2450,nxt:2800,hr:72,base:66,hrv:48,sleep:8.25,eff:94,slp:"8h 15m",rest:94,stages:[20,17,55,8],temp:36.6,act:18,glu:94,dose:"0.14 mSv today",stress:32,fat:"Not tired",br:14,spo2:99,bps:118,bpd:76,sex:"M",age:42,ht:178,wt:76,mm:[[3.6,3.7],[3.4,3.5],[27.5,27.9],[9.6,9.8],[9.4,9.6]],rm:0,q:[1,1,1,0,0,0,0],inc:{ack:false,done:[true,false,false,false]},
   bs:{"Heart rate":[66,72,4],"Sleep duration":[7.3,8.25,.6],"Body temperature":[36.6,36.6,.12],"Exercise":[44,18,12],"Blood glucose":[94,94,8],"Blood pressure":[118,118,5]}},
- {name:"Dr. Adolfo",greet:"Good morning, Dr. Adolfo",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,sex:"M",age:42,ht:178,wt:76,mm:[[3.6,3.7],[3.4,3.5],[27.5,27.9],[9.6,9.8],[9.4,9.6]],rm:2,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
+ {name:"Dr. Ángels",greet:"Good morning, Dr. Ángels",lvl:11,stk:21,xp0:3900,nxt:4200,hr:62,base:62,hrv:56,sleep:7.6,eff:91,slp:"7h 36m",rest:91,stages:[22,18,51,9],temp:36.5,act:52,glu:90,dose:"0.12 mSv today",stress:24,fat:"Not tired",br:13,spo2:99,bps:114,bpd:72,sex:"F",age:38,ht:168,wt:61,mm:[[2.4,2.5],[2.3,2.4],[21.0,21.6],[7.6,7.9],[7.4,7.8]],rm:2,surgeon:true,q:[1,1,1,1,0,0,0],inc:{ack:true,done:[true,true,true,true]},
   bs:{"Heart rate":[62,62,3],"Sleep duration":[7.5,7.6,.5],"Body temperature":[36.5,36.5,.1],"Exercise":[50,52,8],"Blood glucose":[90,90,6],"Blood pressure":[114,114,4]},
   ex:{'Heart rate':[['Resting HR','62 bpm'],['HRV (RMSSD)','56 ms'],['Recovery, 1 min','28 bpm drop'],['SpO2','99%'],['Breathing rate','13 /min'],['Baseline','62 bpm']],'Sleep duration':[['Efficiency','91%'],['Deep','18%'],['REM','22%'],['Awake','9%'],['Awakenings','2'],['Target','7 h']],'Body temperature':[['Skin, overnight','36.5 °C'],['Baseline','36.5 °C'],['Alert above','37.3 °C']],'Exercise':[['Steps','7,880'],['Very active','52 min'],['Prescribed','45 min']],'Blood glucose':[['Fasting','90 mg/dL'],['Target','70–140'],['Last reading','06:35']]}}
 ];
@@ -928,9 +928,9 @@ $("admHome").onclick=()=>{location.hash="landing"};
 
 // admin: all crew data
 const CREW=[
- {n:"Cmdr. Becky",bps:118,bpd:76,r:"Mission commander",live:true,spo2:99,dose:.14,cum:18.4,sm:0,b:{hr:66,sleep:7.3,temp:36.6,act:44,glu:94}},
- {n:"Dr. Adolfo",bps:114,bpd:72,r:"Flight surgeon",live:true,hr:62,spo2:99,sleep:7.6,temp:36.5,act:52,glu:90,dose:.12,cum:17.9,chk:7,seal:true,sm:0,b:{hr:62,sleep:7.5,temp:36.5,act:50,glu:90}},
- {n:"Ángels",bps:120,bpd:78,r:"Geologist",hr:66,spo2:98,sleep:7.2,temp:36.6,act:58,glu:96,dose:.19,cum:19.6,chk:6,seal:true,sm:3,b:{hr:65,sleep:7.3,temp:36.6,act:56,glu:95}},
+ {n:"Cmdr. Adolfo",bps:118,bpd:76,r:"Mission commander",live:true,spo2:99,dose:.14,cum:18.4,sm:0,b:{hr:66,sleep:7.3,temp:36.6,act:44,glu:94}},
+ {n:"Dr. Ángels",bps:114,bpd:72,r:"Flight surgeon",live:true,hr:62,spo2:99,sleep:7.6,temp:36.5,act:52,glu:90,dose:.12,cum:17.9,chk:7,seal:true,sm:0,b:{hr:62,sleep:7.5,temp:36.5,act:50,glu:90}},
+ {n:"Becky",bps:120,bpd:78,r:"Geologist",hr:66,spo2:98,sleep:7.2,temp:36.6,act:58,glu:96,dose:.19,cum:19.6,chk:6,seal:true,sm:3,b:{hr:65,sleep:7.3,temp:36.6,act:56,glu:95}},
  {n:"Alex",bps:126,bpd:82,r:"Systems engineer",hr:78,spo2:96,sleep:6.4,temp:37.5,act:47,glu:101,dose:.16,cum:18.1,chk:3,seal:false,sm:2,b:{hr:64,sleep:7.2,temp:36.6,act:52,glu:98}},
  {n:"Valentina",bps:116,bpd:74,r:"Biologist",hr:70,spo2:98,sleep:5.9,temp:36.7,act:30,glu:92,dose:.13,cum:17.5,chk:4,seal:true,sm:190,b:{hr:68,sleep:7.4,temp:36.6,act:48,glu:93}},
  {n:"Ivan",bps:122,bpd:80,r:"Pilot",hr:64,spo2:99,sleep:7.8,temp:36.4,act:61,glu:152,dose:.15,cum:18.8,chk:5,seal:true,sm:4,b:{hr:63,sleep:7.7,temp:36.4,act:58,glu:100}}
