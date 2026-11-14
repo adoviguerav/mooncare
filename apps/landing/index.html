@@ -252,6 +252,10 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .jr{display:flex;align-items:center;gap:8px;margin-top:4px}.jr .s,.jr .b{width:14px;height:14px;border-radius:50%;flex:none}.jr .s{background:radial-gradient(circle at 35% 30%,#fff3b0,#ffa63d);box-shadow:0 0 12px rgba(255,166,61,.8)}.jr .b{background:radial-gradient(circle at 35% 30%,#9fe9ff,#2fd8ff);box-shadow:0 0 12px rgba(47,216,255,.7)}
 .jr .line{position:relative;flex:1;height:4px;border-radius:4px;background:var(--line)}.jr #jrFill{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#ffa63d,var(--warn));transition:width 1s linear}
 .jr .mk{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,166,61,.45),0 0 14px #ffa63d;transition:left 1s linear}
+
+.bp{transform-box:fill-box;transform-origin:center;animation:bpul 2.2s ease-out infinite}@keyframes bpul{from{transform:scale(.8);opacity:.9}to{transform:scale(2.4);opacity:0}}
+.radar{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.01)),rgba(5,13,26,.7);border-radius:18px;border-color:var(--gl-line)}
+@media(prefers-reduced-motion:reduce){.bp{animation:none}#radS,#radNeed,#radTrail{transition:none!important}}
 </style>
 </head>
 <body>
@@ -478,8 +482,30 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <p class="note">Coronal mass ejection (CME) inbound</p>
     <div class="eta"><span>ETA impact window</span><b id="eta" role="timer">00:18:42</b></div>
     <div class="trk2" aria-live="off"><div><span class="note">Distance to base</span><div class="dv"><b id="dist">1,391,280</b> <small>km</small></div></div><div style="text-align:right"><span class="note">Closing speed</span><div class="dv"><b id="spd">1,240</b> <small>km/s</small></div></div></div>
-    <div class="jr" aria-hidden="true"><i class="s"></i><span class="line"><i id="jrFill"></i><i class="mk" id="jrMk"></i></span><i class="b"></i></div>
-    <div class="row" style="margin:4px 0 12px"><span>Flare detected</span><span id="jrPct">0% of the way</span><span>Lunar base</span></div>
+    <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span id="trkL">Tracking</span></div>
+    <svg viewBox="0 0 340 150" width="100%" role="img" aria-label="Solar shock wave travelling from the Sun to the lunar base, with distance and time to impact">
+      <defs>
+        <radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".55" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="baseG"><stop offset="0" stop-color="#9fe9ff"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+        <linearGradient id="trailG" x1="0" x2="1"><stop offset="0" stop-color="#ff9a3c" stop-opacity="0"/><stop offset="1" stop-color="#ff9a3c" stop-opacity=".45"/></linearGradient>
+      </defs>
+      <g fill="#cfe9ff" opacity=".6"><circle cx="90" cy="20" r="1"/><circle cx="170" cy="130" r="1"/><circle cx="250" cy="24" r="1.2"/><circle cx="320" cy="120" r="1"/><circle cx="130" cy="44" r=".8"/><circle cx="210" cy="112" r=".8"/></g>
+      <line x1="52" x2="296" y1="78" y2="78" stroke="#1b3550" stroke-width="2"/>
+      <g stroke="#2b4c6c" stroke-width="1.5"><path d="M120.600 72v12M208.300 72v12"/></g>
+      <g fill="#8aa3bb" font-size="9" text-anchor="middle"><text x="120.600" y="98">1.0 M km</text><text x="208.300" y="98">0.5 M km</text><text x="296" y="98">Base</text></g>
+      <rect id="radTrail" x="52" y="58" width="0" height="40" fill="url(#trailG)" style="transition:width 1s linear"/>
+      <circle cx="30" cy="78" r="26" fill="url(#sunG)"/><circle cx="30" cy="78" r="13" fill="#ffd36b"/>
+      <circle class="bp" cx="296" cy="78" r="9" fill="none" stroke="#2fd8ff" stroke-width="1.5"/>
+      <circle cx="296" cy="78" r="16" fill="url(#baseG)" opacity=".7"/><circle cx="296" cy="78" r="6" fill="#2fd8ff"/>
+      <g id="radNeed" style="transition:transform 1s linear" transform="translate(296 0)"><path id="radNeedL" d="M0 56v52" stroke="#ffb84a" stroke-width="1.5" stroke-dasharray="3 3"/><text id="radNeedT" x="0" y="142" text-anchor="middle" font-size="9" fill="#ffb84a">Shelter in time</text></g>
+      <g id="radS" style="transition:transform 1s linear" transform="translate(52 0)">
+        <g fill="none" stroke="#ff9a3c" stroke-linecap="round"><path d="M-3 44Q15 78 -3 112" stroke-width="3"/><path d="M-13 48Q2 78 -13 108" stroke-opacity=".55" stroke-width="2"/><path d="M-23 53Q-11 78 -23 103" stroke-opacity=".3" stroke-width="1.5"/></g>
+        <text id="radKm" x="0" y="30" text-anchor="middle" font-size="12" font-weight="700" fill="#ffd9a0">1.39 M km</text>
+        <path d="M0 35v5" stroke="#ffd9a0" stroke-width="1"/>
+        <text id="radEta" x="0" y="126" text-anchor="middle" font-size="11" fill="#cfe3f5">ETA 18:42</text>
+      </g>
+      
+    </svg></div>
     <div class="tlbar" aria-hidden="true"><i id="tlNeed"></i></div>
     <div class="row" style="margin:6px 0 14px"><span id="tlNeedT"></span><span id="tlSpareT"></span></div>
     <div class="stp" id="stepper" aria-hidden="true"></div>
@@ -489,8 +515,7 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
     <div class="row" style="margin:16px 0 6px"><b style="color:var(--ink)">Crew whereabouts</b><span id="crewSum"></span></div>
     <div id="crewList"></div>
     <div class="rate"><div><span class="note">Radiation at your position (demo)</span><div><b id="rate">0.14</b> <small>mSv/h</small></div><div class="note" id="rateWhere"></div></div><svg id="rateSp" viewBox="0 0 120 40" width="120" height="40" aria-hidden="true"></svg></div>
-    <div class="radar"><div class="rt"><span>Heliospheric shock radar</span><span id="trkL">Tracking</span></div>
-    <svg viewBox="0 0 340 110" width="100%" role="img" aria-label="Solar shock wave moving toward the lunar base"><defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa63d"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient></defs><g id="shock" fill="none" stroke="#ff9a3c" stroke-opacity=".6" style="transition:transform 1s linear"><path d="M85 25q22 30 0 60"/><path d="M105 18q30 37 0 74"/><path d="M125 11q38 44 0 88"/></g><circle cx="45" cy="55" r="30" fill="url(#sunG)"/><line x1="80" y1="55" x2="280" y2="55" stroke="#ffb84a" stroke-dasharray="4 4"/><rect x="150" y="45" width="70" height="20" rx="6" fill="#3a2a0a" stroke="#ffb84a"/><text x="185" y="59" text-anchor="middle" font-size="11" fill="#ffd27a">1,240 km/s</text><circle cx="300" cy="55" r="15" fill="#2fa8d8"/><circle cx="300" cy="55" r="22" fill="none" stroke="#2fd8ff" stroke-opacity=".5"/></svg></div>
+    
     <div class="stats"><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg></span><span>Peak flux</span><b>14.8 mSv/h</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/></svg></span><span>Shock speed</span><b>1,240 km/s</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.1 8 7.5 9.5 4.4-1.5 7.5-5 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span>Bunker shield</span><b>99.45%</b></div><div><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.7"/><g><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(120 12 12)"/><path d="M12 12 8.2 5.4a8.8 8.8 0 0 1 7.6 0Z" transform="rotate(240 12 12)"/></g></svg></span><span>Outside dose rate</span><b id="telRate">0.14 mSv/h</b></div></div>
     <div class="novabox"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z"/><path d="M18.5 15v4M16.5 17h4"/></svg></span><span><b>Dr. Nova AI:</b> <span id="novaLine"></span></span></div>
     <p class="note" style="margin-top:12px">Step times and radiation values are demo estimates. Distance is the closing speed multiplied by the time left.</p>
@@ -689,9 +714,12 @@ function drawLive(){
   $("rateWhere").textContent=sh?"In the shelter, 99.45% shielded":"Outside the shelter, outside rate "+out.toFixed(2)+" mSv/h";
   $("rateSp").innerHTML=`<polyline points="${hist.map((v,i)=>(i*120/39)+","+(36-Math.min(1,v/16)*32)).join(" ")}" fill="none" stroke="${sh?"var(--ok)":"var(--warn)"}" stroke-width="2"/>`;
   const km=Math.max(0,eta)*FLARE.speed,dist=km.toLocaleString("en-US");$("dist").textContent=dist;$("spd").textContent=FLARE.speed.toLocaleString("en-US");
-  $("jrFill").style.width=(f*100)+"%";$("jrMk").style.left=(f*100)+"%";$("jrPct").textContent=Math.round(f*100)+"% of the way";
   $("trkL").textContent=eta>0?"Tracking · "+(km/1e6).toFixed(2)+" M km":"Impact";
-  $("shock").style.transform="translateX("+(f*150)+"px)";
+  const X0=52,W=244,xs=X0+f*W,need2=needMin(),xn=296-Math.min(1,need2*60*FLARE.speed/(FLARE.speed*FLARE.t0))*W;
+  $("radS").setAttribute("transform","translate("+xs+" 0)");$("radTrail").setAttribute("width",f*W);
+  $("radKm").textContent=eta>0?(km/1e6).toFixed(2)+" M km":"Impact";$("radEta").textContent=eta>0?"ETA "+mmss(eta):"Impact window open";
+  const nd=$("radNeed");nd.style.display=(need2&&eta>0)?"":"none";nd.setAttribute("transform","translate("+xn+" 0)");
+  const late=xs>xn;$("radNeedL").setAttribute("stroke",late?"#ff7b72":"#ffb84a");$("radNeedT").setAttribute("fill",late?"#ff7b72":"#ffb84a");$("radNeedT").textContent=late?"Too late to finish all steps":"Finish before the shock reaches here";
   $("eta").style.color=eta<300?"var(--bad)":"";
   const ph=phase();$("aPhase").className="tag "+ph[0];$("aPhase").textContent=ph[1];
   const need=needMin(),win=eta/60,spare=win-need;
