@@ -69,6 +69,10 @@ MOOD_NAMES = {
     "mood_neutral": "Neutral",
 }
 
+# Indicator id, which is also its name, to the normal range of the Inspiration4 metabolic panel file, in mmol/L
+ELECTROLYTE_RANGES = {"sodium": (135.0, 146.0), "potassium": (3.5, 5.3), "chloride": (98.0, 110.0)}
+KIDNEY_HOW_TO_MEASURE = "With a portable analyser, from a drop of blood from the finger or a blood sample."
+
 # REVIEW: how_to_measure and why_it_matters are drafts built from docs/parameters_and_datasets.md.
 INDICATORS = [
     Indicator(
@@ -176,6 +180,72 @@ INDICATORS = [
     ),
     *[
         Indicator(
+            id=electrolyte,
+            name=f"Blood {electrolyte}",
+            unit="mmol/L",
+            how_to_measure="With a portable chemistry analyser, from a drop of blood from the finger.",
+            why_it_matters=(
+                f"{electrolyte.capitalize()} is one of the electrolytes in your blood. A value outside "
+                "the normal range is an electrolyte imbalance."
+            ),
+            source_id="inspiration4_metabolic_panel",
+        )
+        for electrolyte in ELECTROLYTE_RANGES
+    ],
+    Indicator(
+        id="creatinine",
+        name="Creatinine",
+        unit="mg/dL",
+        how_to_measure=KIDNEY_HOW_TO_MEASURE,
+        why_it_matters=(
+            "Creatinine is a waste product that your kidneys clear from the blood. A value that rises "
+            "against your own baseline can be a sign that the kidneys are working less well."
+        ),
+        source_id="inspiration4_metabolic_panel",
+    ),
+    Indicator(
+        id="urea_nitrogen",
+        name="Urea nitrogen (BUN)",
+        unit="mg/dL",
+        how_to_measure=KIDNEY_HOW_TO_MEASURE,
+        why_it_matters=(
+            "Urea is a waste product that your kidneys clear from the blood. It is followed together with "
+            "creatinine to watch kidney function."
+        ),
+        source_id="inspiration4_metabolic_panel",
+    ),
+    Indicator(
+        id="egfr",
+        name="Kidney filtration rate (eGFR)",
+        unit="mL/min/1.73 m²",
+        how_to_measure="It is worked out from the creatinine of the same blood test.",
+        why_it_matters=(
+            "An estimate of how much blood your kidneys filter each minute. A value that falls against "
+            "your own baseline can be a sign that the kidneys are working less well."
+        ),
+        source_id="inspiration4_metabolic_panel",
+    ),
+    Indicator(
+        id="albumin",
+        name="Albumin",
+        unit="g/dL",
+        how_to_measure="With a portable chemistry analyser, from a blood sample.",
+        why_it_matters=(
+            "Albumin is the main protein in your blood. An abnormal value can be a sign of a nutritional "
+            "deficiency."
+        ),
+        source_id="inspiration4_metabolic_panel",
+    ),
+    Indicator(
+        id="calcium",
+        name="Blood calcium",
+        unit="mg/dL",
+        how_to_measure="With a blood test.",
+        why_it_matters="The calcium in your blood. A value outside the normal range is worth a second test.",
+        source_id="inspiration4_metabolic_panel",
+    ),
+    *[
+        Indicator(
             id=mood_id,
             name=mood_name,
             unit=None,
@@ -210,6 +280,17 @@ MOOD_RULE_LIMITS = (
     "check-in covers one. To confirm with the medical reviewer."
 )
 
+def get_metabolic_panel_range_source(analyte_name: str) -> str:
+    return f"Normal range given for {analyte_name} in the Inspiration4 metabolic panel file (NASA OSDR, OSD-575)."
+
+
+def get_widest_metabolic_panel_range_source(analyte_name: str) -> str:
+    return (
+        f"Widest of the normal ranges given for {analyte_name} in the Inspiration4 metabolic panel file "
+        "(NASA OSDR, OSD-575). The file gives a different range by astronaut and draw."
+    )
+
+
 # REVIEW: title, explanation and action are drafts built from docs/parameters_and_datasets.md.
 RULES = [
     Rule(
@@ -222,9 +303,7 @@ RULES = [
             "This can be a sign of abnormal glucose regulation."
         ),
         action="Ask for a metabolic assessment.",
-        threshold_source=(
-            "Normal range given for glucose in the Inspiration4 metabolic panel file (NASA OSDR, OSD-575)."
-        ),
+        threshold_source=get_metabolic_panel_range_source("glucose"),
     ),
     Rule(
         indicator_id="resting_heart_rate",
@@ -284,5 +363,81 @@ RULES = [
             'last 2 weeks, and "more than half the days" is the answer that starts to count. '
             + MOOD_RULE_LIMITS
         ),
+    ),
+    *[
+        Rule(
+            indicator_id=electrolyte,
+            low=low,
+            high=high,
+            title=f"{electrolyte.capitalize()} out of range",
+            explanation=(
+                f"Your blood {electrolyte} is outside the normal range of "
+                f"{low:g} to {high:g} mmol/L. This is an electrolyte imbalance."
+            ),
+            action="Repeat the test and ask for a clinical review.",
+            threshold_source=get_metabolic_panel_range_source(electrolyte),
+        )
+        for electrolyte, (low, high) in ELECTROLYTE_RANGES.items()
+    ],
+    Rule(
+        indicator_id="urea_nitrogen",
+        low=7.0,
+        high=25.0,
+        title="Urea nitrogen out of range",
+        explanation=(
+            "Your blood urea nitrogen is outside the normal range of 7 to 25 mg/dL. "
+            "This can be a sign of a change in kidney function."
+        ),
+        action="Ask for a renal assessment.",
+        threshold_source=get_metabolic_panel_range_source("urea nitrogen (BUN)"),
+    ),
+    Rule(
+        indicator_id="egfr",
+        low=60.0,
+        title="Kidney filtration rate low",
+        explanation=(
+            "Your estimated kidney filtration rate (eGFR) is below 60 mL/min/1.73 m². "
+            "This can be a sign that the kidneys are working less well."
+        ),
+        action="Ask for a renal assessment.",
+        threshold_source=(
+            "Lower limit given for eGFR in the Inspiration4 metabolic panel file (NASA OSDR, OSD-575). "
+            "The file gives no upper limit."
+        ),
+    ),
+    Rule(
+        indicator_id="albumin",
+        low=3.6,
+        high=5.1,
+        title="Albumin out of range",
+        explanation=(
+            "Your blood albumin is outside the normal range of 3.6 to 5.1 g/dL. "
+            "This can be a sign of a nutritional deficiency."
+        ),
+        action="Ask for a targeted nutritional assessment.",
+        threshold_source=get_metabolic_panel_range_source("albumin"),
+    ),
+    # The file gives creatinine and calcium a different range by astronaut and draw, and a rule holds one
+    # range for the whole crew: these two take the widest, from the lowest minimum to the highest maximum.
+    Rule(
+        indicator_id="creatinine",
+        low=0.5,
+        high=1.35,
+        title="Creatinine out of range",
+        explanation=(
+            "Your creatinine is outside the normal range of 0.5 to 1.35 mg/dL. "
+            "This can be a sign of a change in kidney function."
+        ),
+        action="Ask for a renal assessment.",
+        threshold_source=get_widest_metabolic_panel_range_source("creatinine"),
+    ),
+    Rule(
+        indicator_id="calcium",
+        low=8.6,
+        high=10.4,
+        title="Calcium out of range",
+        explanation="Your blood calcium is outside the normal range of 8.6 to 10.4 mg/dL.",
+        action="Repeat the test and ask for a clinical review.",
+        threshold_source=get_widest_metabolic_panel_range_source("calcium"),
     ),
 ]

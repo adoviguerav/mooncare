@@ -13,7 +13,10 @@ const MOOD_DAY_COUNT_IDS = ['mood_sad_days_14', 'mood_tense_days_14']
 
 // Which indicators are shown together. An indicator in no group goes under OTHER_GROUP.
 const GROUPS = [
-  { title: 'Blood', indicatorIds: ['glucose'] },
+  {
+    title: 'Blood',
+    indicatorIds: ['glucose', 'sodium', 'potassium', 'chloride', 'creatinine', 'urea_nitrogen', 'egfr', 'albumin', 'calcium'],
+  },
   { title: 'Heart', indicatorIds: ['heart_rate', 'resting_heart_rate'] },
   { title: 'Activity', indicatorIds: ['very_active_minutes', 'steps'] },
   { title: 'Sleep', indicatorIds: ['sleep_duration', 'sleep_efficiency'] },

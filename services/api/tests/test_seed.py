@@ -14,8 +14,8 @@ from seed import (
     build_mood_day_counts,
     read_crew_readings,
     read_daily_readings,
-    read_glucose_readings,
     read_heart_rate_readings,
+    read_metabolic_panel_readings,
     to_sql_literal,
 )
 from seed_content import INDICATORS, RULES
@@ -77,14 +77,44 @@ def test_an_empty_glucose_cell_produces_no_reading(tmp_path: Path) -> None:
         METABOLIC_PANEL_HEADER + "C003_serum_L-3,,65,99\n" + "C003_serum_R+45,36,65,99\n",
     )
 
-    assert read_glucose_readings(metabolic_panel, "C003") == [Reading("glucose", "2021-11-02T00:00", 36.0)]
+    assert read_metabolic_panel_readings(metabolic_panel, "C003") == [Reading("glucose", "2021-11-02T00:00", 36.0)]
+
+
+def test_stores_every_analyte_of_a_metabolic_panel_draw(tmp_path: Path) -> None:
+    metabolic_panel = write_csv(
+        tmp_path / "panel.csv",
+        "Sample Name,"
+        "glucose_value_milligram_per_deciliter,"
+        "sodium_value_millimol_per_liter,"
+        "potassium_value_millimol_per_liter,"
+        "chloride_value_millimol_per_liter,"
+        "creatinine_value_milligram_per_deciliter,"
+        "urea_nitrogen_bun_value_milligram_per_deciliter,"
+        "egfr_african_american_value_milliliter_per_minute_per_1.73_meter_squared,"
+        "egfr_non_african_american_value_milliliter_per_minute_per_1.73_meter_squared,"
+        "albumin_value_gram_per_deciliter,"
+        "calcium_value_milligram_per_deciliter\n"
+        "C003_serum_R+1,103,137,3,103,0.89,21,102,88,4.2,9.4\n",
+    )
+
+    assert read_metabolic_panel_readings(metabolic_panel, "C003") == [
+        Reading("glucose", "2021-09-19T00:00", 103.0),
+        Reading("sodium", "2021-09-19T00:00", 137.0),
+        Reading("potassium", "2021-09-19T00:00", 3.0),
+        Reading("chloride", "2021-09-19T00:00", 103.0),
+        Reading("creatinine", "2021-09-19T00:00", 0.89),
+        Reading("urea_nitrogen", "2021-09-19T00:00", 21.0),
+        Reading("egfr", "2021-09-19T00:00", 88.0),
+        Reading("albumin", "2021-09-19T00:00", 4.2),
+        Reading("calcium", "2021-09-19T00:00", 9.4),
+    ]
 
 
 def test_rejects_a_sample_label_it_cannot_date(tmp_path: Path) -> None:
     metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER + "C003_serum_FD2,80,65,99\n")
 
     with pytest.raises(ValueError, match="Unknown sample label 'FD2'"):
-        read_glucose_readings(metabolic_panel, "C003")
+        read_metabolic_panel_readings(metabolic_panel, "C003")
 
 
 def test_loads_the_glucose_rule_with_the_limits_of_the_nasa_file(
@@ -108,11 +138,32 @@ def test_loads_the_resting_heart_rate_sleep_and_mood_rules_with_their_sourced_li
 
     load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
 
-    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id > 1 ORDER BY id") == [
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id BETWEEN 2 AND 5 ORDER BY id") == [
         (2, "resting_heart_rate", None, 100.0),
         (3, "sleep_duration", 420.0, None),
         (4, "mood_sad_days_14", None, 7.0),
         (5, "mood_tense_days_14", None, 7.0),
+    ]
+
+
+def test_loads_the_blood_rules_with_the_ranges_of_the_nasa_file(
+    tmp_path: Path, load_seeds: LoadSeeds, fetch_all: FetchAll
+) -> None:
+    metabolic_panel = write_csv(tmp_path / "panel.csv", METABOLIC_PANEL_HEADER)
+    hourly = write_csv(tmp_path / "hourly.csv", HOURLY_HEADER)
+
+    load_seeds(ONE_CREW_MEMBER, metabolic_panel, hourly)
+
+    assert fetch_all("SELECT id, indicator_id, low, high FROM cfg.rule WHERE id > 5 ORDER BY id") == [
+        (6, "sodium", 135.0, 146.0),
+        (7, "potassium", 3.5, 5.3),
+        (8, "chloride", 98.0, 110.0),
+        (9, "urea_nitrogen", 7.0, 25.0),
+        (10, "egfr", 60.0, None),
+        (11, "albumin", 3.6, 5.1),
+        # The file gives these two a different range by astronaut and draw: the rule takes the widest
+        (12, "creatinine", 0.5, 1.35),
+        (13, "calcium", 8.6, 10.4),
     ]
 
 
@@ -165,6 +216,14 @@ def test_the_real_datasets_give_four_crew_members_a_full_panel_on_the_demo_date(
     assert [panel["glucose"] for panel in panels] == [36.0, 84.0, 44.0, 43.0]
     # Only Crew 2 is over the limit of the mood rule, 7 days
     assert [panel["mood_tense_days_14"] for panel in panels] == [7.0, 13.0, 3.0, 1.0]
+
+
+def test_the_real_metabolic_panel_gives_crew_1_low_potassium_the_day_after_landing() -> None:
+    panel = get_latest_values(read_crew_readings(CREW[0], DATASET_FILES), "2021-09-19")
+
+    assert panel["potassium"] == 3.0
+    assert panel["sodium"] == 137.0
+    assert panel["egfr"] == 88.0
 
 
 def test_counts_for_each_mood_entry_the_days_with_that_mood_in_the_14_days_ending_on_it() -> None:

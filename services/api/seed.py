@@ -22,7 +22,20 @@ LAUNCH_DATE = date(2021, 9, 16)
 LANDING_DATE = date(2021, 9, 18)
 SAMPLE_LABEL_PATTERN = re.compile(r"([LR])[+-](\d+)")
 
-GLUCOSE_COLUMN = "glucose_value_milligram_per_deciliter"
+# Inspiration4 metabolic panel: indicator id to the column it comes from (docs/parameters_and_datasets.md).
+# One reading per astronaut, draw and indicator. An empty cell produces no reading.
+METABOLIC_PANEL_COLUMNS = {
+    "glucose": "glucose_value_milligram_per_deciliter",
+    "sodium": "sodium_value_millimol_per_liter",
+    "potassium": "potassium_value_millimol_per_liter",
+    "chloride": "chloride_value_millimol_per_liter",
+    "creatinine": "creatinine_value_milligram_per_deciliter",
+    "urea_nitrogen": "urea_nitrogen_bun_value_milligram_per_deciliter",
+    # The file gives eGFR twice, by race. We take the lower one
+    "egfr": "egfr_non_african_american_value_milliliter_per_minute_per_1.73_meter_squared",
+    "albumin": "albumin_value_gram_per_deciliter",
+    "calcium": "calcium_value_milligram_per_deciliter",
+}
 
 # LifeSnaps daily file: indicator id to the column it comes from (docs/parameters_and_datasets.md, table 1).
 # One reading per person, day and indicator, at T00:00. An empty cell produces no reading.
@@ -116,15 +129,18 @@ def get_draw_date(sample_label: str) -> date:
     return LAUNCH_DATE - days if reference == "L" else LANDING_DATE + days
 
 
-def read_glucose_readings(metabolic_panel_csv: Path, inspiration4_code: str) -> list[Reading]:
+def read_metabolic_panel_readings(metabolic_panel_csv: Path, inspiration4_code: str) -> list[Reading]:
     readings = []
     with metabolic_panel_csv.open(newline="", encoding="utf-8-sig") as csv_file:
         for row in csv.DictReader(csv_file):
             crew_code, _, sample_label = row["Sample Name"].split("_")
-            if crew_code != inspiration4_code or row[GLUCOSE_COLUMN] == "":
+            if crew_code != inspiration4_code:
                 continue
             taken_at = f"{get_draw_date(sample_label).isoformat()}T00:00"
-            readings.append(Reading("glucose", taken_at, float(row[GLUCOSE_COLUMN])))
+            for indicator_id, column in METABOLIC_PANEL_COLUMNS.items():
+                # A file without the column gives no reading either: the real-datasets test catches a renamed column
+                if row.get(column):
+                    readings.append(Reading(indicator_id, taken_at, float(row[column])))
     return readings
 
 
@@ -180,7 +196,7 @@ def read_crew_readings(pairing: CrewPairing, dataset_files: DatasetFiles) -> lis
         dataset_files.lifesnaps_daily, pairing.lifesnaps_id, pairing.lifesnaps_offset_days
     )
     return (
-        read_glucose_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
+        read_metabolic_panel_readings(dataset_files.metabolic_panel, pairing.inspiration4_code)
         + read_heart_rate_readings(dataset_files.lifesnaps_hourly, pairing.lifesnaps_id, pairing.lifesnaps_offset_days)
         + daily_readings
         + build_mood_day_counts(daily_readings)
