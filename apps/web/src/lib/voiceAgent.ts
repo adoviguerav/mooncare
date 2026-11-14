@@ -90,7 +90,7 @@ export function buildAgentPrompt(procedure: Procedure): string {
 - Every action comes from the procedure below. Keep its facts exactly: the items, the amounts, the times, the order, the names of the drugs, the doses and the warnings. You choose the spoken words; you never change what is done.
 - Never add a step, a dose, a number or a piece of medical advice that is not written below. Never diagnose.
 - If she asks something the procedure does not answer, say so in one sentence and go back to the current action.
-- Where the manual says to call MCC-H or to contact the Surgeon, tell her there is no link and that what she records is sent when the link returns. The manual's own rule for Loss of Signal is in its opening note: say it in the manual's words if she asks. What to do is her decision as the physician, never yours.
+- Where the manual says to call MCC-H or to contact the Surgeon, tell her there is no link and that what she records is sent when the link returns. The manual's own rule for Loss of Signal is written in the treatment step: say it in the manual's words. What to do is her decision as the physician, never yours.
 - Never choose a drug or a dose for her, and never tell her to give one. When a step lists drugs, tell her which ones are on her screen and ask which one she wants to hear. Read that entry as written: its dose, and its warning if it has one.
 - If she asks for a dose, a time or a detail that is not written below, say this checklist does not give it. Never fill the gap.
 

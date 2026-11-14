@@ -65,11 +65,13 @@ export function ProfilePicker({ onPick }: Props) {
       {emergency !== null ? (
         <div className="simulation-banner" role="status">
           <span>Simulation running: an alert for {emergency.patientName}. Open a profile to see it.</span>
-          <button onClick={endEmergency}>End simulation</button>
+          <button className="ghost ghost-small" onClick={endEmergency}>
+            End simulation
+          </button>
         </div>
       ) : (
         patient !== undefined && (
-          <button className="simulate" onClick={() => startEmergency('infection', patient.id, patient.name)}>
+          <button className="ghost simulate" onClick={() => startEmergency('infection', patient.id, patient.name)}>
             Simulate a possible infection
           </button>
         )

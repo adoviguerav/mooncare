@@ -127,7 +127,6 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
       ) : (
         <Status procedure={procedure} emergency={emergency} isCommander={crewMember.role === 'commander'} />
       )}
-      {emergency.event === 'infection' && <SurgeonReport procedure={procedure} emergency={emergency} />}
       <Evidence emergency={emergency} />
       <details className="card group">
         <summary className="card-heading">
@@ -147,11 +146,14 @@ export function EmergencyScreen({ crewMember, emergency, onOpenPanel }: Props) {
           </p>
           <p>
             The instructions, the lists and the drug entries are the manual's own words. The titles of the steps, the
-            buttons, the drawings and the notes marked "Our note" are ours.
+            buttons and the drawings are ours. Left out: the drugs of the Russian kits, the header of the urinalysis
+            form and its second version, for the URILUX analyzer. The model flags an infection, not where it is; the
+            checklists of other infections are not loaded.
           </p>
           <p className="muted">{procedure.source}</p>
         </div>
       </details>
+      {emergency.event === 'infection' && <SurgeonReport procedure={procedure} emergency={emergency} />}
     </main>
   )
 }
@@ -279,7 +281,9 @@ function SimulationBanner() {
   return (
     <div className="simulation-banner" role="status">
       <span>Simulation. This is not a real emergency.</span>
-      <button onClick={endEmergency}>End simulation</button>
+      <button className="ghost ghost-small" onClick={endEmergency}>
+        End simulation
+      </button>
     </div>
   )
 }
@@ -309,21 +313,26 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
   return (
     <section className="card guide">
       <div className="guide-top">
-        <Progress procedure={procedure} step={step} />
+        <p className="eyebrow">
+          Step {procedure.steps.indexOf(step) + 1} of {procedure.steps.length} · {step.block}
+        </p>
         <VoiceIndicator agent={agent} />
       </div>
-      <span className="chip chip-alert">{step.block}</span>
+      <Progress procedure={procedure} step={step} />
       <h2 className="guide-title">{step.title}</h2>
+      {step.checklist !== undefined && (
+        <p className="guide-hint">Tap what the patient has, or tell the voice guide.</p>
+      )}
       {step.checklist?.map((group) => (
         <div key={group.title} className="guide-checklist">
-          <p className="muted">{group.title}</p>
+          <h3 className="guide-sub">{group.title}</h3>
           <div className="guide-ticks">
             {group.items.map((item) => {
               const present = emergency.record[item] !== undefined
               return (
                 <button
                   key={item}
-                  className="tick"
+                  className="ghost tick"
                   aria-pressed={present}
                   onClick={() => recordFinding(item, present ? null : PRESENT)}
                 >
@@ -357,12 +366,12 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
               <figcaption>{picture.caption}</figcaption>
             </figure>
           ))}
-          <p className="muted">Drawings to recognise the items. They are ours, not from the manual.</p>
         </div>
       )}
       {step.record !== undefined && (
         <div className="guide-record">
-          <p className="muted">{step.record.title}</p>
+          <h3 className="guide-sub">{step.record.title}</h3>
+          <p className="guide-hint">Type each value, or read them aloud to the voice guide.</p>
           <div className="guide-record-fields">
             {step.record.fields.map((field) => (
               <label key={field}>
@@ -386,17 +395,17 @@ function Guide({ procedure, emergency }: { procedure: Procedure; emergency: Emer
             {entry.lines.map((line) => (
               <p key={line}>{line}</p>
             ))}
-            <button className="tick" aria-pressed={given} onClick={() => recordFinding(entry.title, given ? null : GIVEN)}>
+            <button
+              className="ghost tick"
+              aria-pressed={given}
+              onClick={() => recordFinding(entry.title, given ? null : GIVEN)}
+            >
               {given ? 'Given · in the report' : 'Mark as given'}
             </button>
           </details>
         )
       })}
-      {step.note !== undefined && (
-        <p className="guide-note">
-          <strong>Our note, not from the manual.</strong> {step.note}
-        </p>
-      )}
+      {step.note !== undefined && <p className="guide-note">{step.note}</p>}
       {step.timerSeconds !== undefined && <Timer key={emergency.stepStartedAt} seconds={step.timerSeconds} />}
       {step.question !== undefined && <p className="guide-question">{step.question}</p>}
       <div className="guide-options">
@@ -475,7 +484,7 @@ const VOICE_LABELS = {
 function VoiceIndicator({ agent }: { agent: VoiceAgent }) {
   const mode = agent.state === 'live' ? (agent.isSpeaking ? 'speaking' : 'listening') : agent.state
   return (
-    <button className={`voice voice-${mode}`} onClick={agent.toggle} aria-label={`${VOICE_LABELS[mode]}. Tap to turn the voice guide on or off.`}>
+    <button className={`ghost voice voice-${mode}`} onClick={agent.toggle} aria-label={`${VOICE_LABELS[mode]}. Tap to turn the voice guide on or off.`}>
       <span className="voice-orb" aria-hidden="true" />
       {VOICE_LABELS[mode]}
     </button>

@@ -152,9 +152,6 @@ export const AED_ASSISTED_CPR: Procedure = {
   ],
 }
 
-const SURGEON_NOTE =
-  'There is no link with Earth. The manual gives its own rule for Loss of Signal, in its opening note. What you record goes into the report for the Surgeon, sent when the link returns.'
-
 export const BLADDER_KIDNEY_INFECTION: Procedure = {
   id: 'bladder-kidney-infection',
   title: 'Bladder/Kidney Infection',
@@ -167,10 +164,7 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       id: 'symptoms',
       block: 'Symptoms and signs',
       title: 'Check symptoms and signs',
-      lines: [
-        'NOTE: Contact Surgeon before giving any medication marked with an asterisk. In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible.',
-      ],
-      note: 'The model flags an infection, not where it is. This checklist looks for one in the bladder or kidney. The checklists of other infections are not loaded.',
+      lines: [],
       checklist: [
         {
           title: 'Symptoms',
@@ -229,7 +223,6 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
           'Hemoglobin (Ery/uL)',
         ],
       },
-      note: 'The manual also has the header of the form (date, flight day, examiner and crew member) and a second form, for the URILUX analyzer. They are left out here.',
       options: [{ label: 'Results recorded', next: 'treatment', heard: ['recorded', 'done', 'next'] }],
     },
     {
@@ -238,9 +231,10 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       title: 'Treatment',
       lines: [
         'Contact Surgeon to discuss treatment.',
+        // In the manual this note opens the procedure. It is here because this is the step it applies to.
+        'Contact Surgeon before giving any medication marked with an asterisk. In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible.',
         'Increase daily fluid intake (at least 1 L extra per day).',
       ],
-      note: SURGEON_NOTE,
       options: [{ label: 'Done', next: 'antibiotics', heard: ['done', 'next'] }],
     },
     {
@@ -277,7 +271,6 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       ],
       // Ours: the manual also gives the drugs of the Russian kits (Biseptol, Ampioks, Ciprolet, Tarivid,
       // Nitroxoline). The three shown are the ones of the US Ambulatory Medical Pack.
-      note: 'Shown: the three antibiotics of the Ambulatory Medical Pack. The manual lists more, from the Russian kits.',
       options: [{ label: 'Antibiotic given', next: 'pain-relief', heard: ['given', 'done', 'next'] }],
     },
     {
@@ -295,7 +288,6 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
           ],
         },
       ],
-      note: 'The manual also lists Baralgin, from a Russian kit. It is left out here.',
       options: [{ label: 'Done', next: 'kidney-check', heard: ['done', 'next'] }],
     },
     {
@@ -318,7 +310,6 @@ export const BLADDER_KIDNEY_INFECTION: Procedure = {
       lines: [
         'If no improvement or relief from antibiotic treatment and pain worsens within 24 hours, contact Surgeon.',
       ],
-      note: 'Close the case to put the report in the queue for the Surgeon.',
       options: [],
     },
     {

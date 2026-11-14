@@ -48,9 +48,9 @@ flowchart TD
 ```
 
 - **Nobody writes a medical step.** The instructions, the lists of symptoms and signs, the form and the drug entries are the manual's words.
-- **What is ours is said to be ours.** The titles of the steps, the buttons, the drawings of the kit and every note are ours. On screen a note starts with "Our note, not from the manual".
-- **What is left out is said too.** The drugs of the Russian kits (Biseptol, Ampioks, Ciprolet, Tarivid, Nitroxoline, Baralgin), the header of the urinalysis form and the second form, for the URILUX analyzer.
-- **The manual has its own rule for no link.** Its opening note says: "In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible." The guide shows it first. What to do is the medical officer's decision.
+- **What is ours is said to be ours.** The titles of the steps, the buttons and the drawings of the kit are ours. The card "About this simulation" says so. The steps carry no notes of ours, to keep the screen clean.
+- **What is left out is said too**, in the same card: the drugs of the Russian kits (Biseptol, Ampioks, Ciprolet, Tarivid, Nitroxoline, Baralgin), the header of the urinalysis form and the second form, for the URILUX analyzer.
+- **The manual has its own rule for no link.** Its note says: "In an emergency or during Loss of Signal, begin appropriate treatment; then call Surgeon as soon as possible." In the manual it opens the procedure; the guide shows it in the treatment step, where it applies. What to do is the medical officer's decision.
 - **She can go back** one step at a time, by voice or with a button.
 
 A second procedure stays loaded and is not in the demo: 1.102 AED ASSISTED CPR, from NASA's Emergency Medical Procedures Manual for the ISS (MED CL, 09 APR 15, FOIA 16-JSC-F-00174). It has recorded audio and no voice agent.
