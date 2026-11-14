@@ -81,6 +81,13 @@ What was decided for the link to the ground on 14 Nov:
     - One way only, ship to ground. The ground looks and does not answer.
     - The lost link is shown with a switch, "Link with Earth: on or off". One backend and one database, not two.
 
+### In parallel · Study notes
+
+Runs in its own session and branch, away from the priorities above. It goes to `main` only if it is done and seen before the submission.
+
+- [ ] **K1. Learn more about a parameter.** A folded block of study notes, with drawings and sources, on the page of the seven parameters of the infection alert. The spec is in [learn_more.md](learn_more.md). Frontend only.
+    - Done when: the seven parameters show their notes, the tests pass and the page was seen on a phone and on a laptop.
+
 ### Not for Sunday
 
 - [ ] **C1. Commander view.** Decided on 14 Nov: the commander has a button that opens what each of the other crew members sees, read only. No check-in and no changes from there. It changes one line of the System_design, section 6: health data is private day to day, except for the commander.
