@@ -1,0 +1,2140 @@
+/* Copied from apps/web/src/styles/index.css: the look of the real app. Copy it again when the app changes. */
+/* The look of the design prototype (apps/landing/index.html): night sky, glass cards, one cyan accent.
+   The glass is a web approximation with backdrop-filter, with a solid fallback. Dark only, like the prototype. */
+
+:root {
+  --bg: #050d1a;
+  --bg-glow: #0d2745;
+  --surface: #0b1a2e;
+  --ink: #e6f1fb;
+  /* Secondary text. Light enough to read on the glass cards, not only on the plain background */
+  --mute: #c6d6e5;
+  --accent: #2fd8ff;
+  --ok: #3be0a0;
+  --alert: #ffb84a;
+  --alert-ink: #ffd9a0;
+  --line: rgb(255 255 255 / 0.2);
+  --line-faint: rgb(255 255 255 / 0.14);
+  /* The cards carry the glass of the pill buttons: a pale blue sheet, brighter at the top, with a lit edge */
+  --glass: linear-gradient(180deg, rgb(196 226 255 / 0.2), rgb(150 200 255 / 0.07) 55%, rgb(150 200 255 / 0.1)),
+    rgb(22 50 88 / 0.36);
+  --glass-edge:
+    inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(255 255 255 / 0.08),
+    0 1px 0 rgb(2 10 24 / 0.3), 0 22px 54px -18px rgb(2 10 24 / 0.7);
+  --glass-line: rgb(205 230 255 / 0.3);
+  /* Motion with some weight: quick to leave, slow to settle */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  /* The surfaces inside a card. No blur of their own: the card already blurs what is behind. */
+  --tile: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.02));
+  --tile-edge: inset 0 1px 0 rgb(255 255 255 / 0.25);
+  --button: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05));
+  --button-edge: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px rgb(0 0 0 / 0.25);
+  --button-edge-hover: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 6px 20px rgb(47 216 255 / 0.25);
+  --badge-glow: rgb(47 216 255 / 0.15);
+  --badge-glow-alert: rgb(255 184 74 / 0.3);
+  --radius-card: 24px;
+  --radius-tile: 18px;
+  --radius-pill: 999px;
+  --tap: 48px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.5 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The sky, in four fixed, inert layers, so scrolling never repaints them: the stars, the light of the
+   aurora, the Earth with its atmosphere, and a fine grain that ties them together. */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* A vignette that darkens the corners, over three star fields of different sizes, so the pattern
+     does not visibly repeat */
+  background:
+    radial-gradient(120% 90% at 50% 38%, transparent 55%, rgb(2 6 14 / 0.6)),
+    /* Three hairline orbits around the Earth below, and the glint of the sun on its horizon */
+    radial-gradient(circle at 50% 138%, transparent calc(64vmax - 1px), rgb(190 226 255 / 0.13) 64vmax, transparent calc(64vmax + 1px)),
+    radial-gradient(circle at 50% 138%, transparent calc(80vmax - 1px), rgb(190 226 255 / 0.09) 80vmax, transparent calc(80vmax + 1px)),
+    radial-gradient(circle at 50% 138%, transparent calc(98vmax - 1px), rgb(190 226 255 / 0.06) 98vmax, transparent calc(98vmax + 1px)),
+    radial-gradient(60vmax 12vmax at 50% 100%, rgb(120 210 255 / 0.22), transparent 70%),
+    radial-gradient(1.6px 1.6px at 24px 36px, rgb(255 255 255 / 0.9), transparent) 0 0 / 370px 370px,
+    radial-gradient(1.2px 1.2px at 210px 280px, rgb(190 226 255 / 0.85), transparent) 0 0 / 370px 370px,
+    radial-gradient(1px 1px at 70px 110px, rgb(255 255 255 / 0.7), transparent) 0 0 / 230px 230px,
+    radial-gradient(1px 1px at 180px 40px, rgb(207 233 255 / 0.65), transparent) 0 0 / 230px 230px,
+    radial-gradient(0.8px 0.8px at 30px 90px, rgb(255 255 255 / 0.5), transparent) 0 0 / 140px 140px,
+    radial-gradient(0.8px 0.8px at 110px 20px, rgb(255 255 255 / 0.45), transparent) 0 0 / 140px 140px,
+    radial-gradient(120% 70% at 50% -12%, var(--bg-glow), transparent 64%),
+    linear-gradient(180deg, #040b17, var(--bg) 45%, #030812);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  /* One family of light: cyan from the left, deep blue from the right, a low teal near the horizon */
+  background:
+    radial-gradient(42vmax 34vmax at 14% 18%, rgb(47 216 255 / 0.2), transparent 64%),
+    radial-gradient(40vmax 36vmax at 88% 26%, rgb(64 110 255 / 0.2), transparent 64%),
+    radial-gradient(52vmax 26vmax at 50% 96%, rgb(47 216 190 / 0.14), transparent 66%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  left: 50%;
+  /* Follows the width, which stops growing at 1400px */
+  bottom: max(-78vw, -728px);
+  z-index: -1;
+  width: 150vw;
+  max-width: 1400px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.5;
+  background: radial-gradient(circle at 50% 0, #6cc4f7, #2371c4 22%, #0b2f66 52%, #061a3a 68%, transparent 72%);
+  /* The atmosphere: a thin bright rim, then a wide soft glow */
+  box-shadow:
+    inset 0 2px 1px rgb(190 236 255 / 0.85),
+    inset 0 14px 40px rgb(120 205 255 / 0.3),
+    0 -2px 26px rgb(47 216 255 / 0.5),
+    0 -30px 120px rgb(47 150 255 / 0.28);
+}
+
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* A fine grain, so the gradients do not band */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")
+    0 0 / 160px 160px;
+  opacity: 0.06;
+  mix-blend-mode: screen;
+}
+
+/* What moves in the sky. Not behind the panel: there each frame would blur dozens of glass tiles again. */
+#root::before,
+#root::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* A few brighter stars that fade in and out, over the still ones */
+#root::before {
+  inset: 0;
+  background:
+    radial-gradient(2px 2px at 60px 80px, #fff, transparent) 0 0 / 420px 420px,
+    radial-gradient(1.6px 1.6px at 300px 220px, rgb(190 230 255), transparent) 0 0 / 420px 420px,
+    radial-gradient(1.8px 1.8px at 180px 350px, #fff, transparent) 0 0 / 420px 420px;
+}
+
+/* A shooting star, now and then */
+#root::after {
+  top: 12%;
+  left: -20%;
+  width: 180px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, transparent, rgb(190 230 255 / 0.9));
+  box-shadow: 0 0 12px rgb(120 210 255 / 0.6);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body:has(.picker, .detail, .emergency)::before {
+    will-change: transform;
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+
+  body::after {
+    animation: breathe 9s ease-in-out infinite alternate;
+  }
+
+  body:has(.picker, .detail, .emergency) #root::before {
+    animation: twinkle 5s ease-in-out infinite alternate;
+  }
+
+  body:has(.picker, .detail, .emergency) #root::after {
+    animation: shoot 11s 3s ease-in infinite;
+  }
+
+  .logo-glow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: glow 5s ease-in-out infinite alternate;
+  }
+
+  .logo-pulse {
+    stroke-dasharray: 0.16 0.84;
+    animation: beat 2.6s linear infinite;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.15;
+  }
+
+  to {
+    opacity: 0.95;
+  }
+}
+
+@keyframes shoot {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(16deg);
+  }
+
+  3% {
+    opacity: 1;
+  }
+
+  14%,
+  100% {
+    opacity: 0;
+    transform: translate3d(150vw, 43vw, 0) rotate(16deg);
+  }
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.42;
+  }
+
+  to {
+    opacity: 0.6;
+  }
+}
+
+@keyframes glow {
+  from {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes beat {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drift {
+  to {
+    transform: translate3d(3%, -4%, 0) scale(1.08) rotate(3deg);
+  }
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: scale 0.15s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.muted {
+  color: var(--mute);
+}
+
+.icon {
+  flex: none;
+}
+
+/* --- Layout --- */
+
+.screen {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+  display: grid;
+  /* Without the zero minimum, the chart widens the column past a phone screen */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.screen.with-tabs {
+  padding-bottom: 120px;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px 4px;
+}
+
+.section-title {
+  margin: 8px 4px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* Not --mute: this text sits on the sky, and over the Earth --mute is too faint */
+  color: var(--ink);
+}
+
+/* --- Glass card --- */
+
+.card {
+  display: block;
+  width: 100%;
+  padding: 22px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-card);
+  text-align: left;
+}
+
+/* What sits on the sky carries the glass. The vitals tiles do: they are not inside a card. */
+.card,
+.tiles-vitals .tile {
+  background: var(--glass);
+  box-shadow: var(--glass-edge);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card,
+  .tabs,
+  .tiles-vitals .tile {
+    background: var(--surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .card,
+  .tabs,
+  .tiles-vitals .tile {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-heading > :nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-heading > h2:first-child {
+  flex: 1;
+}
+
+.card-heading > .ranges {
+  flex: none;
+}
+
+.card-heading + * {
+  margin-top: 16px;
+}
+
+.icon-badge,
+.tile-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--button);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 0 16px var(--badge-glow);
+  color: var(--accent);
+}
+
+.icon-badge-alert,
+.tile-alert .tile-icon {
+  --badge-glow: var(--badge-glow-alert);
+  color: var(--alert);
+}
+
+.origin {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--mute);
+}
+
+/* --- Collapsible group of the Data tab --- */
+
+.group > summary {
+  list-style: none;
+  cursor: pointer;
+  min-height: var(--tap);
+}
+
+.group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.group-chevron {
+  display: grid;
+  flex: none !important;
+  color: var(--mute);
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+
+.group[open] .group-chevron {
+  transform: rotate(90deg);
+}
+
+/* --- Buttons --- */
+
+.ghost,
+.primary {
+  min-height: var(--tap);
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  transition:
+    scale 0.25s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: var(--button);
+  box-shadow: var(--button-edge);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* A ghost button that can be on or off, such as a symptom that is ticked */
+.ghost[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgb(47 216 255 / 0.3), rgb(47 216 255 / 0.12));
+  color: var(--ink);
+}
+
+.ghost-small {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+.ghost:hover {
+  box-shadow: var(--button-edge-hover);
+}
+
+.primary {
+  border: 1px solid rgb(255 255 255 / 0.5);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.55), rgb(47 216 255 / 0.9) 60%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 4px 18px rgb(47 216 255 / 0.4);
+  color: #04121f;
+  font-weight: 700;
+}
+
+.primary:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 6px 24px rgb(47 216 255 / 0.55);
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* scale, not transform: it adds to the lift of a hovered tile instead of replacing it */
+button:active:not(:disabled) {
+  scale: 0.97;
+}
+
+/* A card is too wide for the same press */
+button.card:active {
+  scale: 0.99;
+}
+
+/* --- Chips --- */
+
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chip-ok {
+  background: rgb(59 224 160 / 0.12);
+  color: var(--ok);
+}
+
+.chip-due {
+  background: rgb(47 216 255 / 0.14);
+  color: var(--accent);
+}
+
+.chip-quiet {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--mute);
+  font-weight: 500;
+}
+
+.chip-alert {
+  background: rgb(255 184 74 / 0.14);
+  color: var(--alert);
+}
+
+/* --- Profile picker --- */
+
+.picker {
+  min-height: 100dvh;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+}
+
+.logo {
+  max-width: 80vw;
+  color: var(--accent);
+  overflow: visible;
+}
+
+.logo-trace {
+  opacity: 0.35;
+}
+
+/* Without motion the pulse is the whole line, lit */
+.logo-pulse {
+  opacity: 0.9;
+}
+
+.picker-tagline {
+  max-width: 34ch;
+  margin-bottom: 24px;
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.picker-card {
+  max-width: 600px;
+  display: grid;
+  gap: 8px;
+  padding: 28px;
+}
+
+/* Title: large and bold. The line under it: body size, readable. */
+.picker-card h1 {
+  font-size: 1.75rem;
+}
+
+.picker-card .card-heading .muted {
+  color: var(--ink);
+  font-size: 1rem;
+  opacity: 0.86;
+}
+
+.profile strong {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.profile .muted {
+  font-size: 0.9375rem;
+}
+
+.picker .simulation-banner {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 16px;
+  color: var(--ink);
+  font-size: 0.9375rem;
+}
+
+.profiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 84px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  text-align: left;
+  transition:
+    transform 0.2s ease,
+    scale 0.15s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile:hover {
+  border-color: var(--accent);
+  box-shadow:
+    var(--tile-edge),
+    0 0 22px rgb(47 216 255 / 0.25);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* backwards, not both: a finished animation that still applies would stop the glass of the tiles inside */
+  .picker-card,
+  button.profile {
+    animation: rise 0.6s backwards;
+  }
+
+  /* The cards of the panel come in one after another */
+  .with-tabs > :not(header) {
+    animation: rise 0.5s backwards;
+  }
+
+  .with-tabs > :nth-child(3) {
+    animation-delay: 60ms;
+  }
+
+  .with-tabs > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .with-tabs > :nth-child(n + 5) {
+    animation-delay: 180ms;
+  }
+
+  /* The line draws itself. It carries pathLength="1". */
+  .sparkline polyline {
+    stroke-dasharray: 1;
+    animation: draw-in 1.4s ease-out;
+  }
+
+  .tab-count::after {
+    animation: alert-pulse 2.2s ease-out infinite;
+  }
+}
+
+/* The ring that pulses around the number of alerts. Only its size and opacity move. */
+.tab-count::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--alert);
+  opacity: 0;
+}
+
+@keyframes draw-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes alert-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+.profile-text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.profile-text .muted {
+  font-size: 0.875rem;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #14395e, var(--surface));
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* --- Check-in --- */
+
+.checkin {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+
+.moods {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.mood {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  transition:
+    scale 0.15s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mood:hover {
+  border-color: rgb(47 216 255 / 0.5);
+}
+
+.mood[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgb(47 216 255 / 0.3), rgb(47 216 255 / 0.08));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 0 24px rgb(47 216 255 / 0.35);
+}
+
+.mood-face {
+  flex: none;
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.35));
+  transition: transform 0.2s ease;
+}
+
+.mood:not([aria-pressed='true']) .mood-face {
+  opacity: 0.85;
+}
+
+.mood[aria-pressed='true'] .mood-face {
+  transform: scale(1.08);
+}
+
+.checkin-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.checkin-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.checkin-mood {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streak {
+  font-size: 0.8125rem;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.mood-alert {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgb(255 184 74 / 0.4);
+  border-radius: var(--radius-tile);
+  background: rgb(255 184 74 / 0.08);
+  text-align: left;
+  font-size: 0.9375rem;
+}
+
+.mood-alert > strong {
+  color: var(--alert);
+}
+
+/* --- Routines --- */
+
+.routines {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.routine {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+}
+
+.routine-due {
+  border-color: rgb(47 216 255 / 0.45);
+  background: rgb(47 216 255 / 0.06);
+}
+
+.routine-icon {
+  display: grid;
+  color: var(--ok);
+}
+
+.routine-due .routine-icon {
+  color: var(--accent);
+}
+
+.routine-text {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.routine-text .muted {
+  font-size: 0.8125rem;
+}
+
+.routine-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: var(--alert);
+  font-size: 0.9375rem;
+}
+
+/* --- Status line on Today --- */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status > :nth-child(2) {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+}
+
+.status-ok {
+  color: var(--ok);
+}
+
+.status-ok h2 {
+  color: var(--ink);
+}
+
+.status-alert {
+  border-color: rgb(255 184 74 / 0.45);
+  color: var(--alert);
+}
+
+.status-alert strong {
+  color: var(--ink);
+}
+
+.status-link {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* --- Indicator tiles --- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.tiles-vitals {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tile {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 2px;
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  text-align: left;
+  transition:
+    transform 0.15s ease,
+    scale 0.15s ease,
+    border-color 0.2s ease;
+}
+
+.tile:hover {
+  border-color: rgb(47 216 255 / 0.5);
+}
+
+/* The lifts are for a pointer: after a tap they would stay up */
+@media (hover: hover) {
+  .tile:hover,
+  .profile:hover {
+    transform: translateY(-2px);
+  }
+
+  .tabs button:hover .icon,
+  .tabs button:focus-visible .icon {
+    transform: translateY(-2px) scale(1.1);
+    filter: drop-shadow(0 0 8px rgb(47 216 255 / 0.6));
+  }
+}
+
+.tile-alert {
+  border-color: rgb(255 184 74 / 0.5);
+}
+
+.tile-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.tile-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.tile-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: var(--mute);
+}
+
+.tile-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-unit {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mute);
+}
+
+.tile-alert .tile-value {
+  color: var(--alert);
+}
+
+.tile-age {
+  font-size: 0.75rem;
+  color: var(--mute);
+}
+
+
+.sparkline {
+  width: 100%;
+  max-width: 140px;
+  height: 32px;
+  margin-top: 8px;
+}
+
+.sparkline polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- Alerts --- */
+
+.alert-card {
+  display: grid;
+  gap: 12px;
+  border-color: rgb(255 184 74 / 0.45);
+  transition: transform 0.15s ease;
+}
+
+.alert-card .card-heading > :nth-child(2) {
+  display: grid;
+}
+
+.alert-title {
+  font-size: 1.0625rem;
+}
+
+.alert-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--alert);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.alert-text {
+  max-width: 65ch;
+}
+
+.alert-action {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius-tile);
+  background: rgb(255 184 74 / 0.1);
+  color: var(--alert-ink);
+}
+
+.alert-action strong {
+  font-size: 0.8125rem;
+  color: var(--alert);
+}
+
+/* --- Tab bar --- */
+
+.tabs {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 10;
+  display: flex;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--glass);
+  box-shadow: var(--glass-edge);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+}
+
+.tabs button {
+  position: relative;
+  flex: 1;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 8px 0 6px;
+  border: 0;
+  border-radius: 22px;
+  background: none;
+  color: var(--mute);
+  font-size: 0.75rem;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.tabs button:hover {
+  color: var(--ink);
+}
+
+.tabs .icon {
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* The Alerts tab stays amber while something needs a look */
+.tabs button:has(.tab-count) {
+  color: var(--alert);
+}
+
+.tabs button[aria-current='page'] {
+  background: rgb(47 216 255 / 0.12);
+  color: var(--accent);
+}
+
+.tab-count {
+  position: absolute;
+  top: 6px;
+  left: calc(50% + 8px);
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--alert);
+  color: #2a1a00;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+/* --- Indicator detail --- */
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--button);
+  box-shadow: var(--button-edge);
+  transition: box-shadow 0.2s ease;
+}
+
+.back:hover {
+  box-shadow: var(--button-edge-hover);
+}
+
+.eyebrow {
+  color: var(--mute);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reading-card {
+  display: grid;
+  gap: 8px;
+}
+
+.reading-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+/* What it is, what is normal, what it means, what to do: one after another, each with its heading */
+.explain {
+  display: grid;
+  gap: 22px;
+}
+
+/* Title: large and bold. Body: regular weight, full ink. Secondary: smaller, in the mute colour. */
+.explain h2 {
+  margin-bottom: 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.explain p {
+  max-width: 62ch;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.explain-action {
+  padding: 14px 16px;
+  border-left: 3px solid var(--alert);
+  border-radius: 0 var(--radius-tile) var(--radius-tile) 0;
+  background: rgb(255 184 74 / 0.08);
+}
+
+.explain-action h2 {
+  color: var(--alert);
+}
+
+.detail h1 {
+  font-size: 2rem;
+}
+
+.detail .card-heading h2 {
+  font-size: 1.25rem;
+}
+
+.detail .muted {
+  font-size: 0.9375rem;
+}
+
+.detail .rule strong {
+  font-size: 1.0625rem;
+}
+
+.range-bar {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.range-track {
+  position: relative;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.08);
+}
+
+.range-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(59 224 160 / 0.55);
+}
+
+.range-marker {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--bg);
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--ink);
+  transform: translate(-50%, -50%);
+}
+
+.range-labels {
+  position: relative;
+  height: 1.2em;
+  color: var(--mute);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.range-labels span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+@keyframes slide-in {
+  from {
+    left: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes grow-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The cards of the detail come in one after another */
+  .detail > :not(header) {
+    animation: rise 0.5s backwards;
+  }
+
+  .detail > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .detail > :nth-child(4) {
+    animation-delay: 160ms;
+  }
+
+  .detail > :nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+
+  .range-band {
+    transform-origin: left;
+    animation: grow-in 0.6s 0.2s ease-out backwards;
+  }
+
+  .range-marker {
+    animation: slide-in 0.9s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+
+  /* The line draws itself, then its points and limits appear. The line carries pathLength="1". */
+  .chart-line {
+    stroke-dasharray: 1;
+    animation: draw-in 1.2s 0.15s ease-out backwards;
+  }
+
+  .chart-dot,
+  .chart-dot-alert {
+    animation: fade-in 0.4s 1.1s backwards;
+  }
+
+  .chart-band,
+  .chart-limit,
+  .chart-limit-label {
+    animation: fade-in 0.6s backwards;
+  }
+}
+
+.detail-value {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-value.is-alert {
+  color: var(--alert);
+}
+
+.detail-reading {
+  max-width: 65ch;
+  margin-top: 14px;
+  font-size: 1.0625rem;
+}
+
+.detail-reading + .alert-action {
+  margin-top: 14px;
+}
+
+.detail-what {
+  max-width: 65ch;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--mute);
+}
+
+.prose {
+  display: grid;
+  gap: 14px;
+}
+
+.prose p {
+  max-width: 65ch;
+}
+
+.prose h3 {
+  margin-bottom: 2px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mute);
+}
+
+.rule {
+  display: grid;
+  gap: 8px;
+}
+
+.rule + .rule {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.source-link {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.out-of-range {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.out-of-range li {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 184 74 / 0.1);
+  font-size: 0.875rem;
+}
+
+.out-of-range strong {
+  margin-left: 6px;
+  color: var(--alert);
+}
+
+/* --- Study notes of a parameter --- */
+
+.learn-notes {
+  display: grid;
+  gap: 22px;
+}
+
+/* Title of a block: in between the title of the card and the body. Body: as in .explain. */
+.learn h3 {
+  margin-bottom: 6px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.learn p:not(.eyebrow),
+.learn-moves li {
+  max-width: 62ch;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.learn-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: start;
+  gap: 22px;
+}
+
+.learn-figure {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  color: var(--mute);
+  font-size: 0.8125rem;
+}
+
+.learn-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.learn-moves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 22px;
+}
+
+.learn-moves ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+}
+
+.learn-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.learn-sources ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The drawing comes in when the notes open */
+  .learn[open] .learn-figure {
+    animation: rise 0.5s 0.1s backwards;
+  }
+}
+
+/* --- History chart --- */
+
+.chart-box {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart {
+  display: block;
+}
+
+.chart-grid {
+  stroke: var(--line-faint);
+  stroke-width: 1;
+}
+
+.chart-unit {
+  font-weight: 700;
+}
+
+.chart-limit-label {
+  fill: var(--ok);
+}
+
+/* --- Time range of the chart --- */
+
+.ranges {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.ranges button {
+  min-width: 48px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--mute);
+  font-size: 0.8125rem;
+}
+
+.ranges button[aria-pressed='true'] {
+  background: rgb(47 216 255 / 0.14);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.chart-band {
+  fill: rgb(59 224 160 / 0.08);
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-dot {
+  fill: var(--accent);
+}
+
+.chart-dot-alert {
+  fill: var(--alert);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.chart-limit {
+  stroke: var(--ok);
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+  opacity: 0.7;
+}
+
+.chart-label {
+  fill: var(--mute);
+  font-size: 12px;
+}
+
+/* --- Emergency --- */
+
+:root {
+  --danger: #ff5a52;
+}
+
+.simulation-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1px dashed rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-tile);
+  color: var(--mute);
+  font-size: 0.875rem;
+}
+
+.simulate {
+  margin-top: 20px;
+}
+
+.emergency-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 48px 24px;
+  border-color: var(--danger);
+  background: rgb(255 90 82 / 0.1);
+  text-align: center;
+}
+
+.emergency-alert {
+  min-height: 60dvh;
+  align-content: center;
+  font-size: 1.0625rem;
+}
+
+.emergency-triangle {
+  display: grid;
+  color: var(--danger);
+}
+
+.emergency-title {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.emergency-return {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.emergency-return strong {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .emergency-alert .emergency-triangle {
+    animation: pulse 0.9s ease-in-out infinite alternate;
+  }
+}
+
+.detection-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 4px;
+}
+
+.detection-chart polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.detection-real {
+  stroke: var(--accent);
+}
+
+.detection-simulated {
+  stroke: var(--danger);
+  stroke-dasharray: 6 5;
+}
+
+.detection-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin-top: 8px;
+  font-size: 0.8125rem;
+}
+
+.legend-real {
+  color: var(--accent);
+}
+
+.legend-simulated {
+  color: var(--danger);
+}
+
+.guide {
+  display: grid;
+  gap: 16px;
+  border-color: rgb(255 90 82 / 0.5);
+}
+
+.guide-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Title of the step: large and bold. Subtitle of a block: in between. Hint: small and secondary. */
+.guide-sub {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.guide-hint {
+  color: var(--mute);
+  font-size: 0.9375rem;
+}
+
+.guide-progress {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-progress li {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--line-faint);
+}
+
+.guide-progress .done {
+  background: var(--ok);
+}
+
+.guide-progress .current {
+  background: var(--accent);
+}
+
+.voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 0 14px;
+}
+
+.voice-orb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.voice-listening,
+.voice-speaking {
+  border-color: var(--accent);
+}
+
+.voice-listening .voice-orb,
+.voice-speaking .voice-orb {
+  color: var(--accent);
+}
+
+.voice-listening .voice-orb {
+  opacity: 1;
+}
+
+.voice-speaking .voice-orb,
+.voice-starting .voice-orb {
+  opacity: 1;
+  animation: voice-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-orb {
+    animation: none;
+  }
+}
+
+.guide-record-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.guide-record {
+  display: grid;
+  gap: 4px;
+}
+
+.guide-record-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.guide-record-fields input {
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--tile-edge);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 400;
+}
+
+.guide-record-fields input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.guide-checklist {
+  display: grid;
+  gap: 8px;
+}
+
+.guide-ticks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide-pictures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.guide-pictures figure {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.guide-pictures img {
+  width: 96px;
+  height: 96px;
+}
+
+.report dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 20px;
+  margin: 0 0 12px;
+}
+
+.report dt {
+  color: var(--mute);
+  font-size: 0.875rem;
+}
+
+.report dd {
+  margin: 0;
+}
+
+.report .card-heading {
+  justify-content: space-between;
+}
+
+.guide-reference .tick {
+  margin-top: 14px;
+}
+
+.guide-closed {
+  border-color: rgb(59 224 160 / 0.5);
+}
+
+.guide-back {
+  justify-self: start;
+}
+
+.guide-reference {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+}
+
+.guide-reference summary {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guide-reference p {
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.signals {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.signal {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.signal-label {
+  font-weight: 700;
+}
+
+.signal-usual {
+  color: var(--mute);
+  font-size: 0.875rem;
+}
+
+.signal-now {
+  min-width: 120px;
+  color: var(--danger);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.guide-title {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.guide-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.guide-lines {
+  flex: 1;
+  min-width: 260px;
+  margin: 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: 12px;
+  font-size: 1.1875rem;
+  line-height: 1.45;
+}
+
+.guide-task {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 1.1875rem;
+}
+
+.guide-figure {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  font-size: 0.8125rem;
+  color: var(--mute);
+}
+
+.guide-figure img {
+  width: 200px;
+  height: auto;
+  border-radius: var(--radius-tile);
+  background: #fff;
+}
+
+.guide-note {
+  padding: 10px 14px;
+  border-left: 3px solid var(--line);
+  color: var(--mute);
+  font-size: 0.9375rem;
+}
+
+.guide-question {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.guide-options {
+  display: grid;
+  gap: 10px;
+}
+
+/* The way forward is the primary button of the system, as wide as the card */
+.guide-option {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.0625rem;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.timer-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-done .timer-value {
+  color: var(--ok);
+}
+
+/* --- Loading --- */
+
+.skeleton {
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.skeleton-tall {
+  height: 180px;
+}
+
+.profile-placeholder {
+  border-style: dashed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton,
+  .profile-placeholder {
+    animation: pulse 1.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* --- Phone --- */
+
+@media (max-width: 560px) {
+  .screen {
+    padding: 20px 14px 32px;
+  }
+
+  .profiles {
+    grid-template-columns: 1fr;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .moods {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tile-head .chip {
+    display: none;
+  }
+
+  .status {
+    flex-wrap: wrap;
+  }
+
+  .status-link {
+    width: 100%;
+    padding-left: 42px;
+  }
+
+  .learn-body,
+  .learn-moves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .learn-figure {
+    max-width: 280px;
+  }
+}

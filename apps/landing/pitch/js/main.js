@@ -34,7 +34,6 @@
     });
     document.querySelectorAll("#langs button").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
     drawTeam();
-    drawShock();
     if (window.setIntroTagline) window.setIntroTagline(t("intro_tagline"));
     try { localStorage.setItem("mooncare-pitch-lang", lang); } catch(e){}
   }
@@ -48,17 +47,6 @@
   function onScroll(){ nav.classList.toggle("solid", scrollY > 40); }
   addEventListener("scroll", onScroll, {passive:true}); onScroll();
 
-  // emergency countdown
-  var T0 = 369, tt = T0, timer = null, SPEED = 1240;
-  var cd = document.getElementById("cd"), fill = document.getElementById("shockFill"), km = document.getElementById("shockKm");
-  function fmt(s){ return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
-  function drawShock(){
-    cd.textContent = fmt(tt);
-    cd.classList.toggle("hot", tt < 300);
-    fill.style.width = (100 - tt/600*100) + "%";
-    var n = (tt*SPEED/1e6).toLocaleString(HTML_LANG[lang], {minimumFractionDigits:2, maximumFractionDigits:2});
-    km.textContent = t("em_away").replace("{km}", n);
-  }
 
   // first language: English, unless the visitor picked another one before
   var saved = null; try { saved = localStorage.getItem("mooncare-pitch-lang"); } catch(e){}
@@ -80,14 +68,6 @@
     setTimeout(function(){ els.forEach(show); }, 3000);   // failsafe: everything visible after 3 s
   }
 
-  if (!RM && "IntersectionObserver" in window) {
-    new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if (e.isIntersecting && !timer) timer = setInterval(function(){ tt = tt > 1 ? tt-1 : T0; drawShock(); }, 1000);
-        else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; }
-      });
-    }, {threshold:.3}).observe(document.getElementById("emergency"));
-  }
 
   // Earth rising behind "back on Earth": Alex's procedural Earth, slowly turning
   (function(){
@@ -123,7 +103,7 @@
   // live demo: load the app only when asked
   document.getElementById("demoStart").addEventListener("click", function(){
     var f = document.createElement("iframe");
-    f.src = "app.html#landing";
+    f.src = "demo/index.html";
     f.title = t("try_iframe");
     var s = document.getElementById("demoScreen");
     s.innerHTML = ""; s.appendChild(f); f.focus();

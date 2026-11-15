@@ -1,60 +1,80 @@
-"""Capture screenshots of the Mooncare app for the pitch landing page.
+"""Screenshots of the real app for the pitch landing page, written as WebP to img/shots/.
 
-Usage: python3 tools/shoot.py  (run from apps/landing/pitch)
-Writes WebP files to img/shots/.
+Usage (run from apps/landing/pitch):
+    python tools/shoot.py [WEB_APP_URL]
+
+- The panel, the alerts, one value and the data come from the mini demo (demo/index.html), which needs no server.
+- The infection case is not in the mini demo: it comes from the real web app (apps/web), at WEB_APP_URL
+  (default http://localhost:5173, with the moon server running). Pass "skip" to leave that screenshot as it is.
+
+Needs Playwright and Chrome: uv run --no-project --with playwright --with pillow python tools/shoot.py
 """
 import asyncio
+import sys
 from pathlib import Path
 
+from PIL import Image
 from playwright.async_api import async_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
-APP = (ROOT / "app.html").as_uri()
+DEMO = (ROOT / "demo" / "index.html").as_uri()
+WEB_APP = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5173"
 OUT = ROOT / "img" / "shots"
-
-# Space Grotesk is loaded from Google Fonts; fall back to Inter when offline.
-FONT_CSS = 'body,button,input,textarea{font-family:"Space Grotesk",Inter,system-ui,sans-serif!important}'
-
 W, H = 820, 1180  # tablet portrait
+COMMANDER = "1"  # Eva Lindqvist: three values out of range on the demo date
+WEBP_QUALITY = 82
 
 
-async def shot(page, name, hash_, setup=None, wait=900, clip=None):
-    await page.goto(APP + "#landing")
-    await page.add_style_tag(content=FONT_CSS)
-    await page.evaluate(f"location.hash={hash_!r}")
-    await page.wait_for_timeout(300)
-    if setup:
-        await page.evaluate(setup)
-    await page.wait_for_timeout(wait)
-    path = OUT / f"{name}.png"
-    await page.screenshot(path=str(path), clip=clip)
-    print("saved", path.name)
+async def save(page, name):
+    png = OUT / f"{name}.png"
+    await page.screenshot(path=str(png))
+    Image.open(png).save(OUT / f"{name}.webp", "WEBP", quality=WEBP_QUALITY)
+    png.unlink()
+    print("saved", f"{name}.webp")
+
+
+async def demo_shot(page, name, steps):
+    await page.goto(DEMO)
+    await page.wait_for_timeout(500)
+    for selector in steps:
+        await page.click(selector)
+        await page.wait_for_timeout(300)
+    # Let the entry animations of the cards and the lines of the charts finish
+    await page.wait_for_timeout(1500)
+    await page.evaluate("scrollTo(0, 0)")
+    await save(page, name)
+
+
+async def infection_shot(page):
+    await page.goto(WEB_APP)
+    await page.evaluate("localStorage.clear()")
+    await page.reload()
+    await page.get_by_role("button", name="Simulate a possible infection").click()
+    await page.get_by_role("button", name="Amara Okafor").click()
+    await page.wait_for_timeout(800)
+    alert = page.locator(".emergency-alert")
+    if await alert.count() > 0:
+        await alert.click()
+    await page.wait_for_timeout(2500)
+    await save(page, "infection")
+    await page.evaluate("localStorage.clear()")
 
 
 async def main():
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path="/usr/bin/google-chrome")
-        ctx = await b.new_context(viewport={"width": W, "height": H}, device_scale_factor=2)
-        await ctx.route("**/fonts.googleapis.com/**", lambda r: r.abort())
-        page = await ctx.new_page()
+        browser = await p.chromium.launch(channel="chrome")
+        context = await browser.new_context(viewport={"width": W, "height": H}, device_scale_factor=2)
+        page = await context.new_page()
 
-        await shot(page, "home", "landing", wait=1200)
-        await shot(page, "today", "crew", wait=1600)
-        await shot(page, "body", "body", wait=1200)
-        await shot(page, "data", "parameters", wait=1800)
-        await shot(page, "measure", "crew", setup="""
-            openMeasure('bp');
-            document.getElementById('mf_sys').value=134;
-            document.getElementById('mf_dia').value=84;
-            document.getElementById('msSave').click();
-            const r=document.getElementById('msRes'); r.scrollIntoView({block:'end'});
-        """, wait=900)
-        await shot(page, "flare", "alerts", setup="""
-            eta=372; inc.done=[true,true,false,false]; drawAlerts(); tick();
-        """, wait=2200)
-        await shot(page, "mission", "admin", wait=1200)
-        await b.close()
+        await demo_shot(page, "home", [])
+        await demo_shot(page, "today", [f'[data-crew="{COMMANDER}"]'])
+        await demo_shot(page, "alerts", [f'[data-crew="{COMMANDER}"]', '[data-tab="alerts"]'])
+        await demo_shot(page, "value", [f'[data-crew="{COMMANDER}"]', '[data-tab="alerts"]', '[data-indicator="glucose"]'])
+        await demo_shot(page, "data", [f'[data-crew="{COMMANDER}"]', '[data-tab="data"]'])
+        if WEB_APP != "skip":
+            await infection_shot(page)
+        await browser.close()
 
 
 asyncio.run(main())

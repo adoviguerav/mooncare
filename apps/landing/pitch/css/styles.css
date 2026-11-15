@@ -114,17 +114,6 @@ ul.ticks li::before{content:"";width:18px;height:18px;flex:none;margin-top:4px;b
 
 /* emergency */
 .emergency{background:linear-gradient(180deg,transparent,rgba(58,42,10,.32) 20%,rgba(58,42,10,.32) 80%,transparent)}
-.timer{display:inline-flex;align-items:center;gap:18px;margin-top:30px;padding:16px 24px;border-radius:20px;border:1px solid rgba(255,184,74,.55);background:linear-gradient(135deg,rgba(255,184,74,.18),rgba(255,184,74,.04)),rgba(12,32,58,.4);box-shadow:var(--gl-hi),0 0 40px rgba(255,184,74,.15)}
-.timer span{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--warn)}
-.timer b{font-size:40px;font-variant-numeric:tabular-nums;color:var(--warn);line-height:1}
-.timer b.hot{color:var(--bad)}
-.shock{margin-top:22px;max-width:460px}
-.shock .line{position:relative;height:6px;border-radius:6px;background:var(--line);overflow:visible}
-.shock .fill{position:absolute;inset:0 auto 0 0;width:40%;border-radius:6px;background:linear-gradient(90deg,#ffa63d,var(--warn));transition:width 1s linear}
-.shock .sun,.shock .base{position:absolute;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%}
-.shock .sun{left:-9px;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffa63d);box-shadow:0 0 18px rgba(255,166,61,.9)}
-.shock .base{right:-9px;background:radial-gradient(circle at 35% 30%,#9fe9ff,#2fd8ff);box-shadow:0 0 18px rgba(47,216,255,.8)}
-.shock .lbl{display:flex;justify-content:space-between;margin-top:12px;font-size:13px;color:var(--mute)}
 
 /* hazards */
 .haz{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:56px}
