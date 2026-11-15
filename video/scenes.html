@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Moon Care demo video: the scenes</title>
+    <!-- Every frame of the video is this page at one moment: build_video.py calls render() and takes a screenshot.
+         Nothing here runs on a clock, so the same call always draws the same frame. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      /* The colours and the glass of the dashboard (apps/web/src/styles/index.css) */
+      :root {
+        --bg: #050d1a;
+        --bg-glow: #0d2745;
+        --ink: #e6f1fb;
+        --mute: #c6d6e5;
+        --accent: #2fd8ff;
+        --ok: #3be0a0;
+        --alert: #ffb84a;
+        --danger: #ff5a52;
+        --glass: linear-gradient(180deg, rgb(196 226 255 / 0.2), rgb(150 200 255 / 0.07) 55%, rgb(150 200 255 / 0.1)),
+          rgb(22 50 88 / 0.36);
+        --glass-edge:
+          inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(255 255 255 / 0.08),
+          0 22px 54px -18px rgb(2 10 24 / 0.7);
+        --glass-line: rgb(205 230 255 / 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font: 400 28px/1.3 'Space Grotesk', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background:
+          radial-gradient(120% 90% at 50% 38%, transparent 55%, rgb(2 6 14 / 0.6)),
+          radial-gradient(1.6px 1.6px at 24px 36px, rgb(255 255 255 / 0.9), transparent) 0 0 / 370px 370px,
+          radial-gradient(1.2px 1.2px at 210px 280px, rgb(190 226 255 / 0.85), transparent) 0 0 / 370px 370px,
+          radial-gradient(1px 1px at 70px 110px, rgb(255 255 255 / 0.7), transparent) 0 0 / 230px 230px,
+          radial-gradient(1px 1px at 180px 40px, rgb(207 233 255 / 0.65), transparent) 0 0 / 230px 230px,
+          radial-gradient(700px 560px at 14% 18%, rgb(47 216 255 / 0.16), transparent 64%),
+          radial-gradient(680px 600px at 88% 26%, rgb(64 110 255 / 0.18), transparent 64%),
+          radial-gradient(900px 440px at 50% 100%, rgb(47 216 190 / 0.12), transparent 66%),
+          radial-gradient(120% 70% at 50% -12%, var(--bg-glow), transparent 64%),
+          linear-gradient(180deg, #040b17, var(--bg) 45%, #030812);
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: none;
+      }
+
+      .scene > svg.drawing {
+        position: absolute;
+        inset: 0;
+      }
+
+      .logo {
+        color: var(--accent);
+        overflow: visible;
+      }
+
+      /* The line every scene carries. Large, so it reads in one pass without sound. */
+      .caption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 84px;
+        text-align: center;
+        font-size: 58px;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+      }
+
+      .caption-sub {
+        display: block;
+        margin-top: 14px;
+        color: var(--mute);
+        font-size: 36px;
+        font-weight: 500;
+        letter-spacing: 0;
+      }
+
+      .glass {
+        border: 1px solid var(--glass-line);
+        background: var(--glass);
+        box-shadow: var(--glass-edge);
+      }
+
+      .badge {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 76px;
+        height: 76px;
+        border: 1px solid rgb(255 255 255 / 0.2);
+        border-radius: 50%;
+        background: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05));
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 0.35),
+          0 0 22px rgb(47 216 255 / 0.2);
+        color: var(--accent);
+      }
+
+      /* --- 1 · Collect --- */
+
+      .source {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        width: 500px;
+        height: 132px;
+        padding: 0 28px;
+        border-radius: 28px;
+      }
+
+      .source strong {
+        display: block;
+        font-size: 36px;
+        line-height: 1.15;
+      }
+
+      .source span {
+        color: var(--mute);
+        font-size: 22px;
+        white-space: nowrap;
+      }
+
+      /* The problem, alone on the screen before anything else */
+      #collect-problem {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 400px;
+        text-align: center;
+        font-size: 76px;
+        font-weight: 700;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+      }
+
+      .tagline {
+        color: var(--mute);
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        text-align: center;
+      }
+
+      /* The Space Apps guide asks for a visible mark on pictures made with AI */
+      .made-with-ai {
+        position: absolute;
+        right: 36px;
+        bottom: 26px;
+        color: var(--mute);
+        font-size: 22px;
+        opacity: 0.8;
+      }
+
+      /* --- 2 to 4 · The app --- */
+
+      #app-screen {
+        position: absolute;
+        left: 70px;
+        top: 40px;
+        width: 1180px;
+        height: 1000px;
+        border: 1px solid var(--glass-line);
+        border-radius: 30px;
+        overflow: hidden;
+        background: var(--bg);
+        box-shadow:
+          0 0 0 8px rgb(150 200 255 / 0.08),
+          0 30px 80px -20px rgb(2 10 24 / 0.9);
+      }
+
+      #app-screen img {
+        display: block;
+        width: 1180px;
+        height: 1000px;
+      }
+
+      /* Drawn over the recording, like the pointer: it shows where the voice guide wrote something down */
+      #app-ring {
+        position: absolute;
+        border: 4px solid var(--accent);
+        border-radius: 999px;
+        pointer-events: none;
+      }
+
+      #app-side {
+        position: absolute;
+        left: 1316px;
+        top: 40px;
+        width: 548px;
+        height: 1000px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      #app-side .logo {
+        position: absolute;
+        top: 20px;
+        left: -8px;
+      }
+
+      #app-caption {
+        font-size: 60px;
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.015em;
+      }
+
+      #app-note {
+        align-self: flex-start;
+        padding: 12px 22px;
+        border: 2px dashed rgb(255 184 74 / 0.7);
+        border-radius: 18px;
+        background: rgb(255 184 74 / 0.12);
+        color: var(--alert);
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      /* --- 5 · Architecture --- */
+
+      .place-label {
+        position: absolute;
+        width: 400px;
+        text-align: center;
+        font-size: 40px;
+        font-weight: 700;
+      }
+
+      .module {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 150px;
+        height: 84px;
+        margin: -42px 0 0 -75px;
+        border: 3px solid var(--accent);
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgb(47 216 255 / 0.34), rgb(47 216 255 / 0.12)), #0b1a2e;
+        box-shadow: 0 0 34px rgb(47 216 255 / 0.45);
+        font-size: 44px;
+        font-weight: 700;
+      }
+
+      /* What is not built yet is drawn dashed */
+      .module-next {
+        border-style: dashed;
+        background: rgb(11 26 46 / 0.9);
+        box-shadow: 0 0 24px rgb(47 216 255 / 0.2);
+      }
+
+      .when {
+        position: absolute;
+        width: 200px;
+        margin-left: -100px;
+        text-align: center;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      /* --- 6 · Close --- */
+
+      #close {
+        text-align: center;
+      }
+
+      #close .logo {
+        margin-top: 120px;
+      }
+
+      #close p {
+        margin-top: 14px;
+      }
+
+      #close .tagline {
+        margin-top: 6px;
+        color: var(--ink);
+        font-size: 40px;
+      }
+
+      #close .challenge {
+        margin-top: 44px;
+        font-size: 46px;
+        font-weight: 700;
+      }
+
+      #close .brief {
+        color: var(--mute);
+        font-size: 34px;
+      }
+
+      #close .team {
+        margin-top: 36px;
+        font-size: 40px;
+        font-weight: 500;
+      }
+
+      #close .url {
+        color: var(--accent);
+        font-size: 46px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <section class="scene" id="collect">
+        <svg class="drawing" viewBox="0 0 1920 1080" id="collect-drawing"></svg>
+        <div id="collect-sources"></div>
+        <div id="collect-logo" style="position: absolute; left: 730px; top: 270px"></div>
+        <p class="tagline" id="collect-tagline" style="position: absolute; left: 600px; width: 720px; top: 600px">
+          A daily health panel for life beyond Earth
+        </p>
+        <div id="collect-problem"></div>
+        <p class="caption" id="collect-caption" data-caption></p>
+        <p class="made-with-ai">Animation made with AI</p>
+      </section>
+
+      <section class="scene" id="app">
+        <div id="app-screen"><img id="app-frame" alt="" /><div id="app-ring"></div></div>
+        <div id="app-side">
+          <div id="app-logo"></div>
+          <p id="app-caption"></p>
+          <p id="app-note"></p>
+        </div>
+      </section>
+
+      <section class="scene" id="architecture">
+        <svg class="drawing" viewBox="0 0 1920 1080" id="architecture-drawing"></svg>
+        <p class="place-label" style="left: 230px; top: 636px">Moon base</p>
+        <p class="place-label" style="left: 1290px; top: 636px">Earth</p>
+        <div class="module" id="module-today">AI</div>
+        <p class="when" id="when-today" style="color: var(--accent)">Today</p>
+        <div class="module module-next" id="module-next">AI</div>
+        <p class="when" id="when-next">Next</p>
+        <p class="caption"><span data-caption></span><span class="caption-sub" data-sub></span></p>
+        <p class="made-with-ai">Animation made with AI</p>
+      </section>
+
+      <section class="scene" id="close">
+        <div id="close-logo"></div>
+        <p class="tagline">Not just to reach the Moon. To live there.</p>
+        <p class="challenge">NASA Space Apps Challenge 2026</p>
+        <p class="brief">Create health monitoring software for astronauts on space missions</p>
+        <p class="team">Team Real Telemetry</p>
+        <p class="url">mooncare-ten.vercel.app</p>
+        <p class="made-with-ai">Animation made with AI</p>
+      </section>
+    </div>
+
+    <script>
+      const clamp = (value) => Math.min(1, Math.max(0, value))
+      // How far along something is: 0 before `start`, 1 after `start + seconds`
+      const progress = (t, start, seconds) => clamp((t - start) / seconds)
+      const ease = (p) => p * p * (3 - 2 * p)
+      const lerp = (from, to, p) => from + (to - from) * p
+      const byId = (id) => document.getElementById(id)
+
+      // The line icons of the dashboard (apps/web/src/components/Icon.tsx). The watch is drawn for this video.
+      const ICONS = {
+        watch:
+          'M8.500 7h7a1.500 1.500 0 0 1 1.500 1.500v7a1.500 1.500 0 0 1-1.500 1.500h-7A1.500 1.500 0 0 1 7 15.500v-7A1.500 1.500 0 0 1 8.500 7ZM9.300 7l.7-4h4l.7 4M9.300 17l.7 4h4l.7-4M9.500 12h1.300l.8-1.600 1 3.200.8-1.600h1.100',
+        drop: 'M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.500 6-10.500ZM9.500 14.500a2.500 2.500 0 0 0 2.500 2.500',
+        radiation:
+          'M10.300 12a1.700 1.700 0 1 0 3.400 0 1.700 1.700 0 0 0-3.400 0ZM12 12 8.200 5.400a8.800 8.800 0 0 1 7.600 0ZM12 12l7.600 0a8.800 8.800 0 0 1-3.800 6.600ZM12 12l-3.800 6.600a8.800 8.800 0 0 1-3.800-6.600Z',
+        smile: 'M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0ZM8.500 14a4 4 0 0 0 7 0M9 9.500h.01M15 9.500h.01',
+        ok: 'M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0ZM8 12.400l2.700 2.700L16 9.500',
+      }
+
+      function icon(name, size) {
+        return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[name]}"/></svg>`
+      }
+
+      // The logo of the dashboard (apps/web/src/components/Logo.tsx)
+      const HEARTBEAT =
+        'M70 490H236L248 490L260 464L276 514L290 480L298 490H430L442 490L454 458L472 520L486 476L494 490H690'
+
+      function logo(id, height) {
+        return `<svg class="logo" viewBox="30 55 690 465" height="${height}">
+          <defs>
+            <linearGradient id="${id}-ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f1fb"/><stop offset="1" stop-color="currentColor"/></linearGradient>
+            <radialGradient id="${id}-moon" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe9ff"/></radialGradient>
+            <radialGradient id="${id}-glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="currentColor" stop-opacity=".45"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient>
+          </defs>
+          <circle data-glow cx="480" cy="150" r="150" fill="url(#${id}-glow)"/>
+          <g fill="none" stroke="url(#${id}-ink)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M70 220V90L130 175L190 90V220"/><ellipse cx="310" cy="150" rx="55" ry="68"/>
+            <circle cx="480" cy="150" r="62" stroke="currentColor" stroke-width="3"/><path d="M610 220V90L690 220V90"/>
+            <path d="M168 338A60 68 0 1 0 168 402"/><path d="M250 440L295 305L340 440M265 402H325"/>
+            <path d="M445 440V305H490A36 36 0 0 1 490 377H445M490 377L525 440"/><path d="M680 305H615V440H680M615 372H670"/>
+          </g>
+          <path d="M480 88A62 62 0 0 0 480 212A26 62 0 0 1 480 88Z" fill="url(#${id}-moon)"/>
+          <g fill="#0d2745"><circle cx="437" cy="125" r="6"/><circle cx="447" cy="106" r="3"/><circle cx="438" cy="172" r="5"/><circle cx="448" cy="196" r="3"/><circle cx="433" cy="150" r="3"/></g>
+          <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="${HEARTBEAT}" opacity=".35"/>
+            <path data-pulse d="${HEARTBEAT}" pathLength="1" stroke-dasharray="0.16 0.84" style="filter: drop-shadow(0 0 6px currentColor)"/>
+          </g>
+        </svg>`
+      }
+
+      const PULSE_SECONDS = 2.6
+
+      function moveLogo(holder, t) {
+        holder.querySelector('[data-pulse]').setAttribute('stroke-dashoffset', 1 - ((t / PULSE_SECONDS) % 1))
+      }
+
+      // --- 1 · Collect: four sources around the logo, and their readings travelling to it ---
+
+      const SOURCES = [
+        { icon: 'watch', title: 'Smartwatch', detail: 'Pulse, sleep, activity', x: 70, y: 170, path: 'M570 236C720 236 640 410 716 420' },
+        { icon: 'drop', title: 'Blood tests', detail: 'NASA open data · Inspiration4', x: 70, y: 570, path: 'M570 636C720 636 640 490 716 480' },
+        { icon: 'radiation', title: 'Radiation sensor', detail: 'NASA open data · RadLab, ISS', x: 1350, y: 170, path: 'M1350 236C1200 236 1280 410 1204 420' },
+        { icon: 'smile', title: 'Daily check-in', detail: '', x: 1350, y: 570, path: 'M1350 636C1200 636 1280 490 1204 480' },
+      ]
+      const SOURCE_STAGGER = 0.12
+      const DOTS_PER_SOURCE = 5
+      const DOT_TRAVEL_SECONDS = 1.3
+      const DOT_EVERY_SECONDS = 0.3
+      const FIRST_DOT_AT = 0.5
+
+      byId('collect-logo').innerHTML = logo('collect', 310)
+      byId('collect-sources').innerHTML = SOURCES.map(
+        (source) => `<div class="source glass" style="left: ${source.x}px; top: ${source.y}px">
+          <span class="badge">${icon(source.icon, 42)}</span>
+          <div><strong>${source.title}</strong>${source.detail === '' ? '' : `<span>${source.detail}</span>`}</div>
+        </div>`,
+      ).join('')
+      byId('collect-drawing').innerHTML = SOURCES.map(
+        (source, index) => `<path id="collect-path-${index}" d="${source.path}" fill="none" stroke="#2fd8ff" stroke-opacity="0.5" stroke-width="2.500" stroke-dasharray="3 9" stroke-linecap="round"/>
+          ${Array.from({ length: DOTS_PER_SOURCE }, (_, dot) => `<circle id="collect-dot-${index}-${dot}" r="9" fill="#2fd8ff" style="filter: drop-shadow(0 0 10px #2fd8ff)"/>`).join('')}`,
+      ).join('')
+
+      // The problem holds the screen first; the sources and the logo come after it
+      const PROBLEM_SECONDS = 5.4
+      const PROBLEM_FADE_SECONDS = 0.3
+      // The second line of the problem comes in when the narration reaches it
+      const PROBLEM_LINE_EVERY_SECONDS = 2.3
+
+      function drawCollect(sceneTime, problemLines) {
+        const problem = byId('collect-problem')
+        problem.replaceChildren(
+          ...problemLines.map((text, index) => {
+            const line = document.createElement('p')
+            line.textContent = text
+            line.style.opacity = ease(progress(sceneTime, 0.1 + index * PROBLEM_LINE_EVERY_SECONDS, 0.4))
+            return line
+          }),
+        )
+        problem.style.opacity = 1 - ease(progress(sceneTime, PROBLEM_SECONDS - PROBLEM_FADE_SECONDS, PROBLEM_FADE_SECONDS))
+        const t = sceneTime - PROBLEM_SECONDS
+        byId('collect-caption').style.opacity = ease(progress(t, 0.1, 0.35))
+        byId('collect-tagline').style.opacity = ease(progress(t, 0.2, 0.4))
+        const cards = byId('collect-sources').children
+        let arrived = 0
+        SOURCES.forEach((source, index) => {
+          const shown = ease(progress(t, 0.1 + index * SOURCE_STAGGER, 0.35))
+          cards[index].style.opacity = shown
+          cards[index].style.transform = `translateY(${lerp(16, 0, shown)}px)`
+          const path = byId(`collect-path-${index}`)
+          path.style.opacity = shown
+          const length = path.getTotalLength()
+          for (let dot = 0; dot < DOTS_PER_SOURCE; dot++) {
+            // Each dot leaves a little after the one before, and the sources do not fire together
+            const leavesAt = FIRST_DOT_AT + index * 0.1 + dot * DOT_EVERY_SECONDS * 2
+            const travelled = (t - leavesAt) / DOT_TRAVEL_SECONDS
+            const circle = byId(`collect-dot-${index}-${dot}`)
+            const onItsWay = travelled > 0 && travelled < 1
+            circle.style.opacity = onItsWay ? Math.min(1, travelled * 6, (1 - travelled) * 6) : 0
+            if (onItsWay) {
+              const point = path.getPointAtLength(ease(travelled) * length)
+              circle.setAttribute('cx', point.x)
+              circle.setAttribute('cy', point.y)
+            }
+            if (travelled >= 1) arrived = Math.max(arrived, 1 - clamp((travelled - 1) * 2.5))
+          }
+        })
+        const holder = byId('collect-logo')
+        holder.style.opacity = ease(progress(t, 0, 0.4))
+        // The moon of the logo glows a little more each time a reading arrives
+        holder.querySelector('[data-glow]').setAttribute('opacity', 0.7 + 0.3 * arrived)
+        moveLogo(holder, t)
+      }
+
+      // --- 2 to 4 · The app: a real recording on the left, the line on the right ---
+
+      byId('app-logo').innerHTML = logo('app', 150)
+
+      async function drawApp(t, frame) {
+        const image = byId('app-frame')
+        if (image.dataset.file !== frame.file) {
+          image.dataset.file = frame.file
+          image.src = frame.file
+          await image.decode()
+        }
+        image.style.opacity = frame.opacity
+        drawRing(frame.ring)
+        moveLogo(byId('app-logo'), t)
+      }
+
+      const RING_MARGIN = 8
+      const RING_PULSE_SECONDS = 0.7
+
+      // `ring` is the box of what was written down and for how long it has been there; absent before that
+      function drawRing(ring) {
+        const style = byId('app-ring').style
+        style.display = ring === undefined ? 'none' : 'block'
+        if (ring === undefined) return
+        // It closes in on the box, then stays
+        const settled = ease(progress(ring.age, 0, RING_PULSE_SECONDS))
+        const margin = lerp(RING_MARGIN * 5, RING_MARGIN, settled)
+        style.left = `${ring.x - margin}px`
+        style.top = `${ring.y - margin}px`
+        style.width = `${ring.width + 2 * margin}px`
+        style.height = `${ring.height + 2 * margin}px`
+        style.opacity = lerp(0.2, 1, settled) * frameOpacity(ring)
+        style.boxShadow = `0 0 ${lerp(40, 18, settled)}px rgb(47 216 255 / 0.7)`
+      }
+
+      const frameOpacity = (ring) => ring.opacity ?? 1
+
+      // --- 5 · Architecture: the link is cut, the base goes on, and the AI moves on board next ---
+
+      const MOON = { x: 430, y: 480 }
+      const EARTH = { x: 1490, y: 480 }
+      const LINK = { from: 610, to: 1310, y: 480 }
+      const MODULE_Y = 230
+      // The label of the AI in the cloud sits over the cloud; the one on board, over its module
+      const TODAY_LABEL_RISE = 156
+      const NEXT_LABEL_RISE = 104
+      const ARCHITECTURE = {
+        linkCutAt: 0.8,
+        baseOkAt: 1.15,
+        moduleLeavesAt: 1.3,
+        moduleSeconds: 1.2,
+        linkBackAt: 2.75,
+        reportLeavesAt: 3.15,
+        reportSeconds: 0.9,
+      }
+      const LINK_CHANGE_SECONDS = 0.3
+      const LINK_GAP = 110
+
+      byId('architecture-drawing').innerHTML = `
+        <defs>
+          <radialGradient id="moon-fill" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#f4f8fc"/><stop offset="1" stop-color="#8fa3b8"/></radialGradient>
+          <radialGradient id="earth-fill" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#6fc3ff"/><stop offset="1" stop-color="#123f8a"/></radialGradient>
+          <clipPath id="earth-clip"><circle cx="${EARTH.x}" cy="${EARTH.y}" r="130"/></clipPath>
+        </defs>
+        <circle cx="${MOON.x}" cy="${MOON.y}" r="130" fill="url(#moon-fill)"/>
+        <g fill="#7f93a8" opacity="0.7">
+          <circle cx="${MOON.x - 60}" cy="${MOON.y + 20}" r="20"/><circle cx="${MOON.x + 50}" cy="${MOON.y + 60}" r="14"/>
+          <circle cx="${MOON.x + 70}" cy="${MOON.y - 20}" r="9"/><circle cx="${MOON.x - 20}" cy="${MOON.y + 85}" r="10"/>
+        </g>
+        <!-- The base: a dome on the Moon -->
+        <path d="M${MOON.x - 52} ${MOON.y - 36}a52 52 0 0 1 104 0Z" fill="#0b1a2e" stroke="#2fd8ff" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M${MOON.x - 18} ${MOON.y - 36}v-22a18 18 0 0 1 36 0v22" fill="rgb(47 216 255 / 0.35)" stroke="#2fd8ff" stroke-width="3"/>
+        <circle id="base-ring" cx="${MOON.x}" cy="${MOON.y - 52}" r="60" fill="none" stroke="#3be0a0" stroke-width="4"/>
+        <g id="base-ok" transform="translate(${MOON.x + 70} ${MOON.y - 150})" color="#3be0a0">
+          <circle cx="24" cy="24" r="22" fill="#062b22"/>
+          <g transform="scale(2)">${icon('ok', 24)}</g>
+        </g>
+        <circle cx="${EARTH.x}" cy="${EARTH.y}" r="130" fill="url(#earth-fill)"/>
+        <g clip-path="url(#earth-clip)" fill="#3be0a0" opacity="0.75">
+          <path d="M${EARTH.x - 110} ${EARTH.y - 60}q40-50 90-20q30 30-10 60q-10 50-50 30q-40-20-30-70Z"/>
+          <path d="M${EARTH.x + 20} ${EARTH.y + 10}q50-30 80 10q20 50-30 80q-50 10-50-90Z"/>
+          <path d="M${EARTH.x + 40} ${EARTH.y - 110}q40-10 60 30q-30 20-60-30Z"/>
+        </g>
+        <!-- The cloud the AI runs in today -->
+        <path d="M${EARTH.x - 120} ${MODULE_Y + 64}a52 52 0 0 1 8-103a78 78 0 0 1 150-22a62 62 0 0 1 72 125Z" fill="rgb(150 200 255 / 0.1)" stroke="rgb(205 230 255 / 0.55)" stroke-width="3" stroke-linejoin="round"/>
+        <line id="link-left" y1="${LINK.y}" y2="${LINK.y}" x1="${LINK.from}" stroke-width="6" stroke-linecap="round" stroke-dasharray="4 18"/>
+        <line id="link-right" y1="${LINK.y}" y2="${LINK.y}" x2="${LINK.to}" stroke-width="6" stroke-linecap="round" stroke-dasharray="4 18"/>
+        <g id="link-cut" stroke="#ff5a52" stroke-width="8" stroke-linecap="round">
+          <path d="M${(LINK.from + LINK.to) / 2 - 26} ${LINK.y - 26}l52 52M${(LINK.from + LINK.to) / 2 + 26} ${LINK.y - 26}l-52 52"/>
+        </g>
+        <g id="report">
+          <rect x="-30" y="-38" width="60" height="76" rx="9" fill="#e6f1fb"/>
+          <path d="M-16 -16h32M-16 0h32M-16 16h20" stroke="#0b1a2e" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <g id="report-ok" transform="translate(${EARTH.x - 190} ${EARTH.y - 150})" color="#3be0a0">
+          <circle cx="24" cy="24" r="22" fill="#062b22"/>
+          <g transform="scale(2)">${icon('ok', 24)}</g>
+        </g>`
+
+      function drawArchitecture(t) {
+        const { linkCutAt, baseOkAt, moduleLeavesAt, moduleSeconds, linkBackAt, reportLeavesAt, reportSeconds } = ARCHITECTURE
+        // 0 with the link whole, 1 with the link cut
+        const cut = ease(progress(t, linkCutAt, LINK_CHANGE_SECONDS)) - ease(progress(t, linkBackAt, LINK_CHANGE_SECONDS))
+        const middle = (LINK.from + LINK.to) / 2
+        const colour = cut > 0.5 ? '#7d8fa3' : '#2fd8ff'
+        for (const [id, end, x] of [['link-left', 'x2', middle - LINK_GAP * cut], ['link-right', 'x1', middle + LINK_GAP * cut]]) {
+          const line = byId(id)
+          line.setAttribute(end, x)
+          line.setAttribute('stroke', colour)
+          // While the link is whole its dashes run; cut, they stand still
+          line.setAttribute('stroke-dashoffset', cut > 0.5 ? 0 : -t * 60)
+        }
+        byId('link-cut').style.opacity = cut
+
+        // The base never stops: its ring beats through the whole scene
+        const beat = (t / 0.9) % 1
+        const ring = byId('base-ring')
+        ring.setAttribute('r', lerp(56, 96, beat))
+        ring.style.opacity = 1 - beat
+        byId('base-ok').style.opacity = ease(progress(t, baseOkAt, 0.25))
+
+        place('module-today', EARTH.x, MODULE_Y)
+        place('when-today', EARTH.x, MODULE_Y - TODAY_LABEL_RISE)
+        // The copy that goes on board next: it leaves the cloud and lands over the base
+        const moved = ease(progress(t, moduleLeavesAt, moduleSeconds))
+        const moduleX = lerp(EARTH.x, MOON.x, moved)
+        const moduleY = MODULE_Y - Math.sin(moved * Math.PI) * 60
+        place('module-next', moduleX, moduleY)
+        byId('module-next').style.opacity = progress(t, moduleLeavesAt, 0.15)
+        place('when-next', moduleX, moduleY - NEXT_LABEL_RISE)
+        byId('when-next').style.opacity = progress(t, moduleLeavesAt + 0.15, 0.25)
+
+        const sent = progress(t, reportLeavesAt, reportSeconds)
+        const report = byId('report')
+        report.setAttribute('transform', `translate(${lerp(LINK.from + 20, LINK.to - 20, ease(sent))} ${LINK.y})`)
+        report.style.opacity = Math.min(1, sent * 8, (1 - sent) * 8)
+        byId('report-ok').style.opacity = ease(progress(t, reportLeavesAt + reportSeconds - 0.05, 0.2))
+      }
+
+      function place(id, x, y) {
+        byId(id).style.left = `${x}px`
+        byId(id).style.top = `${y}px`
+      }
+
+      // --- 6 · Close ---
+
+      byId('close-logo').innerHTML = logo('close', 330)
+
+      // --- One frame ---
+
+      const SCENE_FADE_SECONDS = 0.25
+
+      /** Draws the frame of `shot.scene` at `shot.t` seconds from its start. Resolves when it can be photographed. */
+      window.render = async (shot) => {
+        for (const scene of document.querySelectorAll('.scene')) {
+          scene.style.display = scene.id === shot.scene ? 'block' : 'none'
+        }
+        const scene = byId(shot.scene)
+        scene.style.opacity = ease(progress(shot.t, 0, SCENE_FADE_SECONDS))
+        scene.querySelectorAll('[data-caption]').forEach((line) => (line.textContent = shot.caption))
+        scene.querySelectorAll('[data-sub]').forEach((line) => (line.textContent = shot.sub ?? ''))
+        if (shot.scene === 'collect') drawCollect(shot.t, shot.intro ?? [])
+        if (shot.scene === 'architecture') drawArchitecture(shot.t)
+        if (shot.scene === 'close') moveLogo(byId('close-logo'), shot.t)
+        if (shot.scene === 'app') {
+          byId('app-caption').textContent = shot.caption
+          byId('app-note').textContent = shot.note ?? ''
+          byId('app-note').style.display = shot.note ? 'block' : 'none'
+          await drawApp(shot.t, shot.frame)
+        }
+        await document.fonts.ready
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+1
+00:00:00,300 --> 00:00:04,898
+On the Moon, the link with Earth can drop. And getting home takes three to eleven days.
+
+2
+00:00:05,500 --> 00:00:10,051
+Moon Care keeps the data from every device on board. No connection to Earth needed.
+
+3
+00:00:10,600 --> 00:00:14,222
+Every morning you see how you slept, your heart, your radiation.
+
+4
+00:00:14,800 --> 00:00:18,422
+One day, seven readings shift together: a possible infection.
+
+5
+00:00:19,300 --> 00:00:23,944
+A voice guides the medical officer through NASA's checklist, and writes the report.
+
+6
+00:00:24,400 --> 00:00:26,861
+When the link returns, Earth receives it all.
+
+7
+00:00:27,050 --> 00:00:29,372
+Not just to reach the Moon. To live there.
