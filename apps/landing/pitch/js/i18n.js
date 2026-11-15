@@ -185,7 +185,7 @@ en: {
   try_dash_p: "The whole panel of each crew member, with every alert and what to do, and the guided emergency for the medical officer.",
   try_dash_h: "On the base tablet",
   try_dash_k: "2 · Dashboard",
-  try_app_live: "Real app: coming soon",
+  try_app_live: "Open the real crew app →",
   try_app_steps: ["Pick Liam Novak and type the PIN 123456", "Log your mood and tick a task", "Open Vitals and tap a value"],
   try_app_small: "Real data · any 6-digit PIN · nothing is saved",
   try_app_start: "Start the crew app mini demo",
@@ -198,6 +198,8 @@ en: {
   try_iframe: "Moon Care live demo",
   team_eyebrow: "Hackathon team",
   team_h2: "The crew<br><em>behind Moon Care.</em>",
+  team_photo_alt: "The five members of the Moon Care team, smiling in front of the NASA Space Apps Challenge Barcelona banner",
+  team_photo_caption: "The Moon Care team at NASA Space Apps Challenge Barcelona 2026.",
   role_backend: "Backend, data and SI",
   role_frontend: "Design and frontend",
   role_medical: "Medical lead",
@@ -222,7 +224,7 @@ en: {
   try_access_h: "Demo access",
   try_user: "User",
   try_role_mo: "· medical officer",
-  try_app_note: "This demo account also signs in to the real crew app when it goes online. In the mini demo any 6 digits work.",
+  try_app_note: "This demo account also signs in to the real crew app, which can take about a minute to wake up on the first visit. In the mini demo any 6 digits work.",
 },
 
 es: {
@@ -406,7 +408,7 @@ es: {
   try_dash_p: "El panel completo de cada tripulante, con cada alerta y qué hacer, y la emergencia guiada para el oficial médico.",
   try_dash_h: "En la tableta de la base",
   try_dash_k: "2 · Dashboard",
-  try_app_live: "App real: próximamente",
+  try_app_live: "Abrir la app real →",
   try_app_steps: ["Elige a Liam Novak y escribe el PIN 123456", "Registra tu ánimo y marca una tarea", "Abre Vitals y toca un valor"],
   try_app_small: "Datos reales · cualquier PIN de 6 cifras · no se guarda nada",
   try_app_start: "Iniciar la mini demo de la app",
@@ -419,6 +421,8 @@ es: {
   try_iframe: "Demo en vivo de Moon Care",
   team_eyebrow: "Equipo del hackathon",
   team_h2: "La tripulación<br><em>detrás de Moon Care.</em>",
+  team_photo_alt: "Los cinco miembros del equipo de Moon Care, sonriendo delante del cartel del NASA Space Apps Challenge Barcelona",
+  team_photo_caption: "El equipo de Moon Care en el NASA Space Apps Challenge Barcelona 2026.",
   role_backend: "Backend, datos y SI",
   role_frontend: "Diseño y frontend",
   role_medical: "Responsable médico",
@@ -443,7 +447,7 @@ es: {
   try_access_h: "Acceso de demo",
   try_user: "Usuario",
   try_role_mo: "· oficial médico",
-  try_app_note: "Esta cuenta de demo también entrará en la app real de la tripulación cuando esté en línea. En la mini demo vale cualquier PIN de 6 cifras.",
+  try_app_note: "Esta cuenta de demo también entra en la app real de la tripulación, que puede tardar alrededor de un minuto en arrancar la primera vez. En la mini demo vale cualquier PIN de 6 cifras.",
 },
 
 ca: {
@@ -627,7 +631,7 @@ ca: {
   try_dash_p: "El panell complet de cada tripulant, amb cada alerta i què cal fer, i l'emergència guiada per a l'oficial mèdic.",
   try_dash_h: "A la tauleta de la base",
   try_dash_k: "2 · Dashboard",
-  try_app_live: "App real: properament",
+  try_app_live: "Obrir l'app real →",
   try_app_steps: ["Tria el Liam Novak i escriu el PIN 123456", "Registra el teu ànim i marca una tasca", "Obre Vitals i toca un valor"],
   try_app_small: "Dades reals · qualsevol PIN de 6 xifres · no es desa res",
   try_app_start: "Iniciar la mini demo de l'app",
@@ -640,6 +644,8 @@ ca: {
   try_iframe: "Demo en directe de Moon Care",
   team_eyebrow: "Equip del hackathon",
   team_h2: "La tripulació<br><em>darrere de Moon Care.</em>",
+  team_photo_alt: "Els cinc membres de l'equip de Moon Care, somrient davant del cartell del NASA Space Apps Challenge Barcelona",
+  team_photo_caption: "L'equip de Moon Care al NASA Space Apps Challenge Barcelona 2026.",
   role_backend: "Backend, dades i SI",
   role_frontend: "Disseny i frontend",
   role_medical: "Responsable mèdica",
@@ -664,7 +670,7 @@ ca: {
   try_access_h: "Accés de demo",
   try_user: "Usuari",
   try_role_mo: "· oficial mèdica",
-  try_app_note: "Aquest compte de demo també entrarà a l'app real de la tripulació quan estigui en línia. A la mini demo val qualsevol PIN de 6 xifres.",
+  try_app_note: "Aquest compte de demo també entra a l'app real de la tripulació, que pot trigar aproximadament un minut a arrencar la primera vegada. A la mini demo val qualsevol PIN de 6 xifres.",
 }
 
 };
