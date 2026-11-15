@@ -2,12 +2,13 @@
 (function(){
   // ---- Team. role and bio are keys from i18n.js; the bio comes from each person's public LinkedIn headline.
   var TEAM = [
-    {name:"Adolfo Viguera Varea",     initials:"AV", photo:"img/team/adolfo.webp", role:"role_backend",  bio:"bio_adolfo", url:"https://www.linkedin.com/in/adolfoviguera/"},
-    {name:"Ivan Castaño Carrillo",    initials:"IC", photo:"img/team/ivan.webp", role:"role_backend",  bio:"bio_ivan",   url:"https://www.linkedin.com/in/ivancastanocarrillo/"},
+    {name:"Adolfo Viguera Varea",     initials:"AV", photo:"img/team/adolfo.webp", role:"role_backend",  bio:"bio_adolfo", url:"https://www.linkedin.com/in/adolfoviguera/", web:"https://adolfoviguera.com"},
+    {name:"Ivan Castaño Carrillo",    initials:"IC", photo:"img/team/ivan.webp", role:"role_backend",  bio:"bio_ivan",   url:"https://www.linkedin.com/in/ivancastanocarrillo/", web:"https://ivancastano.com"},
     {name:"Rebecca Sarah Pearce",     initials:"RP", photo:"img/team/becky.webp", role:"role_frontend", bio:"bio_becky",  url:"https://www.linkedin.com/in/rebecca-sarah-pearce-607b90131/"},
     {name:"Àlex Jiménez Roldán",      initials:"ÀJ", photo:"img/team/alex.webp", role:"role_frontend", bio:"bio_alex",   url:"https://www.linkedin.com/in/jiro2405/"},
     {name:"Àngels Gonzalez de Regàs", initials:"ÀG", photo:"img/team/angels.webp", role:"role_research", bio:"bio_angels", url:"https://www.linkedin.com/in/angels-gonzalez-regas/"}
   ];
+  var WEB_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>';
   var LINKEDIN_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>';
 
   var RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -20,7 +21,8 @@
     document.getElementById("teamGrid").innerHTML = TEAM.map(function(m, i){
       return '<div class="glass mate rv in d' + (i % 4 + 1) + '"><div class="av"><img src="' + m.photo + '" alt="" width="180" height="180" loading="lazy" onerror="this.remove()"><i>' + m.initials + '</i></div><b>' + m.name + '</b><span>' + t(m.role) + '</span>' +
         '<p class="bio">' + t(m.bio) + '</p>' +
-        '<a class="li" href="' + m.url + '" target="_blank" rel="noopener" aria-label="' + m.name + ' · LinkedIn">' + LINKEDIN_ICON + '<span>LinkedIn</span></a></div>';
+        '<a class="li" href="' + m.url + '" target="_blank" rel="noopener" aria-label="' + m.name + ' · LinkedIn">' + LINKEDIN_ICON + '<span>LinkedIn</span></a>' +
+        (m.web ? '<a class="li" href="' + m.web + '" target="_blank" rel="noopener" aria-label="' + m.name + ' · Portfolio">' + WEB_ICON + '<span>Portfolio</span></a>' : '') + '</div>';
     }).join("");
   }
 

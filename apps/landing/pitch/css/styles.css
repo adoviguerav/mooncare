@@ -218,6 +218,7 @@ ul.ticks li::before{content:"";width:18px;height:18px;flex:none;margin-top:4px;b
 .mate .li{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink);text-decoration:none;border:1px solid var(--gl-line);background:var(--gl-fill);transition:border-color .2s,color .2s}
 .mate .li span{color:inherit;font-size:13px}
 .mate .li:hover{color:var(--cy);border-color:var(--cy)}
+.mate .li+.li{margin-top:8px}
 @media(max-width:1060px){.team{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.team{grid-template-columns:1fr}.mate .bio{flex:none}}
 footer{padding:60px 0 80px;border-top:1px solid rgba(47,216,255,.12);color:var(--mute);font-size:14px}
