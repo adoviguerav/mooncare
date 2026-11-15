@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { CrewMember } from './api.ts'
 import type { EventId } from './procedures.ts'
 
 // The simulated emergency lives in this browser only, so a demo can be started and repeated without
@@ -6,6 +7,8 @@ import type { EventId } from './procedures.ts'
 // move it to the backend when two tablets have to share one emergency.
 const STORAGE_KEY = 'emergency'
 const CHANGE_EVENT = 'emergency-change'
+// Who has the simulated event of the demo
+const SIMULATED_PATIENT_NAME = 'Liam Novak'
 
 export type Emergency = {
   // What the model flagged, which decides the procedure the guide opens
@@ -77,6 +80,10 @@ function subscribe(onChange: () => void) {
 
 export function useEmergency(): Emergency | null {
   return useSyncExternalStore(subscribe, readEmergency)
+}
+
+export function findSimulatedPatient(crew: CrewMember[]): CrewMember | undefined {
+  return crew.find((crewMember) => crewMember.name === SIMULATED_PATIENT_NAME)
 }
 
 export function startEmergency(event: EventId, patientId: number, patientName: string): void {

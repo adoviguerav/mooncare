@@ -2,7 +2,7 @@ import { Icon } from '../../components/Icon.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { fetchCrew } from '../../lib/api.ts'
 import type { CrewMember, CrewRole, Me } from '../../lib/api.ts'
-import { endEmergency, startEmergency, useEmergency } from '../../lib/emergency.ts'
+import { endEmergency, findSimulatedPatient, startEmergency, useEmergency } from '../../lib/emergency.ts'
 import { useApi } from '../../hooks/useApi.ts'
 
 const ROLE_NAMES: Record<CrewRole, string> = {
@@ -10,8 +10,6 @@ const ROLE_NAMES: Record<CrewRole, string> = {
   medical_officer: 'Medical officer',
   crew_member: 'Crew member',
 }
-// Who has the simulated event of the demo
-const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
 const PROFILE_STAGGER_MS = 60
 
@@ -22,7 +20,7 @@ export function ProfilePicker({ me, onPick, onSignOut }: Props) {
   const { data: crew, error } = useApi(fetchCrew)
   const loading = crew === null && error === null
   const emergency = useEmergency()
-  const patient = crew?.find((crewMember) => crewMember.name === SIMULATED_PATIENT_NAME)
+  const patient = crew == null ? undefined : findSimulatedPatient(crew)
 
   return (
     <main className="screen picker">

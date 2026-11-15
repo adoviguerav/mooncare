@@ -7,11 +7,12 @@ import { Sparkline } from '../../components/Sparkline.tsx'
 import { BodyMap } from '../body/BodyMap.tsx'
 import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { DailyCare } from '../wellbeing/DailyCare.tsx'
-import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
+import { fetchCrew, fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
 import { getBodySystemStates } from '../../lib/bodySystems.ts'
 import type { BodySystemId } from '../../lib/bodySystems.ts'
 import { TODAY } from '../../lib/config.ts'
+import { endEmergency, findSimulatedPatient, startEmergency, useEmergency } from '../../lib/emergency.ts'
 import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue, formatValueParts } from '../../lib/format.ts'
 import {
   DAILY_VITAL_IDS,
@@ -313,7 +314,33 @@ function TodayTab({
           ))}
         </div>
       </section>
+
+      <SimulationControl />
     </>
+  )
+}
+
+// The demo's switch, here for a crew member, who never sees the profile picker
+function SimulationControl() {
+  const { data: crew } = useApi(fetchCrew)
+  const emergency = useEmergency()
+
+  if (emergency !== null) {
+    return (
+      <div className="simulation-banner" role="status">
+        <span>Simulation running: an alert for {emergency.patientName}.</span>
+        <button className="ghost ghost-small" onClick={endEmergency}>
+          End simulation
+        </button>
+      </div>
+    )
+  }
+  const patient = crew === null ? undefined : findSimulatedPatient(crew)
+  if (patient === undefined) return null
+  return (
+    <button className="ghost simulate" onClick={() => startEmergency('infection', patient.id, patient.name)}>
+      Simulate a possible infection
+    </button>
   )
 }
 

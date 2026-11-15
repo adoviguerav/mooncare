@@ -1621,6 +1621,8 @@ button.card:active {
 
 .simulate {
   margin-top: 20px;
+  /* In the panel's one-column grid it would stretch to the full width */
+  justify-self: center;
 }
 
 .emergency-card {
