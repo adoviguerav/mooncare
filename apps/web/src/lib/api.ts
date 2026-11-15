@@ -174,3 +174,53 @@ export async function fetchMe(): Promise<Me | null> {
     throw error
   }
 }
+
+// --- Hydration, breathing and the daily tasks (services/api/app/wellbeing.py and daily.py). Reading follows the
+// panel's access; writing is only for the crew member themselves. ---
+
+export type HydrationGoal = { ml: number; total_water_ml: number; drinks_share: number; source: string }
+
+export type Drink = { drunk_at: string; ml: number }
+
+export type HydrationDay = {
+  date: string
+  // null: no sex recorded for the crew member, so no reference goal
+  goal: HydrationGoal | null
+  total_ml: number
+  drinks: Drink[]
+  full_days_in_a_row: number
+}
+
+export type BreathingDay = { date: string; sessions: number }
+
+export type DailyTask = { id: string; title: string; done: boolean }
+
+export type DailyChecklist = { date: string; tasks: DailyTask[] }
+
+export function fetchHydration(crewMemberId: number, date: string): Promise<HydrationDay> {
+  return sendJson('GET', `/api/crew/${crewMemberId}/hydration/${date}`)
+}
+
+export function logDrink(crewMemberId: number, date: string, ml: number): Promise<HydrationDay> {
+  return sendJson('POST', `/api/crew/${crewMemberId}/hydration/${date}`, { ml })
+}
+
+export function undoDrink(crewMemberId: number, date: string): Promise<HydrationDay> {
+  return sendJson('POST', `/api/crew/${crewMemberId}/hydration/${date}/undo`)
+}
+
+export function fetchBreathing(crewMemberId: number, date: string): Promise<BreathingDay> {
+  return sendJson('GET', `/api/crew/${crewMemberId}/breathing/${date}`)
+}
+
+export function logBreathing(crewMemberId: number, date: string, breaths: number): Promise<BreathingDay> {
+  return sendJson('POST', `/api/crew/${crewMemberId}/breathing/${date}`, { breaths })
+}
+
+export function fetchChecklist(crewMemberId: number, date: string): Promise<DailyChecklist> {
+  return sendJson('GET', `/api/crew/${crewMemberId}/tasks/${date}`)
+}
+
+export function tickTask(crewMemberId: number, date: string, taskId: string): Promise<DailyChecklist> {
+  return sendJson('PUT', `/api/crew/${crewMemberId}/tasks/${date}/${taskId}`, { done: true })
+}
