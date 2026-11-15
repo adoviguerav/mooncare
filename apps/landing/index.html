@@ -1558,42 +1558,30 @@ function hydTag(full,diff){return full?["ok","Goal reached"]:diff<-300?["warn","
 function hydTile(){if(!window.HYD||!HYD.on)return"";const g=hydGoalFor(ME),t=hydTag(HYD.ml>=g,HYD.ml-hydPace(g));
   return `<article class="card m ptile cp hydt" id="hydTile" data-hyd="1" tabindex="0" role="button" aria-label="Open hydration fountain" style="cursor:pointer"><div class="top"><span class="pic">${HDROP}</span><span class="pn">Hydration</span><span class="tag ${t[0]}" id="hydTT">${t[1]}</span></div><div class="val"><span id="hydTV">${(HYD.ml/1000).toFixed(1)}</span> <small>of ${(g/1000).toFixed(1)} L</small></div><div class="hydmini"><i id="hydTB" style="width:${Math.min(100,HYD.ml/g*100).toFixed(0)}%"></i></div></article>`}
 function hydBuild(){const wv='<g class="hwv"><path d="M-150 0 q18.75 -4 37.5 0'+' t37.5 0'.repeat(15)+' V230 H-150 Z" fill="url(#hWat)"/></g>';
-  const gem=[76,112,188,224].map((x,i)=>`<polygon class="hg" data-i="${i}" points="${x},181 ${x+6},184 ${x+6},190 ${x},193 ${x-6},190 ${x-6},184" fill="#17314d" stroke="#6f8cab" stroke-width="1"/>`).join("");
+  const gem=[[100,196],[128,197.5],[172,197.5],[200,196]].map((x,k)=>`<circle class="hg" data-i="${k}" cx="${x[0]}" cy="${x[1]}" r="3" fill="#17314d" stroke="#6f8cab" stroke-width="1"/>`).join("");
   const star=[[30,10],[62,-22],[238,-26],[272,40],[22,70],[282,110],[104,-28],[196,-16]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.5}" fill="#dffbff" opacity="${.35+i%3*.2}"/>`).join("");
   const sp=[[56,34],[246,22],[270,92],[34,96],[214,-8],[92,-14]].map((x,i)=>`<path class="hsp" d="M${x[0]} ${x[1]-5} L${x[0]+1.4} ${x[1]-1.4} L${x[0]+5} ${x[1]} L${x[0]+1.4} ${x[1]+1.4} L${x[0]} ${x[1]+5} L${x[0]-1.4} ${x[1]+1.4} L${x[0]-5} ${x[1]} L${x[0]-1.4} ${x[1]-1.4}Z" fill="#dffbff" style="animation-delay:${i*.35}s;display:none"/>`).join("");
   const BOWL="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z",CUP="M104 62 C104 80 124 88 150 88 C176 88 196 80 196 62 Z";
   $("hydSvg").innerHTML=`<title id="hydT">Hydration fountain</title><defs>
-  <linearGradient id="hWat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff3ff" stop-opacity=".92"/><stop offset=".25" stop-color="#27b9ee" stop-opacity=".9"/><stop offset="1" stop-color="#0a4c9c" stop-opacity=".95"/></linearGradient>
-  <linearGradient id="hSt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7794b3"/><stop offset=".5" stop-color="#3b5776"/><stop offset="1" stop-color="#1e3350"/></linearGradient>
-  <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
+  <linearGradient id="hWat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff3ff" stop-opacity=".9"/><stop offset=".3" stop-color="#27b9ee" stop-opacity=".88"/><stop offset="1" stop-color="#0a4c9c" stop-opacity=".92"/></linearGradient>
+  <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient>
   <linearGradient id="hCry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1fdff"/><stop offset=".5" stop-color="#46dfff"/><stop offset="1" stop-color="#1578cc"/></linearGradient>
-  <radialGradient id="hGG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".6"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
-  <radialGradient id="hMoon" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#dbe9f7" stop-opacity=".3"/><stop offset=".7" stop-color="#8fb0d0" stop-opacity=".12"/><stop offset="1" stop-color="#8fb0d0" stop-opacity=".04"/></radialGradient>
-  <radialGradient id="hEarth" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7fd6ff"/><stop offset="1" stop-color="#1457b8"/></radialGradient>
-  <clipPath id="hClip"><path d="${BOWL}"/></clipPath><clipPath id="hClip2"><path d="${CUP}"/></clipPath>
+  <radialGradient id="hGG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".5"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+  <clipPath id="hClip"><path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z"/></clipPath>
   <filter id="hGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-  ${star}
-  <circle cx="150" cy="84" r="96" fill="url(#hMoon)"/><circle cx="150" cy="84" r="96" fill="none" stroke="#9ad8ff" stroke-opacity=".22" stroke-width="1.2"/>
-  <circle cx="98" cy="40" r="11" fill="#8fb0d0" opacity=".12"/><circle cx="212" cy="62" r="15" fill="#8fb0d0" opacity=".1"/><circle cx="222" cy="22" r="6" fill="#8fb0d0" opacity=".12"/><circle cx="84" cy="96" r="8" fill="#8fb0d0" opacity=".1"/>
-  <g transform="translate(262 -8)"><circle r="12" fill="url(#hEarth)"/><path d="M-6 -4 q4 -5 8 -2 q2 3 -2 5 q-3 1 -6 -3Z M2 4 q4 -1 5 2 q-2 3 -5 1Z" fill="#6fd08a" opacity=".85"/><circle r="12" fill="none" stroke="#bfeaff" stroke-opacity=".5"/></g>
-  <ellipse id="hGl" cx="150" cy="96" rx="150" ry="100" fill="url(#hGG)" opacity=".2" style="transition:opacity .6s"/>
-  <ellipse cx="150" cy="196" rx="124" ry="9" fill="#000" opacity=".4"/>
-  <path d="M40 184 Q40 195 150 197 Q260 195 260 184 Q260 178 150 178 Q40 178 40 184Z" fill="url(#hSt)"/><ellipse cx="150" cy="178" rx="108" ry="8" fill="#5a7898"/><ellipse cx="150" cy="177" rx="100" ry="6" fill="#33506f"/><path d="M52 183 Q150 192 248 183" fill="none" stroke="#2fd8ff" stroke-opacity=".55" stroke-width="1.2"/>${gem}
-  <path d="${BOWL}" fill="#06182f" opacity=".6"/>
-  <g clip-path="url(#hClip)"><g id="hWt">${wv}<ellipse id="hSurf" cx="150" cy="1" rx="100" ry="5" fill="#e4fcff" opacity=".3"/></g>
-   <line id="hPace" x1="30" x2="270" y1="140" y2="140" stroke="#2fd8ff" stroke-width="1.2" stroke-dasharray="3 5" opacity=".55"/></g>
-  <rect x="143" y="84" width="14" height="92" rx="4" fill="url(#hSt)"/><rect x="136" y="152" width="28" height="24" rx="5" fill="url(#hSt)"/><rect x="143" y="84" width="4" height="92" rx="2" fill="#fff" opacity=".12"/>
-  <g clip-path="url(#hClip)" opacity=".42"><g id="hWt2">${wv}</g></g>
-  <path d="${CUP}" fill="#06182f" opacity=".65"/><g clip-path="url(#hClip2)"><rect id="hUp" x="80" y="88" width="140" height="40" fill="url(#hWat)"/></g>
-  <g id="hCasc" style="display:none" fill="none" stroke="#bff4ff" stroke-width="2.2" stroke-linecap="round" opacity=".85"><path id="hC1" class="hcs" d="M106 66 Q95 76 93 120"/><path id="hC2" class="hcs" d="M194 66 Q205 76 207 120"/></g>
-  <g id="hCrys" filter="url(#hGlow)"><polygon points="150,6 160,30 150,58 140,30" fill="url(#hCry)"/><polygon points="150,6 150,58 140,30" fill="#fff" opacity=".25"/></g>
-  <path id="hJet" class="hjet" d="M150 6 L150 -22" stroke="#cffaff" stroke-width="3.4" stroke-linecap="round" fill="none" style="display:none"/>
-  <g id="hStat" fill="none" stroke="#bff4ff" stroke-width="2.4" stroke-linecap="round" opacity=".8" style="display:none"><path d="M150 6 Q70 -30 56 100"/><path d="M150 6 Q230 -30 244 100"/><path d="M150 6 Q108 -24 96 100"/><path d="M150 6 Q192 -24 204 100"/></g>
-  <path d="${CUP}" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.4"/><ellipse cx="150" cy="62" rx="46" ry="5" fill="none" stroke="url(#hSt)" stroke-width="4"/><ellipse cx="150" cy="61" rx="46" ry="4.4" fill="none" stroke="#2fd8ff" stroke-opacity=".6" stroke-width="1"/>
-  <path d="${BOWL}" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.6"/>
-  <path d="M54 112 C56 140 70 156 96 166" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>
-  <ellipse cx="150" cy="102" rx="112" ry="11" fill="none" stroke="url(#hSt)" stroke-width="7"/><ellipse cx="150" cy="99.5" rx="112" ry="10" fill="none" stroke="#2fd8ff" stroke-opacity=".5" stroke-width="1.2"/>
-  <g id="hyR"></g><g id="hyP" fill="#cffaff"></g><g>${sp}</g>`;
+  <ellipse id="hGl" cx="150" cy="104" rx="140" ry="96" fill="url(#hGG)" opacity=".2" style="transition:opacity .6s"/>
+  <ellipse cx="150" cy="191" rx="92" ry="7" fill="#2fd8ff" opacity=".08"/><ellipse cx="150" cy="191" rx="92" ry="7" fill="none" stroke="#2fd8ff" stroke-opacity=".45"/>${gem}
+  <rect x="147" y="52" width="6" height="140" rx="3" fill="#9fc4e6" opacity=".4"/>
+  <path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z" fill="#06182f" opacity=".45"/>
+  <g clip-path="url(#hClip)"><g id="hWt">${wv}<ellipse id="hSurf" cx="150" cy="1" rx="100" ry="5" fill="#e4fcff" opacity=".25"/></g>
+   <line id="hPace" x1="30" x2="270" y1="140" y2="140" stroke="#2fd8ff" stroke-width="1" stroke-dasharray="3 5" opacity=".45"/></g>
+  <g id="hCrys" filter="url(#hGlow)"><polygon points="150,8 158,28 150,52 142,28" fill="url(#hCry)"/><polygon points="150,8 150,52 142,28" fill="#fff" opacity=".22"/></g>
+  <path id="hJet" class="hjet" d="M150 6 L150 -22" stroke="#cffaff" stroke-width="3" stroke-linecap="round" fill="none" style="display:none"/>
+  <g id="hStat" fill="none" stroke="#bff4ff" stroke-width="2.2" stroke-linecap="round" opacity=".8" style="display:none"><path d="M150 6 Q70 -30 56 100"/><path d="M150 6 Q230 -30 244 100"/><path d="M150 6 Q108 -24 96 100"/><path d="M150 6 Q192 -24 204 100"/></g>
+  <path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".5" stroke-width="1.3"/>
+  <path d="M56 114 C58 138 70 154 94 164" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>
+  <ellipse cx="150" cy="102" rx="108" ry="10" fill="none" stroke="#cfeeff" stroke-opacity=".5" stroke-width="1.3"/>
+  <g id="hyR"></g><g id="hyP" fill="#cffaff"></g>`;
   $("hydBtns").innerHTML=HYSZ.map(x=>`<button type="button" data-ml="${x[0]}">${x[1]}<small>${x[0]} ml</small></button>`).join("");
   $("hydBtns").onclick=e=>{const b=e.target.closest("button");if(b)hydAdd(+b.dataset.ml)};
   $("hydUndo").onclick=()=>{if(!HYD.log.length)return;HYD.ml=Math.max(0,HYD.ml-HYD.log.pop());hydSave();hydDraw();hydKick()};
@@ -1618,9 +1606,7 @@ function hydDraw(instant){const g=hydGoalFor(ME),lvT=Math.min(1,HYD.ml/g),full=H
   $("hGl").setAttribute("opacity",(.18+lvT*.3).toFixed(2));
   $("hJet").style.display=full&&!RM?"":"none";$("hStat").style.display=full&&RM?"":"none";document.querySelectorAll(".hsp").forEach(e=>e.style.display=full&&!RM?"":"none");
   hydWater();if(full&&!wasFull&&!instant&&!$("hydPage").hidden)hydBurst()}
-function hydWater(){const lv=HYD.lv,y=hydY(lv),t="translate(0 "+y.toFixed(1)+")";$("hWt").setAttribute("transform",t);$("hWt2").setAttribute("transform",t);$("hSurf").setAttribute("rx",hydHW(y).toFixed(1));$("hCrys").style.opacity=(.55+lv*.45).toFixed(2);
-  $("hUp").setAttribute("y",(88-Math.min(1,lv*2)*24).toFixed(1));const on=lv>=.5;$("hCasc").style.display=on?"":"none";
-  if(on){const wy=(y+1).toFixed(1);$("hC1").setAttribute("d","M106 66 Q95 76 93 "+wy);$("hC2").setAttribute("d","M194 66 Q205 76 207 "+wy)}}
+function hydWater(){const lv=HYD.lv,y=hydY(lv);$("hWt").setAttribute("transform","translate(0 "+y.toFixed(1)+")");$("hSurf").setAttribute("rx",hydHW(y).toFixed(1));$("hCrys").style.opacity=(.55+lv*.45).toFixed(2)}
 function hydSpawn(x,y,vx,vy,r){if(HYD.p.length>90)return;const c=document.createElementNS(NS,"circle");c.setAttribute("r",r||2.2);c.setAttribute("cx",x);c.setAttribute("cy",y);$("hyP").appendChild(c);HYD.p.push({c,x,y,vx,vy})}
 function hydRipple(x,y){if(++HYD.rip%3)return;const e=document.createElementNS(NS,"ellipse");e.setAttribute("class","hrip");e.setAttribute("cx",x);e.setAttribute("cy",y);e.setAttribute("rx",6);e.setAttribute("ry",1.8);$("hyR").appendChild(e);setTimeout(()=>e.remove(),950)}
 function hydBurst(){if(RM)return;for(let i=0;i<34;i++){const a=(Math.random()-.5)*1.5;hydSpawn(150,10,Math.sin(a)*(60+Math.random()*80),-(110+Math.random()*90),2.4)}hydKick()}
