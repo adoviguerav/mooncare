@@ -13,6 +13,9 @@ import { GO_TO_STEP_TOOL, PRESENT, RECORD_FINDINGS_TOOL, VOICE_AGENT_EVENT, buil
 const API = 'https://api.elevenlabs.io/v1'
 // The same pace as the recorded audio. 1.2 is the fastest the API allows.
 const SPEED = 1.2
+const DAILY_CALL_LIMIT = 150
+const CONCURRENT_CALL_LIMIT = 3
+const MAX_CALL_SECONDS = 300
 const AGENT_NAME = 'Moon Care emergency guide'
 const procedure = PROCEDURE_BY_EVENT[VOICE_AGENT_EVENT]
 
@@ -104,17 +107,22 @@ const agent = {
 const tts = { voice_id: voiceId, speed: SPEED }
 // She works in silence while she does each action: wait this many seconds before checking in
 const turn = { turn_timeout: 20 }
-const conversation_config = { agent, tts, turn }
+const conversation_config = { agent, tts, turn, conversation: { max_duration_seconds: MAX_CALL_SECONDS } }
+// Private: a session needs a signed URL, which only the backend can ask for.
+// The limits cap what the public demo can spend, whoever asks for sessions.
+const platform_settings = {
+  auth: { enable_auth: true },
+  call_limits: { daily_limit: DAILY_CALL_LIMIT, agent_concurrency_limit: CONCURRENT_CALL_LIMIT, bursting_enabled: false },
+}
 
 if (agentId) {
-  await callApi('PATCH', `/convai/agents/${agentId}`, { conversation_config })
+  await callApi('PATCH', `/convai/agents/${agentId}`, { conversation_config, platform_settings })
   console.log(`Updated agent ${agentId}`)
 } else {
   const created = await callApi('POST', '/convai/agents/create', {
     name: AGENT_NAME,
     conversation_config,
-    // Private: a session needs a signed URL, which only the backend can ask for
-    platform_settings: { auth: { enable_auth: true } },
+    platform_settings,
   })
   console.log(`Created agent. Add this line to services/api/.env:\nELEVENLABS_AGENT_ID=${created.agent_id}`)
 }
