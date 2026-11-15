@@ -361,6 +361,18 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .hstat{margin:-2px 0 14px;font-size:17px;line-height:1.35;color:var(--ink)}.hstat.w b{color:var(--warn)}.hstat.k b{color:var(--ok)}
 .stkrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.stkrow .note{margin:0;font-size:13px}
 .dots{display:flex;gap:4px}.dots i{width:9px;height:9px;border-radius:50%;background:var(--cy)}.dots i.o{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+/* vitals ring hero */
+.hrow{display:flex;gap:16px;align-items:center}.hl{flex:1;min-width:0}
+#vring{position:relative;width:124px;height:124px;flex:none}#vring svg{width:100%;height:100%;overflow:visible}
+.va{cursor:pointer;transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1),stroke .3s;outline:none;pointer-events:stroke}.va:focus-visible{stroke:#fff!important}
+.va.al{animation:vpulse 2.4s ease-in-out infinite}@keyframes vpulse{50%{opacity:.55}}
+.vc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}.vc b{font-size:30px;line-height:1}.vc small{font-size:12px;color:var(--mute)}
+.vc.beat b{animation:beat 1s ease-in-out infinite}@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.09)}26%{transform:scale(1)}}
+.pills{display:flex;gap:8px;flex-wrap:wrap}.pill2{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 12px;border-radius:18px;font:inherit;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line)}.pill2 svg{width:16px;height:16px;flex:none}#stkPill svg{color:var(--warn)}
+button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{display:block;width:34px;height:5px;border-radius:3px;background:var(--line);overflow:hidden}.pf u{display:block;height:100%;width:0;background:var(--cy);transition:width .5s;text-decoration:none}.done .pf u{background:var(--ok)}
+.flash{animation:vflash 1.1s ease-out}@keyframes vflash{0%{box-shadow:0 0 0 0 rgba(47,216,255,.9)}100%{box-shadow:0 0 0 14px rgba(47,216,255,0)}}
+@media(max-width:420px){#vring{width:104px;height:104px}.vc b{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.va.al,.vc.beat b,.flash{animation:none}.va{transition:none}}
 </style>
 </head>
 <body>
@@ -522,10 +534,10 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <main id="home">
 <section class="hero">
   <div class="card">
-    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2 id="greet">Good morning, Cmdr. Adolfo</h2>
+    <div class="hrow"><div class="hl"><h2 id="greet">Good morning, Cmdr. Adolfo</h2>
     <p class="hstat" id="heroStatus"></p>
-    <div class="stkrow"><div class="dots" id="stkDots" aria-hidden="true"></div><span class="note" id="stk">14 sols in a row</span></div></div>
-    <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px;max-width:90px"></div></div></div>
+    <div class="pills"><span class="pill2" id="stkPill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c.5 3-1.5 4.5-3 6.5S7 13 8.5 15.5c.7 1.2 2 2 3.5 2 2.8 0 5-2.2 5-5 0-2-1-3.5-2-4.5.1 1.4-.4 2.4-1.2 3C14.8 8 14 5 12 3Z"/></svg><span><b id="stk">14</b> sols in a row</span></span><button type="button" class="pill2" id="taskPill" aria-label="Go to today's tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--cy)"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg><span><b id="taskTxt">3 of 7</b> tasks</span><i class="pf"><u id="taskFill"></u></i></button></div></div>
+    <div id="vring" role="group" aria-label="Vitals at a glance"><svg viewBox="0 0 120 120" aria-hidden="false"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="9" opacity=".5"/><g id="vArcs"></g></svg><div class="vc" id="vc"><b id="hrC">72</b><small>bpm</small></div></div></div>
   </div>
   <div class="card">
     <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></span>How are you feeling today?</h2>
@@ -778,7 +790,7 @@ function render(){
     :"All readings look good. Let’s keep your routine steady before "+ENV[ENVK].ev+".";
   $("grid").innerHTML=M.filter(m=>m.name!=="Mood").sort((a,b)=>(b.test(b)-a.test(a))||a.pri.localeCompare(b.pri)).map(m=>{
     const a=m.test(m);
-    return `<article class="card m ptile cp${a?" w":""}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
+    return `<article class="card m ptile cp${a?" w":""}" data-v="${M.indexOf(m)}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
     ${m.name==="Heart rate"?LIVE:spark(m,true)}${a?`<p class="note">${m.msg}</p>`:""}
     </article>`}).join("");
@@ -840,7 +852,14 @@ const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Al
 const QM={2:"temp",3:"glu"};
 const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
 let qAll=false,qKeep=-1;PD[0].ex=EX;
-function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=n===Q.length?"var(--ok)":"var(--cy)";$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent="tasks done today";const tot=M.filter(m=>m.name!=="Mood").length,al2=M.filter(m=>m.name!=="Mood"&&m.test(m)).length,hs=$("heroStatus");hs.className="hstat "+(al2?"w":"k");hs.innerHTML=al2?`<b>${tot-al2} of ${tot} vitals nominal.</b> ${al2} to review.`:`<b>All ${tot} vitals nominal.</b>`;$("glance").setAttribute("aria-label","Today: "+n+" of "+Q.length+" tasks done. "+(al2?al2+" vitals need attention":"all vitals nominal"))}
+function drawGlance(){const V=M.map((m,i)=>[m,i]).filter(x=>x[0].name!=="Mood"),n=Q.filter(q=>q[3]).length,g=$("vArcs"),tot=V.length,bad=V.filter(x=>x[0].test(x[0]));
+  if(g.childElementCount!==tot){g.innerHTML=V.map(([m,i],k)=>`<circle class="va" data-v="${i}" cx="60" cy="60" r="50" fill="none" stroke-width="9" stroke-linecap="round" pathLength="100" tabindex="0" role="button" style="stroke-dasharray:0 100;stroke-dashoffset:${-(k*100/tot)}" transform="rotate(-90 60 60)"><title></title></circle>`).join("");g.getBoundingClientRect()}
+  const seg=100/tot-2.8;g.querySelectorAll(".va").forEach((c,k)=>{const m=V[k][0],a=m.test(m);c.setAttribute("stroke",a?"var(--warn)":"var(--ok)");c.classList.toggle("al",a);c.style.strokeDasharray=seg+" "+(100-seg);c.style.transitionDelay=(k*70)+"ms";c.setAttribute("aria-label",m.name+": "+(a?"needs review":"nominal")+". Show this reading");c.firstChild.textContent=m.name+(a?", needs review":", nominal")});
+  const hs=$("heroStatus"),nm=bad.map(x=>x[0].name.toLowerCase()),list=nm.length===1?nm[0]:nm.length===2?nm[0]+" and "+nm[1]:nm.length+" readings";
+  hs.className="hstat "+(bad.length?"w":"k");hs.innerHTML=bad.length?`<b>${tot-bad.length} of ${tot} vitals nominal.</b> Check ${list}.`:`<b>All ${tot} vitals nominal.</b>`;
+  $("vring").setAttribute("aria-label","Vitals: "+(tot-bad.length)+" of "+tot+" nominal");
+  $("taskTxt").textContent=n+" of "+Q.length;$("taskFill").style.width=(n/Q.length*100)+"%";$("taskPill").classList.toggle("done",n===Q.length);
+  const hv=M[0].val;$("hrC").textContent=hv;$("vc").classList.toggle("beat",!RM);$("vc").style.setProperty("--bt",(60/hv)+"s");$("vc").firstChild.style.animationDuration=(60/hv)+"s"}
 function drawQ(){
   const n=Q.filter(q=>q[3]).length;$("qbar").style.width=(n/Q.length*100)+"%";
   $("qsum").textContent=n+" of "+Q.length+" done"+(n===Q.length?". All set for the sol.":"");
@@ -990,10 +1009,13 @@ function countUp(el){const n=el.firstChild;if(!n||n.nodeType!==3)return;const m=
   const f=v=>comma?v.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec}):v.toFixed(dec);
   (function s(t){if(!el.isConnected)return;const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);n.nodeValue=m[1]+f(to*e)+m[3];if(k<1)requestAnimationFrame(s)})(t0)}
 function countAll(){if(RM)return;document.querySelectorAll("#crewApp .val").forEach(countUp)}
-function glanceIn(){const r=$("gRing");r.style.transition="none";r.style.strokeDashoffset=100;void r.getBoundingClientRect();r.style.transition="";drawGlance()}
+function glanceIn(){const g=$("vArcs");g.querySelectorAll(".va").forEach(c=>{c.style.transition="none";c.style.strokeDasharray="0 100"});g.getBoundingClientRect();g.querySelectorAll(".va").forEach(c=>c.style.transition="");drawGlance()}
+function goV(i){const t=document.querySelector('#grid [data-v="'+i+'"]');if(!t)return;t.scrollIntoView({behavior:RM?"auto":"smooth",block:"center"});t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash")}
+$("vArcs").onclick=e=>{const c=e.target.closest(".va");if(c)goV(+c.dataset.v)};$("vArcs").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest(".va");if(c){e.preventDefault();goV(+c.dataset.v)}}};
+$("taskPill").onclick=()=>{const t=$("qCard");t.scrollIntoView({behavior:RM?"auto":"smooth",block:"center"});t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash")};
 function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".q");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="Done";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
 function party(){if(RM)return;const host=$("qCard");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
-setInterval(()=>{const e=document.getElementById("liveHR");if(e&&!RM&&!$("crewApp").hidden)e.textContent=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2)},3000);
+setInterval(()=>{const e=document.getElementById("liveHR");if(!RM&&!$("crewApp").hidden){const v=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2);if(e)e.textContent=v;$("hrC").textContent=v;$("vc").firstChild.style.animationDuration=(60/v)+"s"}},3000);
 // landing and role switching
 $("goAdmin").onclick=()=>{location.hash="admin"};
 $("homeBtn").onclick=()=>{location.hash="landing"};
@@ -1313,7 +1335,7 @@ function applyProfile(i,first){
   M[2].val=moods[mood][0];M[2].test=()=>false;
   Object.assign(BS,d.bs);EX=d.ex||EX;
   P2[0][3]=d.dose;P2[9][3]="RMSSD "+d.hrv+" ms";P2[12][3]="REM "+d.stages[0]+"%, deep "+d.stages[1]+"%, wake "+d.stages[3]+"%";P2[7][3]="99%";
-  $("greet").textContent=d.greet;$("stk").textContent=d.stk+" sols in a row";$("stkDots").innerHTML=Array.from({length:14},(_,i)=>`<i class="${i<14-Math.min(14,d.stk)?"o":""}"></i>`).join("");
+  $("greet").textContent=(new Date().getHours()<12?"Good morning":new Date().getHours()<18?"Good afternoon":"Good evening")+", "+d.name;$("stk").textContent=d.stk;
   $("hrNote").textContent="Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline ("+d.base+" bpm). The shaded band is the normal range, 60 to 80 bpm.";
   $("liveHR").textContent=M[0].val;
   drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];drawEnv();
