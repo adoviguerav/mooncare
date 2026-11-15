@@ -373,6 +373,26 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .flash{animation:vflash 1.1s ease-out}@keyframes vflash{0%{box-shadow:0 0 0 0 rgba(47,216,255,.9)}100%{box-shadow:0 0 0 14px rgba(47,216,255,0)}}
 @media(max-width:420px){#vring{width:104px;height:104px}.vc b{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.va.al,.vc.beat b,.flash{animation:none}.va{transition:none}}
+/* exercise guide */
+#exPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#exPage[hidden]{display:none}
+#exPage .inc{width:100%;max-width:640px;margin:0 auto}
+.extabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}.extabs::-webkit-scrollbar{display:none}
+.extabs button{flex:none;min-height:42px;padding:0 15px;border-radius:21px;font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer;white-space:nowrap}
+.extabs button[aria-pressed=true]{border-color:rgba(47,216,255,.75);background:rgba(47,216,255,.2);color:#fff;box-shadow:0 0 16px rgba(47,216,255,.35)}
+.exstage{position:relative;border-radius:22px;overflow:hidden;border:1px solid rgba(47,216,255,.32);box-shadow:0 10px 36px rgba(0,0,0,.42),inset 0 0 40px rgba(47,216,255,.08)}.exstage svg{display:block;width:100%;height:auto}
+.exph,.exrep{position:absolute;top:12px;padding:6px 14px;border-radius:16px;font-weight:700;font-size:14px;background:rgba(5,14,30,.68);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.exph{left:12px;color:var(--cy);border:1px solid rgba(47,216,255,.55)}.exph.h{color:#fff;border-color:rgba(255,255,255,.4)}.exph.u{color:#ffd98a;border-color:rgba(255,184,74,.65)}
+.exrep{right:12px;color:var(--ink);font-weight:600;border:1px solid rgba(255,255,255,.2);font-variant-numeric:tabular-nums}
+.excon{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:8px 12px 10px;background:linear-gradient(0deg,rgba(5,14,30,.8),rgba(5,14,30,0))}
+.excon button{flex:none;min-height:40px;min-width:76px;padding:0 14px;border-radius:20px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;border:1px solid rgba(47,216,255,.55);background:rgba(5,14,30,.7)}
+.excon input{flex:1;min-width:0;accent-color:#2fd8ff;height:32px}
+.exef{margin-top:12px}.exeft{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-bottom:6px}
+.exchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.exchips span{padding:6px 12px;border-radius:14px;font-size:13px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--mute);transition:all .25s}
+.exchips span.on{border-color:rgba(255,184,74,.75);background:rgba(255,184,74,.2);color:#ffd98a;box-shadow:0 0 12px rgba(255,184,74,.4)}
+.exsteps{list-style:none;padding:0;margin:0 0 12px;counter-reset:s}.exsteps li{display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.1);line-height:1.45}.exsteps li:first-child{border-top:0}
+.exsteps li:before{counter-increment:s;content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:rgba(47,216,255,.16);border:1px solid rgba(47,216,255,.5);color:var(--cy)}
+.exstars circle{animation:extw 3.2s ease-in-out infinite}@keyframes extw{50%{opacity:.2}}
+@media(prefers-reduced-motion:reduce){.exstars circle{animation:none}}
 </style>
 </head>
 <body>
@@ -617,6 +637,27 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 <section id="bsPage" role="dialog" aria-modal="true" aria-label="Body system details" hidden>
   <div class="inc card glassx"><button class="back x" id="bsX" type="button" aria-label="Close"><span aria-hidden="true">×</span></button><div id="bsBody"></div></div>
 </section>
+<section id="exPage" role="dialog" aria-modal="true" aria-label="Exercise guide" hidden>
+  <div class="inc card">
+    <button class="back x" id="exX" type="button" aria-label="Close exercise guide">×</button>
+    <h2 class="h2i"><span class="pic" id="exPic"></span>Exercise guide</h2>
+    <p class="note" style="margin:0 0 8px">Pick a move and watch it. Same slow tempo for each: about 2 seconds down, 2 seconds up.</p>
+    <div class="extabs" id="exTabs" role="group" aria-label="Choose an exercise"></div>
+    <div class="exstage">
+      <svg id="exSvg" viewBox="0 0 340 236" role="img" aria-label="Animated demonstration of the exercise"></svg>
+      <span class="exph" id="exPh">Lower</span><span class="exrep" id="exRep">Rep 1 of 12</span>
+      <div class="excon"><button type="button" id="exPlay" aria-label="Pause">Pause</button><input type="range" id="exScr" min="0" max="1000" value="0" aria-label="Scrub through the movement"></div>
+    </div>
+    <div class="exef"><div class="exeft"><span>Muscle effort</span><span id="exEfT">0%</span></div><div class="bar warn" aria-hidden="true"><i id="exEf" style="width:0"></i></div><div class="exchips" id="exMus"></div></div>
+    <h3 class="sec" id="exName" style="margin-top:16px"></h3>
+    <p class="note" id="exSets" style="margin:-4px 0 8px"></p>
+    <ol class="exsteps" id="exSteps"></ol>
+    <div class="callbox"><span class="pic" id="exWarnIc"></span><span><b>Common mistake</b><br><span id="exMis"></span></span></div>
+    <h3 class="sec">Why it matters on the Moon</h3><p id="exWhy" style="margin:0"></p>
+    <div class="acts" style="margin-top:14px"><button type="button" class="primary" id="exDone">Mark my resistance session as done</button><button type="button" id="exClose2">Close</button></div>
+    <p class="note" style="margin-top:10px">General technique guidance. Your programme sets the load, sets and reps. Confirm with the flight surgeon or trainer. Stop if you feel sharp pain or dizziness.</p>
+  </div>
+</section>
 <section id="msPage" role="dialog" aria-modal="true" aria-label="Measure and act" hidden>
   <div class="inc card">
     <button class="back x" id="msX" type="button" aria-label="Close">×</button>
@@ -849,7 +890,7 @@ drawDonut(PD[0]);
 
 // quests
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
-const QM={2:"temp",3:"glu"};
+const QM={2:"temp",3:"glu"},QX={4:0};
 const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
 let qAll=false,qKeep=-1;PD[0].ex=EX;
 function drawGlance(){const V=M.map((m,i)=>[m,i]).filter(x=>x[0].name!=="Mood"),n=Q.filter(q=>q[3]).length,g=$("vArcs"),tot=V.length,bad=V.filter(x=>x[0].test(x[0]));
@@ -865,7 +906,7 @@ function drawQ(){
   $("qsum").textContent=n+" of "+Q.length+" done"+(n===Q.length?". All set for the sol.":"");
   const vis=(()=>{const u=[];Q.forEach((q,i)=>{if(!q[3])u.push(i)});const v=qAll?Q.map((_,i)=>i):u.slice(0,3);if(!qAll&&qKeep>=0&&Q[qKeep][3]&&!v.includes(qKeep))v.push(qKeep);return v.sort((a,b)=>a-b)})();
   $("qAll").textContent=qAll?"Show fewer":"Show all "+Q.length;
-  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> <div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
+  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> <div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}${QX[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-ex="${QX[i]}">How to</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
   document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;qKeep=el.checked?i:-1;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
   drawGlance();
 }
@@ -981,9 +1022,9 @@ setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME]
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
 function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
-  if(v!=="crew"){window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
+  if(v!=="crew"){closeEx();window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("exPage").hidden){closeEx();return}if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
 window.addEventListener("hashchange",route);
@@ -1144,7 +1185,7 @@ const SYS=[
   why:"With less load on the body in low gravity, bones and muscles weaken unless you exercise. Resistance training is the main protection.",
   call:"Tell the flight surgeon about new bone or joint pain, or if you keep missing the exercise programme.",
   act:["Complete your resistance session","Log the session on the tablet","Warm up and stretch"],
-  btn:[{l:"Activity history",di:4}],
+  btn:[{l:"Exercise guide",ex:0},{l:"Activity history",di:4}],
   ex:()=>{const n=["Right arm","Left arm","Trunk","Right leg","Left leg"];return`<h3 class="sec" style="margin-top:14px">Muscle mass by body part (demo)</h3>${PD[ME].mm.map((m,i)=>{const d=(m[0]-m[1])/m[1]*100;return`<div class="irow"><span>${n[i]}</span><span><b>${m[0].toFixed(1)} kg</b> <span class="note" style="margin:0">${d<0?"▼":"▲"} ${Math.abs(d).toFixed(1)}% vs start of mission</span></span></div>`}).join("")}<p class="note" style="margin:6px 0 0">Change is against your own start-of-mission baseline. Demo values.</p>`}}
 ];
 const sysAlert=s=>s.ind().some(i=>i[2]);
@@ -1221,11 +1262,11 @@ function openSys(id){bsel=id;const s=SYS.find(x=>x.id===id),a=sysAlert(s);
      ${s.ex?s.ex():""}<h3 class="sec" style="margin-top:14px">Why it matters in space</h3><p style="margin:0">${s.why}</p>
      <h3 class="sec">What you can do</h3><ul class="alist">${s.act.map(x=>`<li>${x}</li>`).join("")}</ul>
      <div class="callbox"><span class="pic">${ico("alert",20)}</span><span><b>When to call the flight surgeon</b><br>${s.call}</span></div>
-     <div class="acts" style="margin-top:12px">${s.btn.map(b=>`<button type="button" ${b.ms?`data-ms="${b.ms}"`:b.go?`data-go="${b.go}"`:`data-di="${b.di}"`}>${b.l}</button>`).join("")}</div>`;
+     <div class="acts" style="margin-top:12px">${s.btn.map(b=>`<button type="button" ${b.ex!==undefined?`data-ex="${b.ex}"`:b.ms?`data-ms="${b.ms}"`:b.go?`data-go="${b.go}"`:`data-di="${b.di}"`}>${b.l}</button>`).join("")}</div>`;
   document.querySelectorAll("#bmap .bn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.s===id)));
   $("bsPage").hidden=false;document.body.style.overflow="hidden";$("bsX").focus()}
 function closeBS(){$("bsPage").hidden=true;bsel=null;document.querySelectorAll("#bmap .bn").forEach(b=>b.setAttribute("aria-pressed","false"));document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden)?"":"hidden"}
-$("bsX").onclick=closeBS;$("bsPage").onclick=e=>{if(e.target.id==="bsPage")closeBS();const b=e.target.closest("button[data-ms],button[data-go],button[data-di]");if(!b)return;const d=b.dataset;closeBS();if(d.ms)openMeasure(d.ms);else if(d.go)location.hash=d.go;else if(d.di)openDet(+d.di)};
+$("bsX").onclick=closeBS;$("bsPage").onclick=e=>{if(e.target.id==="bsPage")closeBS();const b=e.target.closest("button[data-ms],button[data-go],button[data-di],button[data-ex]");if(!b)return;const d=b.dataset;closeBS();if(d.ex!==undefined)openEx(+d.ex);else if(d.ms)openMeasure(d.ms);else if(d.go)location.hash=d.go;else if(d.di)openDet(+d.di)};
 function bodyClick(e){const t=e.target.closest("[data-s]");if(t){openSys(t.dataset.s);return}const b=e.target.closest("button");if(!b)return;
   
   if(b.dataset.v){bview=b.dataset.v;drawBody();return}
@@ -1323,7 +1364,7 @@ $("msSave").onclick=()=>{const g=GD[msId];
   $("msRes").innerHTML=`<div class="mres ${cls}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-size:18px">${msVal}</b>${tagS(j.st)}</div><p style="margin:6px 0">${j.msg}</p>${j.acts.length?`<h3 class="sec" style="margin:10px 0 4px">What to do</h3><ul class="alist">${j.acts.map(a=>`<li>${a}</li>`).join("")}</ul>`:""}${xp?`<p class="note" style="margin:8px 0 0">Checklist updated.${xp}</p>`:""}<div class="acts"><button type="button" id="msDone">Done</button>${j.call?'<button type="button" id="msNotify">Message the flight surgeon</button>':""}</div></div>`;
   $("msDone").onclick=closeMS;
   const nb=$("msNotify");if(nb)nb.onclick=()=>{LOG.unshift({t:nowT(),a:"Crew message from "+PD[ME].name+": "+g.n+" "+msVal,note:j.msg});nb.disabled=true;nb.textContent="Sent (demo)"}};
-$("quests").addEventListener("click",e=>{const b=e.target.closest(".mbtn");if(b){e.preventDefault();e.stopPropagation();openMeasure(b.dataset.ms)}},true);
+$("quests").addEventListener("click",e=>{const b=e.target.closest(".mbtn");if(b){e.preventDefault();e.stopPropagation();if(b.dataset.ex!==undefined)openEx(+b.dataset.ex);else openMeasure(b.dataset.ms)}},true);
 function applyProfile(i,first){
   if(!first)stash();
   ME=i;const d=PD[i],s=P[i];
@@ -1366,6 +1407,83 @@ function runEm(){emT=10*60;emSent=false;emSteps=EMS.map(()=>false);$("emAlarm").
   emDraw();if(emTick)clearInterval(emTick);emTick=setInterval(()=>{if(emT>0)emT--;if(!emSteps.every(Boolean))emDraw()},1000)}
 $("emFab").onclick=openEm;$("emX").onclick=closeEm;$("emDone").onclick=closeEm;$("emIcon").onclick=runEm;$("emAgain").onclick=runEm;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("emPage").hidden)closeEm()});
+
+// exercise guide: animated figure, drawn each frame from simple joint maths
+const R_=Math.PI/180;
+function exIK(S,H,l1,l2){let dx=H[0]-S[0],dy=H[1]-S[1];const L=Math.hypot(dx,dy)||1,d=Math.min(L,l1+l2-.01),a=(l1*l1-l2*l2+d*d)/(2*d),h=Math.sqrt(Math.max(0,l1*l1-a*a)),ux=dx/L,uy=dy/L,mx=S[0]+ux*a,my=S[1]+uy*a,e1=[mx-uy*h,my+ux*h],e2=[mx+uy*h,my-ux*h];return e1[0]<e2[0]?e1:e2}
+const EXP=[
+ {n:"Loaded squat",short:"Squat",sets:"Example: 3 sets of 12",go:"Lower",back:"Push up",arrow:1,mus:["Thighs","Glutes","Core"],
+  pose:d=>{const A=[150,182],fs=26*R_*d,K=[A[0]+44*Math.sin(fs),A[1]-44*Math.cos(fs)],at=88*R_*d,Hp=[K[0]-44*Math.sin(at),K[1]-44*Math.cos(at)],tl=(10+32*d)*R_,S=[Hp[0]+52*Math.sin(tl),Hp[1]-52*Math.cos(tl)],pl=[S[0]-5,S[1]-8];
+   return{A,K,Hp,S,E:[S[0]-9,S[1]+24],Hd:pl,head:[S[0]+20*Math.sin(tl*.7),S[1]-20*Math.cos(tl*.7)],heel:[A[0]-13,192],ball:[A[0]+4,192],toe:[A[0]+22,192],pl,plR:15,sh:[A[0]-4,40+8*d],mu:[[K[0],K[1],Hp[0],Hp[1],.12+.85*d],[Hp[0]-2,Hp[1],Hp[0]+2,Hp[1],.1+.85*d],[K[0],K[1],K[0],K[1],0]]}},
+  steps:["Stand tall with your feet shoulder-width apart. The bar or harness load sits across your upper back.","Breathe in. Push your hips back and bend your knees, lowering for about 2 seconds.","Stop when your thighs are level with the floor. Keep your chest up and your heels down.","Breathe out and push through your heels to stand tall, again over about 2 seconds."],
+  mis:"Knees dropping inward or heels lifting. If that happens, lower the load.",why:"Your legs and hips do the most work against gravity on Earth. With only one sixth of that load on the Moon they lose strength fastest."},
+ {n:"Hip hinge (deadlift)",short:"Hip hinge",sets:"Example: 3 sets of 10",go:"Lower",back:"Stand up",arrow:1,mus:["Back of thighs","Glutes","Lower back"],
+  pose:d=>{const A=[150,182],fs=10*R_*d,K=[A[0]+44*Math.sin(fs),A[1]-44*Math.cos(fs)],at=32*R_*d,Hp=[K[0]-44*Math.sin(at),K[1]-44*Math.cos(at)],tl=(8+72*d)*R_,S=[Hp[0]+52*Math.sin(tl),Hp[1]-52*Math.cos(tl)],Hd=[S[0],S[1]+50],hv=tl*.8;
+   return{A,K,Hp,S,E:[S[0],S[1]+25],Hd,head:[S[0]+20*Math.sin(hv),S[1]-20*Math.cos(hv)],heel:[A[0]-13,192],ball:[A[0]+4,192],toe:[A[0]+22,192],pl:Hd,plR:15,sh:[A[0]+6,40+6*d],mu:[[Hp[0],Hp[1],K[0],K[1],.12+.85*d],[Hp[0],Hp[1],Hp[0]+(S[0]-Hp[0])*.6,Hp[1]+(S[1]-Hp[1])*.6,.12+.85*d],[Hp[0],Hp[1],Hp[0],Hp[1],0]]}},
+  steps:["Stand with your feet hip-width apart. Hold the bar in front of your thighs with straight arms.","Breathe in. Push your hips back, keep your back flat and slide the bar down your legs for about 2 seconds.","Stop when the bar reaches mid-shin or you feel a stretch behind your thighs. Do not round your back.","Breathe out, squeeze your glutes and drive your hips forward to stand tall."],
+  mis:"Rounding the lower back or pulling with the arms. Lighten the load and keep the bar close to your legs.",why:"This strengthens the back of your legs and your lower back, which hold you upright and protect your spine."},
+ {n:"Push-up",short:"Push-up",sets:"Example: 3 sets of 10",go:"Lower chest",back:"Push away",arrow:1,mus:["Chest","Shoulders","Arms"],
+  pose:d=>{const al=(19-14.1*d)*R_,u=[Math.cos(al),-Math.sin(al)],T=[70,190],at=k=>[T[0]+u[0]*k,T[1]+u[1]*k],S=at(148),Hd=[T[0]+148*Math.cos(11*R_),190],E=exIK(S,Hd,26,24),hv=al+.3;
+   return{A:at(8),K:at(52),Hp:at(96),S,E,Hd,head:[S[0]+22*Math.cos(hv),S[1]-22*Math.sin(hv)],heel:at(8),ball:at(4),toe:T,pl:null,plR:0,sh:[T[0]+80,50],mu:[[S[0],S[1],E[0],E[1],.12+.85*d],[S[0],S[1],S[0]-u[0]*24,S[1]-u[1]*24,.12+.85*d],[S[0],S[1],S[0],S[1],0]]}},
+  steps:["Place your hands under your shoulders. Keep your body in one straight line from head to heels.","Breathe in. Lower your chest toward the floor over about 2 seconds, elbows at roughly 45 degrees to your body.","Stop just above the floor. Keep your tummy tight so your hips do not sag.","Breathe out and push the floor away until your arms are straight."],
+  mis:"Hips sagging or sticking up. Drop to your knees to keep a straight line.",why:"Chest, shoulder and arm strength keeps you steady for suit work and EVA tasks. Push-ups feel easier in low gravity, so add a weighted vest if your plan says so."},
+ {n:"Heel raise",short:"Heel raise",sets:"Example: 3 sets of 15",go:"Rise up",back:"Lower slowly",arrow:0,mus:["Calves","Ankles"],
+  pose:d=>{const b=34*R_*d,B=[152,192],u=[-Math.cos(b),-Math.sin(b)],n=[Math.sin(b),-Math.cos(b)],A=[B[0]+24*u[0]+12*n[0],B[1]+24*u[1]+12*n[1]],K=[A[0],A[1]-44],Hp=[A[0],K[1]-44],tl=3*R_,S=[Hp[0]+52*Math.sin(tl),Hp[1]-52*Math.cos(tl)],Hd=[S[0]+3,S[1]+50];
+   return{A,K,Hp,S,E:[S[0]+2,S[1]+25],Hd,head:[S[0]+1,S[1]-20],heel:[B[0]+30*u[0],B[1]+30*u[1]],ball:B,toe:[B[0]+13,192],pl:Hd,plR:8,sh:[B[0]-12,40-4*d],mu:[[A[0],A[1],A[0]+(K[0]-A[0])*.75,A[1]+(K[1]-A[1])*.75,.12+.85*d],[K[0],K[1],K[0],K[1],0],[K[0],K[1],K[0],K[1],0]]}},
+  steps:["Stand tall with your feet hip-width apart. Hold a weight at each side if prescribed, and use a wall for balance if needed.","Breathe in. Rise slowly onto the balls of your feet over about 2 seconds.","Pause at the top and squeeze your calves.","Lower your heels slowly over about 2 seconds."],
+  mis:"Rolling the ankles outward or bouncing. Go slowly and keep your weight over the big toe.",why:"Calf muscles weaken quickly in low gravity. They also help push blood back up from your legs."}
+];
+var exI=0,exT=0,exPlay=true,exRaf=0,exLast=0,exBuilt=false,EXC=4.4;
+function exD(u){const a=2/EXC,b=2.2/EXC,c=4.2/EXC,e=x=>.5-.5*Math.cos(Math.PI*x);return u<a?[e(u/a),0]:u<b?[1,1]:u<c?[e(1-(u-b)/(c-b)),2]:[0,3]}
+function exBuild(){if(exBuilt)return;exBuilt=true;
+  const limb=(id,w)=>`<line id="ex_${id}a" stroke="#1ab0de" stroke-width="${w}" opacity=".96"/><line id="ex_${id}b" stroke="#c6f7ff" stroke-width="${(w*.36).toFixed(1)}" opacity=".5"/>`;
+  const st=[[22,30,.9],[60,18,.6],[96,40,.8],[140,22,.5],[205,34,.7],[250,16,.9],[310,28,.5],[40,70,.6],[120,58,.8],[190,14,.7],[300,86,.6],[16,110,.5]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${x[2]+.4}" fill="#e6f1fb" opacity=".7" style="animation-delay:${i*.27}s"/>`).join("");
+  $("exSvg").innerHTML=`<defs><radialGradient id="exSky" cx=".5" cy=".05" r=".95"><stop offset="0" stop-color="#17467a"/><stop offset=".55" stop-color="#0a2040"/><stop offset="1" stop-color="#050d1c"/></radialGradient>
+  <linearGradient id="exGnd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#436284"/><stop offset="1" stop-color="#0c192d"/></linearGradient>
+  <radialGradient id="exEarth" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#a6ecff"/><stop offset=".5" stop-color="#2f80d8"/><stop offset="1" stop-color="#0a2a66"/></radialGradient>
+  <radialGradient id="exPlate" cx=".4" cy=".35" r=".85"><stop offset="0" stop-color="#ffe0a0"/><stop offset="1" stop-color="#e08a1a"/></radialGradient>
+  <filter id="exGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="exBlur" filterUnits="userSpaceOnUse" x="-100" y="-100" width="540" height="440"><feGaussianBlur stdDeviation="4.5"/></filter></defs>
+  <rect width="340" height="236" fill="url(#exSky)"/><g class="exstars">${st}</g>
+  <circle cx="270" cy="84" r="20" fill="#2fd8ff" opacity=".08"/><circle cx="270" cy="84" r="13" fill="url(#exEarth)"/><circle cx="270" cy="84" r="15.5" fill="none" stroke="#7fe0ff" opacity=".28"/>
+  <path d="M0 198 C60 191 110 195 170 193.5 S290 189 340 194 V236 H0Z" fill="url(#exGnd)"/><path d="M0 198 C60 191 110 195 170 193.5 S290 189 340 194" fill="none" stroke="#7fe0ff" opacity=".6" stroke-width="1.3"/>
+  <ellipse cx="52" cy="214" rx="26" ry="4.5" fill="#08121f" opacity=".6"/><ellipse cx="262" cy="220" rx="34" ry="5" fill="#08121f" opacity=".55"/><ellipse cx="190" cy="228" rx="18" ry="3" fill="#08121f" opacity=".5"/>
+  <ellipse id="ex_sh" cx="150" cy="195" rx="40" ry="4" fill="#000" opacity=".4"/>
+  <g id="ex_wrap" transform="translate(170 192) scale(.8) translate(-170 -192)"><g filter="url(#exBlur)" stroke="#ffb84a" stroke-width="26" stroke-linecap="round"><line id="ex_mu0" opacity="0"/><line id="ex_mu1" opacity="0"/><line id="ex_mu2" opacity="0"/></g>
+  <g id="ex_fig" filter="url(#exGlow)" fill="none" stroke-linecap="round" stroke-linejoin="round">${limb("ft1",9)}${limb("ft2",9)}${limb("sha",12)}${limb("thi",15)}${limb("tor",19)}${limb("ua",9)}${limb("fa",8)}
+   <circle id="ex_hd" r="12" fill="#1ab0de" stroke="#c6f7ff" stroke-width="1.6"/><circle id="ex_vz" r="5.5" fill="#0a2040" opacity=".55"/><circle id="ex_jk" r="4.6" fill="#e9fbff" stroke="none"/><circle id="ex_je" r="3.8" fill="#e9fbff" stroke="none"/></g>
+  <g id="ex_eq"><circle id="ex_pl" fill="url(#exPlate)" stroke="#fff3d6" stroke-width="1.2"/><circle id="ex_pl2" fill="#3a2406"/></g></g>
+  <g id="ex_ar" opacity="0" stroke="#2fd8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M0 -22 V18 M-9 8 L0 19 L9 8"/></g>`;
+  $("exTabs").innerHTML=EXP.map((x,i)=>`<button type="button" aria-pressed="false" data-i="${i}">${x.short}</button>`).join("");
+  $("exTabs").onclick=e=>{const b=e.target.closest("button");if(b)exSel(+b.dataset.i)};
+  $("exPlay").onclick=()=>{exPlay=!exPlay;exPlayUI()};
+  $("exScr").oninput=e=>{exPlay=false;exPlayUI();exT=Math.floor(exT/EXC)*EXC+(+e.target.value/1000)*EXC;exFrame()};
+  $("exX").onclick=closeEx;$("exClose2").onclick=closeEx;$("exPage").onclick=e=>{if(e.target.id==="exPage")closeEx()};
+  $("exDone").onclick=()=>{if(!Q[4][3]){Q[4][3]=true;qKeep=4;drawQ();save();fx(4)}closeEx()};
+  $("exPic").innerHTML=ico("bolt",22);$("exWarnIc").innerHTML=ico("alert",20)}
+function exPlayUI(){$("exPlay").textContent=exPlay?"Pause":"Play";$("exPlay").setAttribute("aria-label",exPlay?"Pause":"Play")}
+function exSel(i){exI=i;const x=EXP[i];exT=RM?EXC*.47:0;
+  document.querySelectorAll("#exTabs button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.i===i)));
+  $("exName").textContent=x.n;$("exSets").textContent=x.sets+" · your programme sets the load";
+  $("exSteps").innerHTML=x.steps.map(t=>`<li><span>${t}</span></li>`).join("");$("exMis").textContent=x.mis;$("exWhy").textContent=x.why;
+  $("exMus").innerHTML=x.mus.map(m=>`<span>${m}</span>`).join("");$("exSvg").setAttribute("aria-label","Animated demonstration of the "+x.n.toLowerCase());
+  $("ex_pl").style.display=$("ex_pl2").style.display="";exFrame()}
+function exFrame(){const x=EXP[exI],u=(exT%EXC)/EXC,[d,sg]=exD(u),p=x.pose(d),set=(id,a,b)=>["a","b"].forEach(k=>{const e=$("ex_"+id+k);e.setAttribute("x1",a[0].toFixed(1));e.setAttribute("y1",a[1].toFixed(1));e.setAttribute("x2",b[0].toFixed(1));e.setAttribute("y2",b[1].toFixed(1))});
+  set("ft1",p.heel,p.ball);set("ft2",p.ball,p.toe);set("sha",p.K,p.A);set("thi",p.Hp,p.K);set("tor",p.Hp,p.S);set("ua",p.S,p.E);set("fa",p.E,p.Hd);
+  const hd=$("ex_hd");hd.setAttribute("cx",p.head[0]);hd.setAttribute("cy",p.head[1]);const vz=$("ex_vz");vz.setAttribute("cx",p.head[0]+5);vz.setAttribute("cy",p.head[1]-1);
+  $("ex_jk").setAttribute("cx",p.K[0]);$("ex_jk").setAttribute("cy",p.K[1]);$("ex_je").setAttribute("cx",p.E[0]);$("ex_je").setAttribute("cy",p.E[1]);
+  const pl=$("ex_pl"),p2=$("ex_pl2");if(p.pl){pl.style.display=p2.style.display="";pl.setAttribute("cx",p.pl[0]);pl.setAttribute("cy",p.pl[1]);pl.setAttribute("r",p.plR);p2.setAttribute("cx",p.pl[0]);p2.setAttribute("cy",p.pl[1]);p2.setAttribute("r",p.plR*.34)}else pl.style.display=p2.style.display="none";
+  p.mu.forEach((m,k)=>{const e=$("ex_mu"+k);e.setAttribute("x1",m[0]);e.setAttribute("y1",m[1]);e.setAttribute("x2",m[2]);e.setAttribute("y2",m[3]);e.setAttribute("opacity",Math.min(.95,m[4]).toFixed(2))});
+  const sh=$("ex_sh");sh.setAttribute("cx",p.sh[0]);sh.setAttribute("rx",p.sh[1]);
+  const ar=$("ex_ar"),mv=sg===0||sg===2,down=(sg===0)===!!x.arrow;ar.setAttribute("opacity",mv?.9:0);ar.setAttribute("transform","translate(306 138) scale(.9 "+(down?.9:-.9)+")");
+  const ph=$("exPh");ph.textContent=["go","Hold","back","Breathe"][sg]==="go"?x.go:["go","Hold","back","Breathe"][sg]==="back"?x.back:["go","Hold","back","Breathe"][sg];ph.className="exph "+(sg===1?"h":sg===2?"u":"");
+  $("exRep").textContent="Rep "+(Math.floor(exT/EXC)%12+1)+" of 12";
+  $("exEf").style.width=(d*100).toFixed(0)+"%";$("exEfT").textContent=Math.round(d*100)+"%";document.querySelectorAll("#exMus span").forEach(s=>s.classList.toggle("on",d>.55));
+  if(exPlay)$("exScr").value=Math.round(u*1000);
+  $("exDone").textContent=Q[4][3]?"Session already ticked":"Mark my resistance session as done";$("exDone").disabled=false}
+function exLoop(ts){if($("exPage").hidden){exRaf=0;return}const dt=exLast?Math.min(.1,(ts-exLast)/1000):0;exLast=ts;if(exPlay)exT+=dt;exFrame();exRaf=requestAnimationFrame(exLoop)}
+function openEx(i){exBuild();$("exPage").hidden=false;document.body.style.overflow="hidden";exPlay=!RM;exPlayUI();exSel(i||0);$("exPage").scrollTop=0;exLast=0;if(!exRaf)exRaf=requestAnimationFrame(exLoop);$("exX").focus()}
+function closeEx(){if(!exBuilt||$("exPage").hidden)return;$("exPage").hidden=true;exRaf=0;document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden&&$("bsPage").hidden)?"":"hidden"}
 </script>
 </body>
 </html>
