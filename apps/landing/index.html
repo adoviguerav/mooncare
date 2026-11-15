@@ -388,7 +388,7 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .excon input{flex:1;min-width:0;accent-color:#2fd8ff;height:32px}
 .exef{margin-top:12px}.exeft{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-bottom:6px}
 .exchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.exchips span{padding:6px 12px;border-radius:14px;font-size:13px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--mute);transition:all .25s}
-.exchips span.on{border-color:rgba(255,184,74,.75);background:rgba(255,184,74,.2);color:#ffd98a;box-shadow:0 0 12px rgba(255,184,74,.4)}
+.exchips span.on{border-color:rgba(255,77,94,.85);background:rgba(255,59,71,.24);color:#ff9fa9;box-shadow:0 0 12px rgba(255,59,71,.5)}#exEf{background:linear-gradient(90deg,#ff8a4a,#ff3347)}
 .exsteps{list-style:none;padding:0;margin:0 0 12px;counter-reset:s}.exsteps li{display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.1);line-height:1.45}.exsteps li:first-child{border-top:0}
 .exsteps li:before{counter-increment:s;content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:rgba(47,216,255,.16);border:1px solid rgba(47,216,255,.5);color:var(--cy)}
 .exstars circle{animation:extw 3.2s ease-in-out infinite}@keyframes extw{50%{opacity:.2}}
@@ -648,7 +648,7 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
       <span class="exph" id="exPh">Lower</span><span class="exrep" id="exRep">Rep 1 of 12</span>
       <div class="excon"><button type="button" id="exPlay" aria-label="Pause">Pause</button><input type="range" id="exScr" min="0" max="1000" value="0" aria-label="Scrub through the movement"></div>
     </div>
-    <div class="exef"><div class="exeft"><span>Muscle effort</span><span id="exEfT">0%</span></div><div class="bar warn" aria-hidden="true"><i id="exEf" style="width:0"></i></div><div class="exchips" id="exMus"></div></div>
+    <div class="exef"><div class="exeft"><span>Muscles working (shown in red)</span><span id="exEfT">0%</span></div><div class="bar warn" aria-hidden="true"><i id="exEf" style="width:0"></i></div><div class="exchips" id="exMus"></div></div>
     <h3 class="sec" id="exName" style="margin-top:16px"></h3>
     <p class="note" id="exSets" style="margin:-4px 0 8px"></p>
     <ol class="exsteps" id="exSteps"></ol>
@@ -1449,10 +1449,10 @@ function exBuild(){if(exBuilt)return;exBuilt=true;
   <path d="M0 198 C60 191 110 195 170 193.5 S290 189 340 194 V236 H0Z" fill="url(#exGnd)"/><path d="M0 198 C60 191 110 195 170 193.5 S290 189 340 194" fill="none" stroke="#7fe0ff" opacity=".6" stroke-width="1.3"/>
   <ellipse cx="52" cy="214" rx="26" ry="4.5" fill="#08121f" opacity=".6"/><ellipse cx="262" cy="220" rx="34" ry="5" fill="#08121f" opacity=".55"/><ellipse cx="190" cy="228" rx="18" ry="3" fill="#08121f" opacity=".5"/>
   <ellipse id="ex_sh" cx="150" cy="195" rx="40" ry="4" fill="#000" opacity=".4"/>
-  <g id="ex_wrap" transform="translate(170 192) scale(.8) translate(-170 -192)"><g filter="url(#exBlur)" stroke="#ffb84a" stroke-width="26" stroke-linecap="round"><line id="ex_mu0" opacity="0"/><line id="ex_mu1" opacity="0"/><line id="ex_mu2" opacity="0"/></g>
+  <g id="ex_wrap" transform="translate(170 192) scale(.8) translate(-170 -192)"><g filter="url(#exBlur)" stroke="#ff2f45" stroke-width="28" stroke-linecap="round"><line id="ex_mu0" opacity="0"/><line id="ex_mu1" opacity="0"/><line id="ex_mu2" opacity="0"/></g>
   <g id="ex_fig" filter="url(#exGlow)" fill="none" stroke-linecap="round" stroke-linejoin="round">${limb("ft1",9)}${limb("ft2",9)}${limb("sha",12)}${limb("thi",15)}${limb("tor",19)}${limb("ua",9)}${limb("fa",8)}
    <circle id="ex_hd" r="12" fill="#1ab0de" stroke="#c6f7ff" stroke-width="1.6"/><circle id="ex_vz" r="5.5" fill="#0a2040" opacity=".55"/><circle id="ex_jk" r="4.6" fill="#e9fbff" stroke="none"/><circle id="ex_je" r="3.8" fill="#e9fbff" stroke="none"/></g>
-  <g id="ex_eq"><circle id="ex_pl" fill="url(#exPlate)" stroke="#fff3d6" stroke-width="1.2"/><circle id="ex_pl2" fill="#3a2406"/></g></g>
+  <g id="ex_mc" stroke="#ff4458" stroke-width="12" stroke-linecap="round" fill="none"><line id="ex_mc0" opacity="0"/><line id="ex_mc1" opacity="0"/><line id="ex_mc2" opacity="0"/></g><g id="ex_eq"><circle id="ex_pl" fill="url(#exPlate)" stroke="#fff3d6" stroke-width="1.2"/><circle id="ex_pl2" fill="#3a2406"/></g></g>
   <g id="ex_ar" opacity="0" stroke="#2fd8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M0 -22 V18 M-9 8 L0 19 L9 8"/></g>`;
   $("exTabs").innerHTML=EXP.map((x,i)=>`<button type="button" aria-pressed="false" data-i="${i}">${x.short}</button>`).join("");
   $("exTabs").onclick=e=>{const b=e.target.closest("button");if(b)exSel(+b.dataset.i)};
@@ -1473,7 +1473,7 @@ function exFrame(){const x=EXP[exI],u=(exT%EXC)/EXC,[d,sg]=exD(u),p=x.pose(d),se
   const hd=$("ex_hd");hd.setAttribute("cx",p.head[0]);hd.setAttribute("cy",p.head[1]);const vz=$("ex_vz");vz.setAttribute("cx",p.head[0]+5);vz.setAttribute("cy",p.head[1]-1);
   $("ex_jk").setAttribute("cx",p.K[0]);$("ex_jk").setAttribute("cy",p.K[1]);$("ex_je").setAttribute("cx",p.E[0]);$("ex_je").setAttribute("cy",p.E[1]);
   const pl=$("ex_pl"),p2=$("ex_pl2");if(p.pl){pl.style.display=p2.style.display="";pl.setAttribute("cx",p.pl[0]);pl.setAttribute("cy",p.pl[1]);pl.setAttribute("r",p.plR);p2.setAttribute("cx",p.pl[0]);p2.setAttribute("cy",p.pl[1]);p2.setAttribute("r",p.plR*.34)}else pl.style.display=p2.style.display="none";
-  p.mu.forEach((m,k)=>{const e=$("ex_mu"+k);e.setAttribute("x1",m[0]);e.setAttribute("y1",m[1]);e.setAttribute("x2",m[2]);e.setAttribute("y2",m[3]);e.setAttribute("opacity",Math.min(.95,m[4]).toFixed(2))});
+  p.mu.forEach((m,k)=>{const e=$("ex_mu"+k);e.setAttribute("x1",m[0]);e.setAttribute("y1",m[1]);e.setAttribute("x2",m[2]);e.setAttribute("y2",m[3]);e.setAttribute("opacity",Math.min(.95,m[4]).toFixed(2));const c=$("ex_mc"+k),f=(a,b,t)=>a+(b-a)*t;c.setAttribute("x1",f(m[0],m[2],.12).toFixed(1));c.setAttribute("y1",f(m[1],m[3],.12).toFixed(1));c.setAttribute("x2",f(m[0],m[2],.88).toFixed(1));c.setAttribute("y2",f(m[1],m[3],.88).toFixed(1));c.setAttribute("opacity",Math.min(.85,m[4]*.9).toFixed(2))});
   const sh=$("ex_sh");sh.setAttribute("cx",p.sh[0]);sh.setAttribute("rx",p.sh[1]);
   const ar=$("ex_ar"),mv=sg===0||sg===2,down=(sg===0)===!!x.arrow;ar.setAttribute("opacity",mv?.9:0);ar.setAttribute("transform","translate(306 138) scale(.9 "+(down?.9:-.9)+")");
   const ph=$("exPh");ph.textContent=["go","Hold","back","Breathe"][sg]==="go"?x.go:["go","Hold","back","Breathe"][sg]==="back"?x.back:["go","Hold","back","Breathe"][sg];ph.className="exph "+(sg===1?"h":sg===2?"u":"");
