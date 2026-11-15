@@ -990,9 +990,9 @@ function drawGlance(){const V=M.map((m,i)=>[m,i]).filter(x=>x[0].name!=="Mood"),
   $("taskTxt").textContent=n+" of "+Q.length;$("taskFill").style.width=(n/Q.length*100)+"%";$("taskPill").classList.toggle("done",n===Q.length);
   const hv=M[0].val;$("hrC").textContent=hv;$("vc").classList.toggle("beat",!RM);$("vc").style.setProperty("--bt",(60/hv)+"s");$("vc").firstChild.style.animationDuration=(60/hv)+"s"}
 function qMeta(){const n=Q.filter(q=>q[3]).length;$("qsum").innerHTML="<b>"+n+"</b> of "+Q.length+" done";$("qseg").innerHTML=Q.map((_,k)=>`<i class="${k<n?"on":""}"></i>`).join("")}
-var qT=0;
+var qT=0,qDB=false;
 function drawQ(){
-  const n=Q.filter(q=>q[3]).length;qMeta();
+  const n=Q.filter(q=>q[3]).length;qMeta();const qAllDone=n===Q.length;if(qAllDone&&!qDB)qAll=false;qDB=qAllDone;
   const pend=[];Q.forEach((q,i)=>{if(!q[3]||i===qKeep)pend.push(i)});const dn=[];Q.forEach((q,i)=>{if(q[3]&&i!==qKeep)dn.push(i)});
   const CK=`<span class="ck"><svg viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7"/></svg></span>`,act=(i,q)=>(QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:"")+(QX[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-ex="${QX[i]}">How to</button>`:"")+(QB[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-br="1">Breathe</button>`:"");
   const hero=i=>{const q=Q[i],a=act(i,q);return `<label class="qh${i===qKeep?" just":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}>${CK}<div class="t"><div class="qup">Up next · ${q[2]}</div><b>${q[0]}</b><div class="note">${q[1]}</div>${a?`<div class="qact">${a}</div>`:""}</div><span class="pic">${ico(QI[q[2]]||"ok",22)}</span></label>`};
