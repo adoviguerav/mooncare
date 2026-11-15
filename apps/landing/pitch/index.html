@@ -307,19 +307,25 @@
     <p class="lead rv" data-t="si_lead"></p>
     <div class="si">
       <div class="glass rv d1">
-        <h3><span class="pic"><svg class="ic"><use href="#i-code"/></svg></span><span data-t="si1_h"></span></h3>
+        <h3><span class="pic"><svg class="ic"><use href="#i-chat"/></svg></span><span data-t="si1_h"></span><span class="chip-si" data-t="chip_built"></span></h3>
         <p class="sub" data-t="si1_sub"></p>
-        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-code"/></svg></span><span><b>Claude Code · Anthropic</b><span data-t="si_t1"></span></span></div>
-        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-spark"/></svg></span><span><b>Claude · Anthropic</b><span data-t="si_t2"></span></span></div>
-        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-chat"/></svg></span><span><b>ChatGPT · OpenAI</b><span data-t="si_t3"></span></span></div>
-        <div class="human"><b data-t="si_hum_h"></b><span data-t="si_hum_p"></span></div>
+        <div class="si-flow" aria-hidden="true">
+          <span><svg class="ic"><use href="#i-steth"/></svg><b data-t="si_f_officer"></b></span>
+          <i></i>
+          <span><svg class="ic"><use href="#i-chat"/></svg><b data-t="si_f_agent"></b></span>
+          <i></i>
+          <span><svg class="ic"><use href="#i-tablet"/></svg><b data-t="si_f_guide"></b></span>
+        </div>
+        <div class="rules" data-list="si1_list"></div>
+        <p class="honest" data-t="si1_note"></p>
       </div>
-      <div class="glass rv d2">
-        <h3><span class="pic"><svg class="ic"><use href="#i-spark"/></svg></span><span data-t="si2_h"></span></h3>
+      <div class="glass rv d2 si-next">
+        <h3><span class="pic"><svg class="ic"><use href="#i-spark"/></svg></span><span data-t="si2_h"></span><span class="chip-si plan" data-t="chip_planned"></span></h3>
         <p class="sub" data-t="si2_sub"></p>
-        <div class="nova"><span class="pic"><svg class="ic"><use href="#i-chat"/></svg></span><div><b>Voice guide</b> <span style="color:var(--mute);font-size:13px" data-t="si_nova_role"></span><p data-t="si_nova_msg"></p></div></div>
-        <div class="rules" data-list="si_rules"></div>
-        <p class="honest" data-t="si_honest"></p>
+        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-server"/></svg></span><span><b data-t="si_moon_h"></b><span data-t="si_moon_p"></span></span></div>
+        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-antenna"/></svg></span><span><b data-t="si_earth_h"></b><span data-t="si_earth_p"></span></span></div>
+        <div class="tool"><span class="pic"><svg class="ic"><use href="#i-wifioff"/></svg></span><span><b data-t="si_offline_h"></b><span data-t="si_offline_p"></span></span></div>
+        <div class="human"><b data-t="si_rule_h"></b><span data-t="si_rule_p"></span></div>
       </div>
     </div>
   </div>
@@ -355,11 +361,19 @@
             </button>
           </div>
         </div>
+        <div class="access">
+          <span class="access-h" data-t="try_access_h"></span>
+          <dl>
+            <div><dt data-t="try_user"></dt><dd>Liam Novak</dd></div>
+            <div><dt>PIN</dt><dd><code>123456</code></dd></div>
+          </dl>
+        </div>
         <ol class="steps" data-list="try_app_steps"></ol>
         <div class="demo-links">
           <a class="btn ghost sm" href="demo-app/index.html" target="_blank" rel="noopener" data-t="try_full"></a>
           <span class="btn sm soon" aria-disabled="true" data-t="try_app_live"></span>
         </div>
+        <p class="wake" data-t="try_app_note"></p>
       </div>
       <div class="glass demo-card rv d2">
         <span class="kicker"><span class="pic"><svg class="ic"><use href="#i-tablet"/></svg></span><span data-t="try_dash_k"></span></span>
@@ -373,6 +387,13 @@
               <small data-t="try_dash_small"></small>
             </button>
           </div>
+        </div>
+        <div class="access">
+          <span class="access-h" data-t="try_access_h"></span>
+          <dl>
+            <div><dt data-t="try_user"></dt><dd>Amara Okafor <small data-t="try_role_mo"></small></dd></div>
+            <div><dt>PIN</dt><dd><code>123456</code></dd></div>
+          </dl>
         </div>
         <ol class="steps" data-list="try_dash_steps"></ol>
         <div class="demo-links">
@@ -397,7 +418,8 @@
 
 <footer>
   <div class="wrap">
-    <span data-t="footer"></span>
+    <a class="sa-logo" href="https://www.spaceappschallenge.org/" target="_blank" rel="noopener"><img src="img/Space_Apps_Logo_light.png" alt="NASA Space Apps Challenge" width="580" height="227" loading="lazy"></a>
+    <span class="foot-text" data-t="footer"></span>
     <span><a href="https://github.com/adoviguerav/mooncare" rel="noopener" data-t="footer_src"></a></span>
   </div>
 </footer>

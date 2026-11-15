@@ -1,20 +1,61 @@
-import { useState } from 'react'
-import type { CrewMember } from './lib/api.ts'
+import { useEffect, useState } from 'react'
+import { fetchMe, signOut } from './lib/api.ts'
+import type { CrewMember, Me } from './lib/api.ts'
 import { useEmergency } from './lib/emergency.ts'
 import { EmergencyScreen } from './features/emergency/EmergencyScreen.tsx'
 import { IndicatorScreen } from './features/indicator/IndicatorScreen.tsx'
 import { PanelScreen } from './features/panel/PanelScreen.tsx'
 import { ProfilePicker } from './features/profile/ProfilePicker.tsx'
+import { SignInScreen } from './features/signin/SignInScreen.tsx'
+
+// Who sees the whole crew: they pick whose panel to open. A crew member opens only their own.
+const CREW_WIDE_ROLES = ['commander', 'medical_officer', 'earth_admin']
 
 export default function App() {
-  const [crewMember, setCrewMember] = useState<CrewMember | null>(null)
+  // undefined while asking the server who is signed in; null when nobody is
+  const [me, setMe] = useState<Me | null | undefined>(undefined)
+  const [pickedCrewMember, setCrewMember] = useState<CrewMember | null>(null)
   const [indicatorId, setIndicatorId] = useState<string | null>(null)
   const emergency = useEmergency()
   // Which emergency this profile has left to look at its own panel. A new one takes the screen again.
   const [dismissedEmergency, setDismissedEmergency] = useState<string | null>(null)
 
+  useEffect(() => {
+    fetchMe()
+      .then(setMe)
+      .catch(() => setMe(null))
+  }, [])
+
+  const crewWide = me != null && CREW_WIDE_ROLES.includes(me.role)
+  // A crew member has one panel, their own: there is no profile to pick
+  const ownCrewMember: CrewMember | null =
+    me != null && !crewWide && me.crew_member_id !== null && me.role !== 'earth_admin'
+      ? { id: me.crew_member_id, name: me.display_name, role: me.role }
+      : null
+  const crewMember = crewWide ? pickedCrewMember : ownCrewMember
+
+  async function leave() {
+    try {
+      await signOut()
+    } finally {
+      setCrewMember(null)
+      setIndicatorId(null)
+      setMe(null)
+    }
+  }
+
+  if (me === undefined) {
+    return (
+      <main className="screen picker">
+        <p className="muted">Connecting to the base server…</p>
+      </main>
+    )
+  }
+  if (me === null) {
+    return <SignInScreen onSignedIn={setMe} />
+  }
   if (crewMember === null) {
-    return <ProfilePicker onPick={setCrewMember} />
+    return <ProfilePicker me={me} onPick={setCrewMember} onSignOut={() => void leave()} />
   }
   if (emergency !== null && dismissedEmergency !== emergency.startedAt) {
     return (
@@ -36,7 +77,9 @@ export default function App() {
         onOpenIndicator={setIndicatorId}
         onSwitchProfile={() => {
           setDismissedEmergency(null)
-          setCrewMember(null)
+          // A crew member has no other profile: switching means signing out
+          if (crewWide) setCrewMember(null)
+          else void leave()
         }}
       />
     )

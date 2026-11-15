@@ -113,3 +113,64 @@ export async function createVoiceSession(): Promise<string> {
   const { signed_url } = (await response.json()) as { signed_url: string }
   return signed_url
 }
+
+// --- Sign-in (services/api/app/auth.py). The session is an HttpOnly cookie the browser sends on its own. ---
+
+export type UserRole = CrewRole | 'earth_admin'
+
+export type SignInUser = { id: number; display_name: string; role: UserRole; crew_member_id: number | null }
+
+export type Me = SignInUser & { node_role: 'moon' | 'earth' }
+
+/** The server answered with an error: 401 not signed in or wrong PIN, 429 locked for a while */
+export class ApiError extends Error {
+  status: number
+  constructor(status: number, message: string) {
+    super(message)
+    this.status = status
+  }
+}
+
+async function sendJson<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const response = await fetch(path, {
+    method,
+    credentials: 'same-origin',
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!response.ok) {
+    let detail = `${path} returned ${response.status}`
+    try {
+      const payload = (await response.json()) as { detail?: unknown }
+      if (typeof payload.detail === 'string') detail = payload.detail
+    } catch {
+      // not JSON: keep the status
+    }
+    throw new ApiError(response.status, detail)
+  }
+  return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
+}
+
+export async function fetchSignInUsers(): Promise<SignInUser[]> {
+  const { users } = await sendJson<{ users: SignInUser[] }>('GET', '/api/auth/users')
+  return users
+}
+
+export async function signIn(userId: number, pin: string): Promise<Me> {
+  const { user } = await sendJson<{ user: Me }>('POST', '/api/auth/login', { user_id: userId, pin })
+  return user
+}
+
+export function signOut(): Promise<void> {
+  return sendJson<void>('POST', '/api/auth/logout')
+}
+
+/** Who is signed in on this browser, or null when nobody is */
+export async function fetchMe(): Promise<Me | null> {
+  try {
+    return await sendJson<Me>('GET', '/api/auth/me')
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return null
+    throw error
+  }
+}

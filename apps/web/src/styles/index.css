@@ -63,11 +63,6 @@ html::before {
      does not visibly repeat */
   background:
     radial-gradient(120% 90% at 50% 38%, transparent 55%, rgb(2 6 14 / 0.6)),
-    /* Three hairline orbits around the Earth below, and the glint of the sun on its horizon */
-    radial-gradient(circle at 50% 138%, transparent calc(64vmax - 1px), rgb(190 226 255 / 0.13) 64vmax, transparent calc(64vmax + 1px)),
-    radial-gradient(circle at 50% 138%, transparent calc(80vmax - 1px), rgb(190 226 255 / 0.09) 80vmax, transparent calc(80vmax + 1px)),
-    radial-gradient(circle at 50% 138%, transparent calc(98vmax - 1px), rgb(190 226 255 / 0.06) 98vmax, transparent calc(98vmax + 1px)),
-    radial-gradient(60vmax 12vmax at 50% 100%, rgb(120 210 255 / 0.22), transparent 70%),
     radial-gradient(1.6px 1.6px at 24px 36px, rgb(255 255 255 / 0.9), transparent) 0 0 / 370px 370px,
     radial-gradient(1.2px 1.2px at 210px 280px, rgb(190 226 255 / 0.85), transparent) 0 0 / 370px 370px,
     radial-gradient(1px 1px at 70px 110px, rgb(255 255 255 / 0.7), transparent) 0 0 / 230px 230px,
@@ -91,27 +86,27 @@ body::before {
     radial-gradient(52vmax 26vmax at 50% 96%, rgb(47 216 190 / 0.14), transparent 66%);
 }
 
-body::after {
-  content: '';
+/* The planets and their orbits, drawn on a canvas by src/components/SolarSky.tsx. Under everything, and still. */
+.sky-solar {
   position: fixed;
-  left: 50%;
-  /* Follows the width, which stops growing at 1400px */
-  bottom: max(-78vw, -728px);
+  inset: 0;
   z-index: -1;
-  width: 150vw;
-  max-width: 1400px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  transform: translateX(-50%);
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  opacity: 0.5;
-  background: radial-gradient(circle at 50% 0, #6cc4f7, #2371c4 22%, #0b2f66 52%, #061a3a 68%, transparent 72%);
-  /* The atmosphere: a thin bright rim, then a wide soft glow */
-  box-shadow:
-    inset 0 2px 1px rgb(190 236 255 / 0.85),
-    inset 0 14px 40px rgb(120 205 255 / 0.3),
-    0 -2px 26px rgb(47 216 255 / 0.5),
-    0 -30px 120px rgb(47 150 255 / 0.28);
+  opacity: 0;
+  transition:
+    opacity 2s ease,
+    filter 0.8s ease;
+}
+
+.sky-solar-ready {
+  opacity: 1;
+}
+
+/* Once a profile is chosen the sky keeps moving, but a little out of focus, so it does not compete with the panel */
+body:has(.with-tabs, .detail, .emergency) .sky-solar {
+  filter: blur(3px) brightness(0.92);
 }
 
 html::after {
@@ -163,10 +158,6 @@ html::after {
     animation: drift 26s ease-in-out infinite alternate;
   }
 
-  body::after {
-    animation: breathe 9s ease-in-out infinite alternate;
-  }
-
   body:has(.picker, .detail, .emergency) #root::before {
     animation: twinkle 5s ease-in-out infinite alternate;
   }
@@ -212,16 +203,6 @@ html::after {
   100% {
     opacity: 0;
     transform: translate3d(150vw, 43vw, 0) rotate(16deg);
-  }
-}
-
-@keyframes breathe {
-  from {
-    opacity: 0.42;
-  }
-
-  to {
-    opacity: 0.6;
   }
 }
 
@@ -687,7 +668,8 @@ button.card:active {
   }
 
   .tab-count::after {
-    animation: alert-pulse 2.2s ease-out infinite;
+    will-change: transform, opacity;
+    animation: alert-pulse 2.2s ease-out 3;
   }
 }
 
@@ -2136,4 +2118,104 @@ button.card:active {
   .learn-figure {
     max-width: 280px;
   }
+}
+
+/* --- Sign-in: the PIN pad and who is signed in --- */
+.signed-in {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.signed-in strong {
+  color: var(--ink);
+}
+
+.pin {
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
+}
+
+.pin > .ghost-small {
+  justify-self: start;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.pin-dots i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--glass-line);
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.pin-dots i.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.pin-message {
+  min-height: 22px;
+  margin: 0;
+  text-align: center;
+  color: var(--alert-ink);
+}
+
+.pinpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 340px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pinpad button {
+  min-height: 60px;
+  border-radius: var(--radius-tile);
+  border: 1px solid var(--glass-line);
+  background: var(--button);
+  box-shadow: var(--button-edge);
+  color: var(--ink);
+  font: 600 22px/1 inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.12s var(--ease), box-shadow 0.2s;
+}
+
+.pinpad button:hover:not(:disabled) {
+  box-shadow: var(--button-edge-hover);
+}
+
+.pinpad button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.pinpad button.fn {
+  font-size: 15px;
+  color: var(--mute);
+}
+
+.pinpad button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.pin-note {
+  text-align: center;
+  margin: 0;
+  font-size: 13px;
 }
