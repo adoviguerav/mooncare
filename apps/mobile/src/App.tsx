@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { ApiError, NetworkError, api } from '@mooncare/api'
-import type { Me } from '@mooncare/api'
+import type { CrewMember, Me, UserRole } from '@mooncare/api'
+import { EmergencyScreen } from '@mooncare/web/features/emergency/EmergencyScreen.tsx'
+import { ProfilePicker } from '@mooncare/web/features/profile/ProfilePicker.tsx'
+import { useEmergency } from '@mooncare/web/lib/emergency.ts'
 import { CrewApp } from './screens/CrewApp'
 import { SignInScreen } from './screens/SignInScreen'
 import { clearDeviceCopies } from './lib/offline'
@@ -26,6 +29,9 @@ function rememberedMe(): Me | null {
     return null
   }
 }
+
+// Who sees the whole crew: they pick whose panel to open. A crew member opens only their own.
+const CREW_WIDE_ROLES: UserRole[] = ['commander', 'medical_officer', 'earth_admin']
 
 type State =
   | { kind: 'checking' }
@@ -90,7 +96,7 @@ export function App() {
       )
     case 'signed-in':
       return (
-        <CrewApp
+        <SignedIn
           me={state.me}
           startedOffline={state.offline}
           onSessionEnded={() => {
@@ -101,4 +107,72 @@ export function App() {
         />
       )
   }
+}
+
+/** What a signed-in user sees: the crew list for those who see everyone, a running medical alert, or a panel. */
+function SignedIn({
+  me,
+  startedOffline,
+  onSessionEnded,
+  onSignOut,
+}: {
+  me: Me
+  startedOffline: boolean
+  onSessionEnded: () => void
+  onSignOut: () => void
+}) {
+  const crewWide = CREW_WIDE_ROLES.includes(me.role)
+  const [picked, setPicked] = useState<CrewMember | null>(null)
+  const emergency = useEmergency()
+  // Which alert this user has left to look at a panel. A new one takes the screen again.
+  const [dismissedEmergency, setDismissedEmergency] = useState<string | null>(null)
+
+  const own: CrewMember | null =
+    me.crew_member_id !== null && me.role !== 'earth_admin'
+      ? { id: me.crew_member_id, name: me.display_name, role: me.role }
+      : null
+  const viewed = crewWide ? picked : own
+
+  // The crew list and the alert are the dashboard's own screens, with its look
+  if (crewWide && viewed === null) {
+    return (
+      <div className="web-ui web-screen">
+        <ProfilePicker me={me} onPick={setPicked} onSignOut={onSignOut} />
+      </div>
+    )
+  }
+  if (viewed !== null && emergency !== null && dismissedEmergency !== emergency.startedAt) {
+    return (
+      <div className="web-ui web-screen">
+        <EmergencyScreen
+          // A new profile starts on the alert, not where the last one left the screen
+          key={viewed.id}
+          crewMember={viewed}
+          emergency={emergency}
+          onOpenPanel={() => setDismissedEmergency(emergency.startedAt)}
+        />
+      </div>
+    )
+  }
+  return (
+    <CrewApp
+      // A new panel for each crew member: nothing of the one before stays on screen
+      key={viewed?.id}
+      me={me}
+      viewed={viewed}
+      startedOffline={startedOffline}
+      emergencyRunning={emergency !== null}
+      onOpenEmergency={() => setDismissedEmergency(null)}
+      onSwitchCrewMember={
+        crewWide
+          ? () => {
+              setDismissedEmergency(null)
+              setPicked(null)
+            }
+          : null
+      }
+      onSessionEnded={onSessionEnded}
+      onSignOut={onSignOut}
+    />
+  )
 }

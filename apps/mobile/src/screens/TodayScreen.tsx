@@ -72,7 +72,10 @@ export function TodayScreen({
         {checkedInToday(panel.indicators, crewMemberId, today) ? (
           <CheckinDone indicators={panel.indicators} crewMemberId={crewMemberId} today={today} />
         ) : (
-          <MoodCheckin crewMemberId={crewMemberId} today={today} onSaved={onCheckinSaved} connection={connection} />
+          // The check-in is a private self-report: nobody fills it in for someone else
+          me.crew_member_id === crewMemberId && (
+            <MoodCheckin crewMemberId={crewMemberId} today={today} onSaved={onCheckinSaved} connection={connection} />
+          )
         )}
       </section>
 

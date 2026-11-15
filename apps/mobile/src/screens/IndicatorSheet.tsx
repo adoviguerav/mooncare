@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '@mooncare/api'
+import { LearnMore } from '@mooncare/web/features/indicator/LearnMore.tsx'
 import { HistoryChart } from '../components/Charts'
 import { Sheet } from '../components/Sheet'
 import { addDays } from '../lib/dates'
@@ -13,11 +14,13 @@ export function IndicatorSheet({
   crewMemberId,
   indicatorId,
   today,
+  onOpenIndicator,
   onClose,
 }: {
   crewMemberId: number
   indicatorId: string
   today: string
+  onOpenIndicator: (indicatorId: string) => void
   onClose: () => void
 }) {
   const [days, setDays] = useState(30)
@@ -77,7 +80,7 @@ export function IndicatorSheet({
             ) : (
               data.rules.map((rule) => (
                 <dd key={rule.id} style={{ marginBottom: 8 }}>
-                  <b>{rule.title}</b>: alert outside {describeLimits(rule, data.indicator.unit)}. {rule.explanation}{' '}
+                  <b>{rule.title}</b>: alert {rule.baseline_direction === null ? 'outside' : 'when'} {describeLimits(rule, data.indicator.unit)}. {rule.explanation}{' '}
                   <b>What to do:</b> {rule.action}
                   <br />
                   <span className="note">Where the limit comes from: {rule.threshold_source}</span>
@@ -93,6 +96,10 @@ export function IndicatorSheet({
               <span className="note">{data.indicator.source.citation}</span>
             </dd>
           </dl>
+          {/* The study notes are the dashboard's own, with its look */}
+          <div className="web-ui">
+            <LearnMore indicatorId={indicatorId} name={data.indicator.name} onOpenIndicator={onOpenIndicator} />
+          </div>
         </>
       )}
     </Sheet>

@@ -1,0 +1,52 @@
+/* The screens brought from the dashboard (apps/web): the crew picker, the guided procedure and the study notes.
+   They are wrapped in .web-ui and keep the dashboard's stylesheet, which vite.config.ts puts in place of the
+   marker at the end of this file. What is written here only undoes what theme.css would add to them. */
+
+.web-ui {
+  color: var(--ink);
+  font: 400 16px/1.5 'Space Grotesk', system-ui, sans-serif;
+  text-align: left;
+}
+
+.web-ui details {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+  font-size: inherit;
+}
+
+.web-ui summary {
+  color: inherit;
+}
+
+.web-ui details p {
+  margin: 0;
+  color: inherit;
+}
+
+.web-ui .primary {
+  width: auto;
+}
+
+.web-ui button:active {
+  transform: none;
+}
+
+/* A whole screen of the dashboard: above the sky of the crew app, and clear of the notch */
+.web-screen {
+  position: relative;
+  z-index: 1;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Inside a sheet of the crew app, a card of the dashboard is not the sheet itself */
+.sheet .web-ui .card {
+  max-width: none;
+  animation: none;
+}
+
+.sheet .web-ui {
+  margin-top: 16px;
+}
+
+/* @web-styles */

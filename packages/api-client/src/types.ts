@@ -2,8 +2,8 @@
 // (section 5), plus the sign-in endpoints of services/api/app/auth.py. Shared by apps/mobile and apps/web.
 
 export type NodeRole = 'moon' | 'earth'
-export type UserRole = 'crew_member' | 'commander' | 'earth_admin'
-export type CrewRole = 'commander' | 'crew_member'
+export type UserRole = 'crew_member' | 'commander' | 'medical_officer' | 'earth_admin'
+export type CrewRole = 'commander' | 'medical_officer' | 'crew_member'
 
 // --- Sign-in ---
 
@@ -56,6 +56,9 @@ export type Rule = {
   id: number
   low: number | null
   high: number | null
+  // Set when the rule compares a reading with the crew member's own usual value; low and high are then null
+  baseline_direction: 'above' | 'below' | null
+  baseline_deviations: number | null
   title: string
   explanation: string
   action: string

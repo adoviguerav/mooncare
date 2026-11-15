@@ -34,6 +34,16 @@ Tapping a parameter opens its history (7, 30 or 90 days) with the rule's limits 
 
 Everything comes from the API. Radiation is the station's dose rate from NASA RadLab (ISS): the same reading for every crew member, not a personal dose. The hydration goal is the EFSA reference for adults (an Earth reference, not a clinical threshold: it raises no alert); drinks and breathing sessions are kept on the server and synced to earth. The server still counts XP for the checklist, but the app no longer shows it. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
 
+## Shared with the dashboard
+
+Three things are the dashboard's own screens (`apps/web`), imported as they are through the `@mooncare/web` alias, so there is one copy of the code and of the medical text:
+
+- **The whole crew.** The commander and the medical officer open on the crew list and pick whose panel to see. They read another crew member's panel; they cannot check in, tick tasks or log drinks for them.
+- **The possible infection.** "Simulate a possible infection" is on the crew list. The alert, the guided procedure with its voice and the report are the ones of the dashboard (see `docs/emergency_guide.md`). The case lives in this browser only.
+- **Study notes.** "Learn more" at the end of a parameter's sheet, for the parameters that have notes.
+
+They keep the dashboard's look: `vite.config.ts` puts the dashboard's stylesheet under the `.web-ui` class (`src/styles/web-ui.css`), away from the crew app's own screens. The drawings in `public/learn/` and `public/emergency/` are copies of the ones in `apps/web/public/`: copy them again when they change.
+
 ## Without a network
 
 - The service worker keeps the app on the device, so it opens with no network (built app only, not `npm run dev`).

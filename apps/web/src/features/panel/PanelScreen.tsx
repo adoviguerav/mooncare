@@ -4,9 +4,13 @@ import { Icon } from '../../components/Icon.tsx'
 import type { IconName } from '../../components/Icon.tsx'
 import { MoodFace } from '../../components/MoodFace.tsx'
 import { Sparkline } from '../../components/Sparkline.tsx'
+import { BodyMap } from '../body/BodyMap.tsx'
 import { CheckinForm } from '../checkin/CheckinForm.tsx'
+import { DailyCare } from '../wellbeing/DailyCare.tsx'
 import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
+import { getBodySystemStates } from '../../lib/bodySystems.ts'
+import type { BodySystemId } from '../../lib/bodySystems.ts'
 import { TODAY } from '../../lib/config.ts'
 import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue, formatValueParts } from '../../lib/format.ts'
 import {
@@ -30,15 +34,18 @@ const STREAK_LOOKBACK_DAYS = 120
 // The tab survives opening an indicator and coming back, which remounts the panel
 const TAB_STORAGE_KEY = 'panel-tab'
 
-type Tab = 'today' | 'data' | 'alerts'
+type Tab = 'today' | 'body' | 'data' | 'alerts'
 const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'today', label: 'Today', icon: 'home' },
+  { id: 'body', label: 'Body', icon: 'body' },
   { id: 'data', label: 'Data', icon: 'database' },
   { id: 'alerts', label: 'Alerts', icon: 'alert' },
 ]
 
 type Props = {
   crewMember: CrewMember
+  canLog: boolean
+  canCheckIn: boolean
   emergencyRunning: boolean
   onOpenEmergency: () => void
   onOpenIndicator: (indicatorId: string) => void
@@ -53,6 +60,8 @@ export function PanelScreen(props: Props) {
     <PanelContent
       key={savedCheckins}
       crewMember={crewMember}
+      canLog={props.canLog}
+      canCheckIn={props.canCheckIn}
       emergencyRunning={props.emergencyRunning}
       onOpenEmergency={props.onOpenEmergency}
       onOpenIndicator={onOpenIndicator}
@@ -67,6 +76,8 @@ type PanelContentProps = Props & { onCheckinSaved: () => void }
 // Remounted with a new key after each saved check-in, so the panel is fetched again
 function PanelContent({
   crewMember,
+  canLog,
+  canCheckIn,
   emergencyRunning,
   onOpenEmergency,
   onOpenIndicator,
@@ -126,6 +137,8 @@ function PanelContent({
         {panel !== null && tab === 'today' && (
           <TodayTab
             crewMemberId={crewMember.id}
+            canLog={canLog}
+            canCheckIn={canCheckIn}
             indicators={indicators}
             moods={moods}
             moodDayCounts={moodDayCounts}
@@ -136,6 +149,9 @@ function PanelContent({
             onOpenAlerts={() => openTab('alerts')}
             onCheckinSaved={onCheckinSaved}
           />
+        )}
+        {panel !== null && tab === 'body' && (
+          <BodyTab indicators={[...measurements, ...moodDayCounts]} onOpenIndicator={onOpenIndicator} />
         )}
         {panel !== null && tab === 'data' && <DataTab measurements={measurements} onOpenIndicator={onOpenIndicator} />}
         {panel !== null && tab === 'alerts' && <AlertsTab alerts={alerts} onOpenIndicator={onOpenIndicator} />}
@@ -177,6 +193,8 @@ function PanelSkeleton() {
 
 type TodayTabProps = {
   crewMemberId: number
+  canLog: boolean
+  canCheckIn: boolean
   indicators: PanelIndicator[]
   moods: PanelIndicator[]
   moodDayCounts: PanelIndicator[]
@@ -189,6 +207,8 @@ type TodayTabProps = {
 
 function TodayTab({
   crewMemberId,
+  canLog,
+  canCheckIn,
   indicators,
   moods,
   moodDayCounts,
@@ -216,7 +236,9 @@ function TodayTab({
           <h2>How are you today?</h2>
           <CheckinStreak crewMemberId={crewMemberId} checkedInToday={checkedInToday} />
         </div>
-        {!checkedInToday || editingCheckin ? (
+        {!canCheckIn && !checkedInToday ? (
+          <p className="muted">No check-in yet today.</p>
+        ) : !checkedInToday || editingCheckin ? (
           <CheckinForm
             crewMemberId={crewMemberId}
             date={TODAY}
@@ -235,9 +257,11 @@ function TodayTab({
                 </span>
               ))}
             </div>
-            <button className="ghost" onClick={() => setEditingCheckin(true)}>
-              Change
-            </button>
+            {canCheckIn && (
+              <button className="ghost" onClick={() => setEditingCheckin(true)}>
+                Change
+              </button>
+            )}
           </div>
         )}
         {moodAlerts.map((count) => (
@@ -274,6 +298,8 @@ function TodayTab({
 
       <Routines indicators={indicators} />
 
+      <DailyCare crewMemberId={crewMemberId} canLog={canLog} />
+
       <section>
         <h2 className="section-title">Your vitals</h2>
         <div className="tiles tiles-vitals">
@@ -288,6 +314,42 @@ function TodayTab({
         </div>
       </section>
     </>
+  )
+}
+
+// --- Body ---
+
+type BodyTabProps = { indicators: PanelIndicator[]; onOpenIndicator: (indicatorId: string) => void }
+
+// Every parameter by body system: the map, and under it the parameters of the one system that is open
+function BodyTab({ indicators, onOpenIndicator }: BodyTabProps) {
+  const [openId, setOpenId] = useState<BodySystemId | null>(null)
+  const states = getBodySystemStates(indicators)
+  const open = states.find((state) => state.system.id === openId)
+
+  return (
+    <section>
+      <h2 className="section-title">Your body</h2>
+      <div className="card">
+        <BodyMap states={states} selectedId={openId} onSelect={(id) => setOpenId(id === openId ? null : id)} />
+        {open !== undefined && (
+          <div className="body-detail" role="region" aria-label={open.system.title}>
+            <div className="card-heading">
+              <span className={open.status === 'alert' ? 'icon-badge icon-badge-alert' : 'icon-badge'}>
+                <Icon name={open.system.icon} />
+              </span>
+              <h2>{open.system.title}</h2>
+              <GroupStatus indicators={open.indicators} />
+            </div>
+            <div className="tiles">
+              {open.indicators.map((indicator) => (
+                <IndicatorTile key={indicator.id} indicator={indicator} onOpen={() => onOpenIndicator(indicator.id)} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 
