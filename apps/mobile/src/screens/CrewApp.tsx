@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, NetworkError, api } from '@mooncare/api'
-import type { Me, NodeStatus, Panel } from '@mooncare/api'
+import type { CrewMember, Me, NodeStatus, Panel } from '@mooncare/api'
 import { Logo } from '../components/Logo'
 import { type Tab, Tabs } from '../components/Tabs'
 import { formatDay, getToday, timeAgo } from '../lib/dates'
@@ -28,16 +28,27 @@ export type ScreenProps = {
 
 export function CrewApp({
   me,
+  viewed,
   startedOffline,
+  emergencyRunning,
+  onOpenEmergency,
+  onSwitchCrewMember,
   onSessionEnded,
   onSignOut,
 }: {
   me: Me
+  // Whose panel is open: their own, or the one a commander or medical officer picked. Null for an account with no crew member.
+  viewed: CrewMember | null
   startedOffline: boolean
+  emergencyRunning: boolean
+  onOpenEmergency: () => void
+  // Only for those who see the whole crew: back to the list
+  onSwitchCrewMember: (() => void) | null
   onSessionEnded: () => void
   onSignOut: () => void
 }) {
-  const crewMemberId = me.crew_member_id ?? 0
+  const crewMemberId = viewed?.id ?? 0
+  const viewsAnother = viewed !== null && viewed.id !== me.crew_member_id
   const today = getToday()
   const [tab, setTab] = useState<Tab>('today')
   const [panel, setPanel] = useState<Panel | null>(() => readPanelCopy(crewMemberId, today)?.panel ?? null)
@@ -116,16 +127,30 @@ export function CrewApp({
         <h1>
           <Logo className="logo-mini" />
           <small>
-            {formatDay(today)} · Lunar base · {me.display_name}
+            {formatDay(today)} · Lunar base · {viewsAnother ? `${viewed.name}, seen by ${me.display_name}` : me.display_name}
           </small>
         </h1>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <ConnectionPill connection={connection} node={node} />
+          {onSwitchCrewMember && (
+            <button className="back" type="button" onClick={onSwitchCrewMember}>
+              Crew
+            </button>
+          )}
           <button className="back" type="button" onClick={onSignOut}>
             Sign out
           </button>
         </div>
       </header>
+
+      {emergencyRunning && (
+        <p className="banner" role="status">
+          Medical alert in progress.{' '}
+          <button className="back" type="button" onClick={onOpenEmergency}>
+            Open the alert
+          </button>
+        </p>
+      )}
 
       {connection.kind !== 'online' && (
         <p className="banner" role="status">
@@ -155,6 +180,7 @@ export function CrewApp({
           crewMemberId={crewMemberId}
           indicatorId={openIndicator}
           today={today}
+          onOpenIndicator={setOpenIndicator}
           onClose={() => setOpenIndicator(null)}
         />
       )}

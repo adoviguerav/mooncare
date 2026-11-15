@@ -15,7 +15,14 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "paths": { "@mooncare/api": ["../../packages/api-client/src/index.ts"] },
+    "paths": {
+      "@mooncare/api": ["../../packages/api-client/src/index.ts"],
+      "@mooncare/web/*": ["../web/src/*"],
+      /* The dashboard's files live outside this app: their imports resolve to this app's packages */
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "@elevenlabs/react": ["./node_modules/@elevenlabs/react"]
+    },
 
     /* Linting */
     "noUnusedLocals": true,
