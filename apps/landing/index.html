@@ -393,8 +393,17 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .exsteps li:before{counter-increment:s;content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:rgba(47,216,255,.16);border:1px solid rgba(47,216,255,.5);color:var(--cy)}
 .exstars circle{animation:extw 3.2s ease-in-out infinite}@keyframes extw{50%{opacity:.2}}
 @media(prefers-reduced-motion:reduce){.exstars circle{animation:none}}
+/* breathing balloon */
+#brPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#brPage[hidden]{display:none}
+#brPage .inc{width:100%;max-width:440px;margin:0 auto}
+#brSvg{width:100%;max-width:340px;margin:8px auto 0;display:block;border-radius:22px;overflow:hidden;border:1px solid var(--line)}
+.brinfo{display:flex;align-items:baseline;justify-content:center;gap:12px;margin-top:12px}.brph{font-size:24px;font-weight:700}.brcnt{font-size:24px;color:var(--cy);font-weight:700;min-width:1ch}
+.brmsg{margin:4px 0 10px;text-align:center;color:var(--mute);font-size:14px}
+.brbob{animation:brbob 5s ease-in-out infinite}@keyframes brbob{50%{transform:translateY(-5px)}}
+.brcl{animation:brcl 40s linear infinite}@keyframes brcl{to{transform:translateX(-40px)}}
+.brfl{animation:brfl .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}@keyframes brfl{to{transform:scale(.88,1.12)}}
+@media(prefers-reduced-motion:reduce){.brbob,.brcl,.brfl{animation:none}}
 /* hydration fountain */
-.hydt{grid-column:1/-1;padding-top:14px;padding-bottom:14px}.hydt .hrow1{display:flex;align-items:center;gap:12px}.hydt .hmid{flex:1;min-width:0}.hydt .pn{font-size:12px;color:var(--mute)}.hydt .val{font-size:24px;margin:0}.hydt .val small{font-size:13px;display:inline}.hydt .hydmini{margin-top:10px}
 #hydPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#hydPage[hidden]{display:none}
 #hydPage .inc{width:100%;max-width:440px;margin:0 auto}
 .hydbody{display:grid;gap:6px;margin-top:4px}
@@ -658,6 +667,19 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 <section id="bsPage" role="dialog" aria-modal="true" aria-label="Body system details" hidden>
   <div class="inc card glassx"><button class="back x" id="bsX" type="button" aria-label="Close"><span aria-hidden="true">×</span></button><div id="bsBody"></div></div>
 </section>
+<section id="brPage" role="dialog" aria-modal="true" aria-label="Breathing exercise" hidden>
+  <div class="inc card" id="brCard">
+    <button class="back x" id="brX" type="button" aria-label="Close breathing exercise">×</button>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-3.3 0-6 2.5-6 5.6 0 2.6 2 5 4.2 6.4h3.6c2.200-1.400 4.200-3.800 4.200-6.400C18 5.500 15.300 3 12 3Z"/><path d="M12 3c-1.600 2-1.600 8.500 0 12M12 3c1.600 2 1.600 8.500 0 12"/><rect x="10" y="18" width="4" height="3" rx=".7"/><path d="M10.800 15 10.300 18M13.200 15l.5 3"/></svg></span>Breathing exercise</h2>
+    <svg id="brSvg" viewBox="0 0 300 340" role="img" aria-label="A hot air balloon that grows as you breathe in and shrinks as you breathe out"></svg>
+    <div class="brinfo" aria-live="polite"><div class="brph" id="brPh">Ready when you are</div><div class="brcnt" id="brCnt"></div></div>
+    <p class="brmsg" id="brMsg"></p>
+    <div class="bar" aria-hidden="true"><i id="brBar" style="width:0"></i></div>
+    <div class="hydbtns" id="brRounds" role="group" aria-label="Number of breaths" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:12px"></div>
+    <div class="acts" style="margin-top:12px"><button type="button" class="primary" id="brGo">Start</button></div>
+    <p class="note hydsrc" id="brSrc">A simple slow-breathing exercise: about 4 seconds in, 6 seconds out. This is a general relaxation exercise, not treatment. The timings are demo values. Stop if you feel dizzy and tell the flight surgeon.</p>
+  </div>
+</section>
 <section id="hydPage" role="dialog" aria-modal="true" aria-label="Hydration fountain" hidden>
   <div class="inc card" id="hydCard">
     <button class="back x" id="hydX" type="button" aria-label="Close hydration fountain">×</button>
@@ -871,7 +893,7 @@ function render(){
     return `<article class="card m ptile cp${a?" w":""}" data-v="${M.indexOf(m)}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
     ${m.name==="Heart rate"?LIVE:spark(m,true)}${a?`<p class="note">${m.msg}</p>`:""}
-    </article>`}).join("")+hydTile();
+    </article>`}).join("")+hydTile()+brTile();
 }
 render();
 
@@ -1059,9 +1081,9 @@ setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME]
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
 function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
-  if(v!=="crew"){closeEx();closeHyd();window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
+  if(v!=="crew"){closeEx();closeHyd();closeBr();window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("hydPage").hidden){closeHyd();return}if(!$("exPage").hidden){closeEx();return}if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("brPage").hidden){closeBr();return}if(!$("hydPage").hidden){closeHyd();return}if(!$("exPage").hidden){closeEx();return}if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
 window.addEventListener("hashchange",route);
@@ -1416,7 +1438,7 @@ function applyProfile(i,first){
   $("greet").textContent=(new Date().getHours()<12?"Good morning":new Date().getHours()<18?"Good afternoon":"Good evening")+", "+d.name;$("stk").textContent=d.stk;
   $("hrNote").textContent="Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline ("+d.base+" bpm). The shaded band is the normal range, 60 to 80 bpm.";
   $("liveHR").textContent=M[0].val;
-  drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];drawEnv();if(window.HYD&&HYD.on)hydLoad();
+  drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];drawEnv();if(window.HYD&&HYD.on)hydLoad();if(window.BR&&BR.on)brLoad();
 }
 applyProfile(0,true);
 route();tick();
@@ -1534,7 +1556,7 @@ const hydY=lv=>172-lv*66,hydHW=y=>Math.max(66,Math.min(108,108-(y-102)*.58));
 function hydPace(goal){const n=new Date(),h=n.getHours()+n.getMinutes()/60,f=Math.max(0,Math.min(1,(h-7)/15));return goal*f}
 function hydTag(full,diff){return full?["ok","Goal reached"]:diff<-300?["warn","Behind pace"]:diff>500?["ok","Ahead of pace"]:["ok","On pace"]}
 function hydTile(){if(!window.HYD||!HYD.on)return"";const g=hydGoalFor(ME),t=hydTag(HYD.ml>=g,HYD.ml-hydPace(g));
-  return `<article class="card m ptile cp hydt" id="hydTile" data-hyd="1" tabindex="0" role="button" aria-label="Open hydration fountain" style="cursor:pointer"><div class="hrow1"><span class="pic">${HDROP}</span><div class="hmid"><span class="pn">Hydration</span><div class="val"><span id="hydTV">${(HYD.ml/1000).toFixed(1)}</span> <small>of ${(g/1000).toFixed(1)} L</small></div></div><span class="tag ${t[0]}" id="hydTT">${t[1]}</span></div><div class="hydmini"><i id="hydTB" style="width:${Math.min(100,HYD.ml/g*100).toFixed(0)}%"></i></div></article>`}
+  return `<article class="card m ptile cp hydt" id="hydTile" data-hyd="1" tabindex="0" role="button" aria-label="Open hydration fountain" style="cursor:pointer"><div class="top"><span class="pic">${HDROP}</span><span class="pn">Hydration</span><span class="tag ${t[0]}" id="hydTT">${t[1]}</span></div><div class="val"><span id="hydTV">${(HYD.ml/1000).toFixed(1)}</span> <small>of ${(g/1000).toFixed(1)} L</small></div><div class="hydmini"><i id="hydTB" style="width:${Math.min(100,HYD.ml/g*100).toFixed(0)}%"></i></div></article>`}
 function hydBuild(){const wv='<g class="hwv"><path d="M-150 0 q18.75 -4 37.5 0'+' t37.5 0'.repeat(15)+' V230 H-150 Z" fill="url(#hWat)"/></g>';
   const gem=[76,112,188,224].map((x,i)=>`<polygon class="hg" data-i="${i}" points="${x},181 ${x+6},184 ${x+6},190 ${x},193 ${x-6},190 ${x-6},184" fill="#17314d" stroke="#6f8cab" stroke-width="1"/>`).join("");
   const star=[[30,10],[62,-22],[238,-26],[272,40],[22,70],[282,110],[104,-28],[196,-16]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.5}" fill="#dffbff" opacity="${.35+i%3*.2}"/>`).join("");
@@ -1617,6 +1639,75 @@ function hydLoad(){const o=hydStore()[ME],d0=HYS[ME]||{ml:0,streak:0,usual:250};
   HYD.usual=d0.usual;HYD.p.forEach(q=>q.c.remove());HYD.p=[];hydDraw(true);if(!$("hydTile"))render()}
 hydBuild();HYD.on=true;hydLoad();
 setInterval(()=>{if(HYD.on&&!$("hydPage").hidden)hydDraw()},60000);
+
+// breathing balloon: breathe in, it grows; breathe out, it shrinks; when the rounds are done it floats off the top of the screen
+var BR={on:false,mode:"idle",ph:"in",round:0,total:5,IN:4,OUT:6,T:4.6,t0:0,s:1,lift:0,raf:0,sess:0};
+const BRI='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-3.3 0-6 2.5-6 5.6 0 2.6 2 5 4.2 6.4h3.6c2.2-1.4 4.2-3.8 4.2-6.4C18 5.5 15.3 3 12 3Z"/><path d="M12 3c-1.6 2-1.6 8.5 0 12M12 3c1.6 2 1.6 8.5 0 12"/><rect x="10" y="18" width="4" height="3" rx=".7"/><path d="M10.8 15 10.3 18M13.2 15l.5 3"/></svg>';
+function brStore(){try{return JSON.parse(localStorage.getItem("mooncare-br")||"{}")}catch(e){return{}}}
+function brSave(){try{const o=brStore();o[ME]={day:hydDay(),n:BR.sess};localStorage.setItem("mooncare-br",JSON.stringify(o))}catch(e){}}
+function brTile(){if(!window.BR||!BR.on)return"";return `<article class="card m ptile cp brt" id="brTile" data-br="1" tabindex="0" role="button" aria-label="Open breathing exercise" style="cursor:pointer"><div class="top"><span class="pic">${BRI}</span><span class="pn">Breathing</span><span class="tag ok" id="brTT">${BR.sess?"Done today":"Ready"}</span></div><div class="val"><span id="brTV">${BR.sess}</span> <small>sessions today</small></div><p class="note" style="margin:8px 0 0">Tap to start. About 1 minute.</p></article>`}
+function brTileDraw(){const t=$("brTT");if(!t)return;t.textContent=BR.sess?"Done today":"Ready";$("brTV").textContent=BR.sess}
+function brBuild(){const ENV_="M0 0 C-22 -4 -52 -38 -52 -72 C-52 -108 -26 -132 0 -132 C26 -132 52 -108 52 -72 C52 -38 22 -4 0 0Z";
+  const stars=[[24,20],[70,48],[120,16],[196,34],[252,24],[278,70],[40,96],[236,104],[160,60],[96,88]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.6}" fill="#dffbff" opacity="${.35+i%3*.22}"/>`).join("");
+  const cl=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k})" fill="#9fc3e8" opacity=".16"><ellipse cx="0" cy="0" rx="34" ry="9"/><ellipse cx="-16" cy="-6" rx="18" ry="9"/><ellipse cx="12" cy="-8" rx="22" ry="11"/></g>`;
+  $("brSvg").innerHTML=`<defs>
+  <linearGradient id="bSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050d1f"/><stop offset=".6" stop-color="#0e2a55"/><stop offset="1" stop-color="#1b4f86"/></linearGradient>
+  <linearGradient id="bEnv" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f6fb4"/><stop offset=".45" stop-color="#46dfff"/><stop offset="1" stop-color="#1578cc"/></linearGradient>
+  <linearGradient id="bBand" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8801f"/><stop offset=".5" stop-color="#ffd27a"/><stop offset="1" stop-color="#e8801f"/></linearGradient>
+  <linearGradient id="bBas" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a066"/><stop offset="1" stop-color="#8a5a2c"/></linearGradient>
+  <radialGradient id="bFl" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#fff6c8"/><stop offset=".5" stop-color="#ffb84a"/><stop offset="1" stop-color="#ff7a30" stop-opacity="0"/></radialGradient>
+  <radialGradient id="bGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".35"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="bHill" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#3a5878"/><stop offset="1" stop-color="#14263f"/></radialGradient>
+  <clipPath id="bClip"><path d="${ENV_}"/></clipPath>
+  <filter id="bBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
+  <rect width="300" height="340" fill="url(#bSky)"/>${stars}
+  <g id="brCl"><g class="brcl">${cl(60,150,1)}${cl(236,200,1.2)}${cl(150,262,1.4)}${cl(280,90,.8)}${cl(24,230,.9)}</g></g>
+  <path d="M0 312 Q70 292 150 300 Q230 292 300 310 V340 H0Z" fill="url(#bHill)"/><ellipse cx="150" cy="300" rx="52" ry="5" fill="#2fd8ff" opacity=".25"/>
+  <g id="brB"><g class="brbob">
+    <ellipse id="brAura" cx="150" cy="170" rx="100" ry="110" fill="url(#bGlow)" opacity=".7"/>
+    <g id="brEnv" transform="translate(150 238)">
+      <path d="${ENV_}" fill="url(#bEnv)"/>
+      <g clip-path="url(#bClip)"><path d="M0 0 C-16 -34 -20 -96 0 -132 C20 -96 16 -34 0 0Z" fill="url(#bBand)" opacity=".92"/><path d="M0 0 C-34 -24 -48 -76 -24 -128" fill="none" stroke="#dff7ff" stroke-opacity=".5" stroke-width="1.3"/><path d="M0 0 C34 -24 48 -76 24 -128" fill="none" stroke="#dff7ff" stroke-opacity=".5" stroke-width="1.3"/><ellipse cx="-24" cy="-84" rx="8" ry="34" fill="#fff" opacity=".22" transform="rotate(8 -24 -84)"/></g>
+      <path d="${ENV_}" fill="none" stroke="#cfeeff" stroke-opacity=".6" stroke-width="1.4"/>
+      <path d="M-9 -1 Q0 5 9 -1 L7 6 H-7Z" fill="#7794b3"/>
+    </g>
+    <g id="brFl" class="brfl"><ellipse cx="150" cy="248" rx="9" ry="13" fill="url(#bFl)" filter="url(#bBlur)"/><ellipse cx="150" cy="249" rx="3.2" ry="6" fill="#fff3b8"/></g>
+    <path d="M143 243 L139 262M157 243 L161 262M150 244 L150 262" stroke="#b8d4ea" stroke-opacity=".8" stroke-width="1"/>
+    <rect x="137" y="262" width="26" height="19" rx="4" fill="url(#bBas)"/><path d="M137 268 H163M137 274 H163" stroke="#6b4421" stroke-opacity=".5"/><rect x="137" y="262" width="26" height="3" rx="1.5" fill="#f1c185"/>
+  </g></g>`;
+  $("brRounds").innerHTML=[3,5,8].map(n=>`<button type="button" data-n="${n}">${n} breaths<small>${n*10} s</small></button>`).join("");
+  $("brRounds").onclick=e=>{const b=e.target.closest("button");if(b&&BR.mode==="idle"){BR.total=+b.dataset.n;brLabels()}};
+  $("brGo").onclick=()=>{if(BR.mode==="idle")brStart();else if(BR.mode==="run")brStop();else if(BR.mode==="done")brReset()};
+  $("brX").onclick=closeBr;$("brPage").onclick=e=>{if(e.target.id==="brPage")closeBr()};
+  $("grid").addEventListener("click",e=>{if(e.target.closest("[data-br]"))openBr()});
+  $("grid").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.closest("[data-br]")){e.preventDefault();openBr()}})}
+function brLabels(){document.querySelectorAll("#brRounds button").forEach(b=>{b.classList.toggle("u",+b.dataset.n===BR.total);b.disabled=BR.mode!=="idle"});
+  const m=BR.mode,ph=$("brPh"),msg=$("brMsg"),go=$("brGo");
+  if(m==="idle"){ph.textContent="Ready when you are";$("brCnt").textContent="";msg.textContent="Breathe in as the balloon grows. Breathe out as it shrinks.";go.textContent="Start";$("brBar").style.width="0"}
+  else if(m==="run"){ph.textContent=BR.ph==="in"?"Breathe in":"Breathe out";msg.textContent="Breath "+(BR.round+1)+" of "+BR.total;go.textContent="Stop"}
+  else if(m==="lift"){ph.textContent="Well done";$("brCnt").textContent="";msg.textContent="Watch it float away.";go.textContent="Stop";go.disabled=true}
+  else if(m==="done"){ph.textContent="Session complete";$("brCnt").textContent="";msg.textContent="Nicely done. "+BR.total+" slow breaths.";go.textContent="Go again";go.disabled=false}
+  if(m!=="lift")go.disabled=false}
+function brApply(){const s=BR.s;$("brEnv").setAttribute("transform","translate(150 238) scale("+s.toFixed(3)+")");
+  const lift=BR.lift,sx=BR.mode==="lift"?8*Math.sin(lift/38)*Math.min(1,lift/120):0;
+  $("brB").setAttribute("transform","translate("+sx.toFixed(1)+" "+(-lift).toFixed(1)+")");$("brCl").setAttribute("transform","translate(0 "+(lift*.55).toFixed(1)+")");
+  $("brFl").style.opacity=Math.min(1,.55+(s-1)/.38*.45+(BR.mode==="lift"?.2:0)).toFixed(2);$("brAura").setAttribute("opacity",(.35+(s-1)/.38*.55).toFixed(2))}
+function brStart(){BR.mode="run";BR.ph="in";BR.round=0;BR.t0=0;BR.lift=0;brLabels();brKick()}
+function brStop(){BR.mode="idle";BR.s=1;BR.lift=0;BR.round=0;$("brB").style.opacity=1;brLabels();brApply()}
+function brReset(){BR.mode="idle";BR.s=1;BR.lift=0;BR.round=0;$("brB").style.opacity=1;brLabels();brApply()}
+function brKick(){if(!BR.raf)BR.raf=requestAnimationFrame(brTick)}
+function brTick(ts){BR.raf=0;if($("brPage").hidden||BR.mode==="idle"||BR.mode==="done")return;if(!BR.t0)BR.t0=ts;const el=(ts-BR.t0)/1000;
+  if(BR.mode==="run"){const d=BR.ph==="in"?BR.IN:BR.OUT,u=Math.min(1,el/d),e=.5-.5*Math.cos(Math.PI*u);
+    BR.s=RM?(BR.ph==="in"?1.38:1):(BR.ph==="in"?1+.38*e:1.38-.38*e);$("brCnt").textContent=Math.max(1,Math.ceil(d-el));
+    $("brBar").style.width=((BR.round+(BR.ph==="in"?.4*u:.4+.6*u))/BR.total*100).toFixed(1)+"%";
+    if(u>=1){BR.t0=ts;if(BR.ph==="in")BR.ph="out";else{BR.round++;if(BR.round>=BR.total){BR.mode="lift";BR.s=1;$("brBar").style.width="100%"}else BR.ph="in"}brLabels()}}
+  else if(BR.mode==="lift"){const u=Math.min(1,el/(RM?1:BR.T));BR.lift=RM?0:400*u*u;$("brB").style.opacity=RM?1-u:1;
+    if(u>=1){BR.mode="done";BR.sess++;brSave();brTileDraw();$("brB").style.opacity=0;brLabels()}}
+  brApply();if(BR.mode==="run"||BR.mode==="lift")BR.raf=requestAnimationFrame(brTick)}
+function openBr(){$("brPage").hidden=false;document.body.style.overflow="hidden";$("brPage").scrollTop=0;if(BR.mode==="done"||BR.mode==="lift")brReset();brLabels();brApply();$("brX").focus()}
+function closeBr(){const e=document.getElementById("brPage");if(!e||e.hidden)return;e.hidden=true;if(BR.mode==="run"||BR.mode==="lift")brStop();document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden&&$("bsPage").hidden&&$("exPage").hidden&&$("hydPage").hidden)?"":"hidden"}
+function brLoad(){const o=brStore()[ME];BR.sess=o&&o.day===hydDay()?o.n:0;brTileDraw();if(!$("brTile"))render()}
+brBuild();BR.on=true;brLoad();brLabels();brApply();
 </script>
 </body>
 </html>
