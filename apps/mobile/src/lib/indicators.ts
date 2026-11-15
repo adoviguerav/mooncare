@@ -106,8 +106,9 @@ export function formatReading(indicator: PanelIndicator): string {
   return `${formatValue(value, indicator.unit)} ${shownUnit(value, indicator.unit)}`.trim()
 }
 
-/** "65 to 99 mg/dL", "at least 7 h 00", "at most 100 bpm": the range a rule allows. */
+/** "65 to 99 mg/dL", "at least 7 h 00", "at most 100 bpm", or "well below your own usual value": what a rule allows. */
 export function describeLimits(rule: Rule, unit: string | null): string {
+  if (rule.baseline_direction !== null) return `well ${rule.baseline_direction} your own usual value`
   const show = (value: number) => `${formatValue(value, unit)} ${shownUnit(value, unit)}`.trim()
   if (rule.low != null && rule.high != null) return `${show(rule.low)} to ${show(rule.high)}`
   if (rule.low != null) return `at least ${show(rule.low)}`

@@ -56,6 +56,9 @@ export type Rule = {
   id: number
   low: number | null
   high: number | null
+  // Set when the rule compares a reading with the crew member's own usual value; low and high are then null
+  baseline_direction: 'above' | 'below' | null
+  baseline_deviations: number | null
   title: string
   explanation: string
   action: string

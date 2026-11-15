@@ -80,7 +80,7 @@ export function IndicatorSheet({
             ) : (
               data.rules.map((rule) => (
                 <dd key={rule.id} style={{ marginBottom: 8 }}>
-                  <b>{rule.title}</b>: alert outside {describeLimits(rule, data.indicator.unit)}. {rule.explanation}{' '}
+                  <b>{rule.title}</b>: alert {rule.baseline_direction === null ? 'outside' : 'when'} {describeLimits(rule, data.indicator.unit)}. {rule.explanation}{' '}
                   <b>What to do:</b> {rule.action}
                   <br />
                   <span className="note">Where the limit comes from: {rule.threshold_source}</span>
