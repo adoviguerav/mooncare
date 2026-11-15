@@ -15,7 +15,8 @@ const SIMULATED_PATIENT_NAME = 'Liam Novak'
 const PLACEHOLDER_PROFILES = 4
 const PROFILE_STAGGER_MS = 60
 
-type Props = { me: Me; onPick: (crewMember: CrewMember) => void; onSignOut: () => void }
+// me is null when the server has no accounts yet and the dashboard opens with no sign-in
+type Props = { me: Me | null; onPick: (crewMember: CrewMember) => void; onSignOut: () => void }
 
 export function ProfilePicker({ me, onPick, onSignOut }: Props) {
   const { data: crew, error } = useApi(fetchCrew)
@@ -27,23 +28,29 @@ export function ProfilePicker({ me, onPick, onSignOut }: Props) {
     <main className="screen picker">
       <Logo height={200} />
       <p className="picker-tagline">A daily health panel for life beyond Earth</p>
-      <div className="signed-in">
-        <span>
-          Signed in as <strong>{me.display_name}</strong>
-          {me.role in ROLE_NAMES ? ` · ${ROLE_NAMES[me.role as CrewRole]}` : ''}
-        </span>
-        <button className="ghost ghost-small" onClick={onSignOut}>
-          Sign out
-        </button>
-      </div>
+      {me !== null && (
+        <div className="signed-in">
+          <span>
+            Signed in as <strong>{me.display_name}</strong>
+            {me.role in ROLE_NAMES ? ` · ${ROLE_NAMES[me.role as CrewRole]}` : ''}
+          </span>
+          <button className="ghost ghost-small" onClick={onSignOut}>
+            Sign out
+          </button>
+        </div>
+      )}
       <section className="card picker-card">
         <div className="card-heading">
           <span className="icon-badge">
             <Icon name="users" />
           </span>
           <div>
-            <h1>Whose panel?</h1>
-            <p className="muted">You see the whole crew. Choose a crew member to open their health panel.</p>
+            <h1>{me === null ? 'Who is checking in?' : 'Whose panel?'}</h1>
+            <p className="muted">
+              {me === null
+                ? 'Choose your profile to open your own health panel.'
+                : 'You see the whole crew. Choose a crew member to open their health panel.'}
+            </p>
           </div>
         </div>
         {error !== null && <p role="alert">Could not load the crew. {error}</p>}

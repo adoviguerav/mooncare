@@ -9,11 +9,14 @@ Reading is like the panel: the crew member, the medical officer and the commande
 themselves, never on their behalf. Rows are written on the moon and sent to earth with the sync.
 """
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from app import models
@@ -21,6 +24,18 @@ from app.auth import CurrentUser, now, require_access_to_crew_member, require_ow
 from app.db import DbSession
 
 router = APIRouter(prefix="/api", tags=["wellbeing"])
+
+NOT_SET_UP = "Hydration and breathing are not set up on this server yet"
+
+
+@contextmanager
+def tables_ready(session: Session) -> Iterator[None]:
+    """A database that has not run migrations/2026-11-15_wellbeing.sql lacks these tables: say so, as a 503."""
+    try:
+        yield
+    except ProgrammingError as error:
+        session.rollback()
+        raise HTTPException(status_code=503, detail=NOT_SET_UP) from error
 
 STREAK_WINDOW_DAYS = 400
 GOAL_ROUNDING_ML = 100
@@ -123,22 +138,29 @@ def build_hydration_day(session: Session, crew_member_id: int, day: date) -> Hyd
 @router.get("/crew/{crew_member_id}/hydration/{day}")
 def get_hydration(crew_member_id: int, day: date, session: DbSession, user: CurrentUser) -> HydrationDay:
     require_access_to_crew_member(user, crew_member_id)
-    return build_hydration_day(session, crew_member_id, day)
+    with tables_ready(session):
+        return build_hydration_day(session, crew_member_id, day)
 
 
 @router.post("/crew/{crew_member_id}/hydration/{day}")
 def log_drink(crew_member_id: int, day: date, request: DrinkRequest, session: DbSession, user: CurrentUser) -> HydrationDay:
     require_own_crew_member(user, crew_member_id)
-    find_goal(session, crew_member_id)  # 404 for a crew member that does not exist
-    session.add(models.HydrationDrink(crew_member_id=crew_member_id, drunk_at=now(), day=day, ml=request.ml, undone=False))
-    session.commit()
-    return build_hydration_day(session, crew_member_id, day)
+    with tables_ready(session):
+        find_goal(session, crew_member_id)  # 404 for a crew member that does not exist
+        session.add(models.HydrationDrink(crew_member_id=crew_member_id, drunk_at=now(), day=day, ml=request.ml, undone=False))
+        session.commit()
+        return build_hydration_day(session, crew_member_id, day)
 
 
 @router.post("/crew/{crew_member_id}/hydration/{day}/undo")
 def undo_last_drink(crew_member_id: int, day: date, session: DbSession, user: CurrentUser) -> HydrationDay:
     """Marks the day's last drink as undone. The row stays, because the sync does not carry deletions."""
     require_own_crew_member(user, crew_member_id)
+    with tables_ready(session):
+        return undo(session, crew_member_id, day)
+
+
+def undo(session: Session, crew_member_id: int, day: date) -> HydrationDay:
     last = session.scalars(
         select(models.HydrationDrink)
         .where(
@@ -171,8 +193,9 @@ def count_sessions(session: Session, crew_member_id: int, day: date) -> Breathin
 @router.get("/crew/{crew_member_id}/breathing/{day}")
 def get_breathing(crew_member_id: int, day: date, session: DbSession, user: CurrentUser) -> BreathingDay:
     require_access_to_crew_member(user, crew_member_id)
-    find_goal(session, crew_member_id)  # 404 for a crew member that does not exist
-    return count_sessions(session, crew_member_id, day)
+    with tables_ready(session):
+        find_goal(session, crew_member_id)  # 404 for a crew member that does not exist
+        return count_sessions(session, crew_member_id, day)
 
 
 @router.post("/crew/{crew_member_id}/breathing/{day}")
@@ -180,8 +203,9 @@ def log_breathing(
     crew_member_id: int, day: date, request: BreathingRequest, session: DbSession, user: CurrentUser
 ) -> BreathingDay:
     require_own_crew_member(user, crew_member_id)
-    find_goal(session, crew_member_id)
-    session.add(models.BreathingSession(crew_member_id=crew_member_id, finished_at=now(), day=day, breaths=request.breaths))
-    session.commit()
-    return count_sessions(session, crew_member_id, day)
+    with tables_ready(session):
+        find_goal(session, crew_member_id)
+        session.add(models.BreathingSession(crew_member_id=crew_member_id, finished_at=now(), day=day, breaths=request.breaths))
+        session.commit()
+        return count_sessions(session, crew_member_id, day)
 

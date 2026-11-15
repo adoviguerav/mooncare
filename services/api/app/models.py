@@ -66,7 +66,9 @@ class CrewMember(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     role: Mapped[str]
-    sex: Mapped[str | None]  # female or male: only to pick the hydration goal
+    # female or male: only to pick the hydration goal. Deferred: read only when asked for, so a database that has
+    # not run migrations/2026-11-15_wellbeing.sql yet still serves the crew, the panel and everything else
+    sex: Mapped[str | None] = mapped_column(deferred=True)
 
 
 class Reading(Base):
