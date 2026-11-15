@@ -4,10 +4,13 @@ import { Icon } from '../../components/Icon.tsx'
 import type { IconName } from '../../components/Icon.tsx'
 import { MoodFace } from '../../components/MoodFace.tsx'
 import { Sparkline } from '../../components/Sparkline.tsx'
+import { BodyMap } from '../body/BodyMap.tsx'
 import { CheckinForm } from '../checkin/CheckinForm.tsx'
 import { DailyCare } from '../wellbeing/DailyCare.tsx'
 import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
+import { getBodySystemStates } from '../../lib/bodySystems.ts'
+import type { BodySystemId } from '../../lib/bodySystems.ts'
 import { TODAY } from '../../lib/config.ts'
 import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue, formatValueParts } from '../../lib/format.ts'
 import {
@@ -296,7 +299,43 @@ function TodayTab({
           ))}
         </div>
       </section>
+
+      <BodySystems indicators={[...measurements, ...moodDayCounts]} onOpenIndicator={onOpenIndicator} />
     </>
+  )
+}
+
+type BodySystemsProps = { indicators: PanelIndicator[]; onOpenIndicator: (indicatorId: string) => void }
+
+// Every parameter by body system: the map, and under it the parameters of the one system that is open
+function BodySystems({ indicators, onOpenIndicator }: BodySystemsProps) {
+  const [openId, setOpenId] = useState<BodySystemId | null>(null)
+  const states = getBodySystemStates(indicators)
+  const open = states.find((state) => state.system.id === openId)
+
+  return (
+    <section>
+      <h2 className="section-title">Your body</h2>
+      <div className="card">
+        <BodyMap states={states} selectedId={openId} onSelect={(id) => setOpenId(id === openId ? null : id)} />
+        {open !== undefined && (
+          <div className="body-detail" role="region" aria-label={open.system.title}>
+            <div className="card-heading">
+              <span className={open.status === 'alert' ? 'icon-badge icon-badge-alert' : 'icon-badge'}>
+                <Icon name={open.system.icon} />
+              </span>
+              <h2>{open.system.title}</h2>
+              <GroupStatus indicators={open.indicators} />
+            </div>
+            <div className="tiles">
+              {open.indicators.map((indicator) => (
+                <IndicatorTile key={indicator.id} indicator={indicator} onOpen={() => onOpenIndicator(indicator.id)} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 

@@ -2366,6 +2366,149 @@ body:has(.sheet[open]) {
   }
 }
 
+/* --- Body map: the figure, a dot and a label for each body system --- */
+
+.body-map {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto;
+  aspect-ratio: 360 / 400;
+}
+
+.body-figure {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.body-shape {
+  fill: var(--accent);
+  fill-opacity: 0.16;
+  stroke: var(--accent);
+  stroke-opacity: 0.7;
+  stroke-width: 1.3;
+}
+
+.body-arm {
+  fill: var(--accent);
+  fill-opacity: 0.25;
+  stroke: var(--accent);
+  stroke-opacity: 0.25;
+  stroke-linecap: round;
+}
+
+.body-bones {
+  fill: none;
+  stroke: var(--ink);
+  stroke-opacity: 0.28;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+/* The colour of a system's dot and line: green when fine, amber when it needs a look, grey with no reading */
+.body-mark {
+  color: var(--mute);
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.body-mark-ok {
+  color: var(--ok);
+}
+
+.body-mark-alert {
+  color: var(--alert);
+}
+
+.body-mark path {
+  fill: none;
+  stroke-opacity: 0.6;
+}
+
+.body-dot {
+  stroke: var(--ink);
+  stroke-opacity: 0.7;
+}
+
+.body-ping {
+  stroke: none;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* A ghost button laid out as a label of the map: on one side, at the height of its system */
+.body-system {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 34%;
+  padding: 6px 12px 6px 10px;
+  border-radius: var(--radius-tile);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  text-align: left;
+  white-space: normal;
+  transform: translateY(-50%);
+}
+
+.body-system-left {
+  left: 0;
+}
+
+.body-system-right {
+  right: 0;
+}
+
+.body-system .icon {
+  color: var(--accent);
+}
+
+.body-system-alert .icon {
+  color: var(--alert);
+}
+
+.body-status {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+.body-status-alert {
+  background: var(--alert);
+}
+
+.body-detail {
+  margin-top: 20px;
+}
+
+@keyframes body-ping {
+  from {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .body-ping {
+    animation: body-ping 2.2s ease-out infinite;
+  }
+
+  .body-detail {
+    animation: rise 0.4s var(--ease) backwards;
+  }
+}
+
 /* --- Loading --- */
 
 .skeleton {
@@ -2442,6 +2585,12 @@ body:has(.sheet[open]) {
 
   .learn-figure {
     max-width: 280px;
+  }
+
+  /* Room for a name of two lines in a label a third of the screen wide */
+  .body-system {
+    gap: 5px;
+    padding: 6px 10px 6px 8px;
   }
 }
 
