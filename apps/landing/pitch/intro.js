@@ -151,8 +151,13 @@ function drawLogo(c, cx, cy, k, pxRatio, progress, ink, alpha) {
   c.globalAlpha = alpha * 0.35; c.lineWidth = 1;
   c.beginPath(); c.moveTo(-60, base2 + 48); c.lineTo(60, base2 + 48); c.stroke();
   c.globalAlpha = alpha;
+  // Pitch page: shrink the tagline if a translated line would run past the screen edges.
   c.font = `400 26px ${FONT}`;
-  TAGLINE.forEach((line, i) => drawTracked(c, line, 0, base2 + 104 + i * 38, 10));
+  const k0 = c.getTransform().a || 1, maxW = (W * 0.9 * pxRatio) / k0;
+  const widest = Math.max(...TAGLINE.map(l => c.measureText(l).width + 10 * (l.length - 1)));
+  const f = Math.min(1, maxW / widest);
+  c.font = `400 ${26 * f}px ${FONT}`;
+  TAGLINE.forEach((line, i) => drawTracked(c, line, 0, base2 + 104 + i * 38, 10 * f));
   c.restore();
 }
 
@@ -250,15 +255,24 @@ function drawMeteors(t) {
 
 // =====================================================================
 //  Earth: procedural, semi-realistic (continents, ocean depth, ice caps, clouds, night lights, atmosphere)
+//  Pitch page: smooth (bilinear) sampling, a quick low-detail map at start, and a sharper map
+//  built in small slices in the background so the page never freezes.
 // =====================================================================
-const TW = 768, TH = 384, CW = 512, CH = 256, S = 720;
+const S = (innerWidth < 700 ? 600 : (devicePixelRatio > 1.4 && innerWidth > 1100 ? 840 : 760));
 let earthReady = false;
-let texRGB, texOcean, texLights, texCloud, eDiff, eSpec, eRim, eDay, eLon, eLonC, eRow, eRowC, eAlpha;
+let tex = null;                       // current maps: { TW, TH, CW, CH, rgb, ocean, lights, cloud }
+let eDiff, eSpec, eRim, eDay, eFu, eFv, eAlpha;
 const earthCanvas = document.createElement('canvas'); earthCanvas.width = earthCanvas.height = S;
 const earthCtx = earthCanvas.getContext('2d');
 const earthImg = earthCtx.createImageData(S, S);
 
-function buildEarth() {
+// Self-contained Earth map builder. Used on the page for a quick first map and, as a Web Worker,
+// to build the detailed maps on another thread so the animation never stutters.
+function earthMapKit() {
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   // --- 3D value noise ---
   const rnd = mulberry32(1969), PERM = new Uint8Array(512), LAT = new Float32Array(256);
   const base = Array.from({ length: 256 }, (_, i) => i);
@@ -280,98 +294,156 @@ function buildEarth() {
     for (let i = 0; i < oct; i++) { s += a * vn(x * f, y * f, z * f); n += a; f *= 2.03; a *= 0.5; }
     return s / n;
   }
-
-  // --- terrain texture (equirectangular) ---
-  texRGB = new Uint8Array(TW * TH * 3); texOcean = new Uint8Array(TW * TH); texLights = new Uint8Array(TW * TH);
   const THR = 0.535;
   const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-  for (let v = 0; v < TH; v++) {
-    const lat = (0.5 - (v + 0.5) / TH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat), alat = Math.abs(lat);
-    for (let u = 0; u < TW; u++) {
-      const lon = ((u + 0.5) / TW) * Math.PI * 2 - Math.PI;
-      const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
-      const warp = 0.22 * (fbm(x * 3.1 + 9, y * 3.1 + 4, z * 3.1 + 1, 4) - 0.5);
-      const n = fbm(x * 1.55 + 3, y * 1.55 + 5, z * 1.55 + 7, 6) + warp;
-      const i = v * TW + u;
-      let col, ocean = 0, lights = 0;
-      if (n > THR) {
-        const e = clamp((n - THR) / (1 - THR) * 2.2);
-        const moist = fbm(x * 2.4 + 20, y * 2.4 + 11, z * 2.4 + 3, 4);
-        col = mix([32, 74, 42], [70, 118, 56], smooth(0.35, 0.65, moist));
-        const band = smooth(0.1, 0.32, alat) * (1 - smooth(0.5, 0.75, alat));            // desert belts
-        col = mix(col, [184, 156, 102], band * smooth(0.58, 0.4, moist));
-        col = mix(col, [118, 106, 96], smooth(0.5, 0.8, e));                              // mountains
-        const snow = Math.max(smooth(1.05, 1.3, alat + 0.12 * (moist - 0.5)), smooth(0.8, 1.0, e));
-        col = mix(col, [238, 242, 247], snow);
-        const city = fbm(x * 16, y * 16, z * 16, 2);
-        if (alat < 1.15 && e < 0.45 && city > 0.58) lights = Math.round(255 * smooth(0.58, 0.72, city) * (1 - smooth(0.2, 0.45, e)));
-      } else {
-        const depth = clamp((THR - n) / 0.28);
-        col = mix([34, 104, 160], [5, 22, 66], Math.pow(depth, 0.7));
-        ocean = 1;
-        const ice = smooth(1.2, 1.38, alat + 0.12 * (fbm(x * 4, y * 4, z * 4, 3) - 0.5));
-        if (ice > 0) { col = mix(col, [236, 242, 248], ice); ocean = ice > 0.5 ? 0 : 1; }
+
+  // builds the maps one row at a time, so it can run in slices
+  function* makeMaps(TW, TH, CW, CH) {
+    const m = { TW, TH, CW, CH, rgb: new Uint8Array(TW * TH * 3), ocean: new Uint8Array(TW * TH), lights: new Uint8Array(TW * TH), cloud: new Uint8Array(CW * CH) };
+    for (let v = 0; v < TH; v++) {
+      const lat = (0.5 - (v + 0.5) / TH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat), alat = Math.abs(lat);
+      for (let u = 0; u < TW; u++) {
+        const lon = ((u + 0.5) / TW) * Math.PI * 2 - Math.PI;
+        const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
+        const warp = 0.22 * (fbm(x * 3.1 + 9, y * 3.1 + 4, z * 3.1 + 1, 4) - 0.5);
+        const detail = TW > 1000 ? 0.035 * (fbm(x * 24 + 2, y * 24 + 7, z * 24 + 5, 3) - 0.5) : 0;
+        const n = fbm(x * 1.55 + 3, y * 1.55 + 5, z * 1.55 + 7, TW > 1000 ? 8 : 6) + warp + detail;
+        const i = v * TW + u;
+        let col, ocean = 0, lights = 0;
+        if (n > THR) {
+          const e = clamp((n - THR) / (1 - THR) * 2.2);
+          const moist = fbm(x * 2.4 + 20, y * 2.4 + 11, z * 2.4 + 3, 4);
+          const tint = TW > 1000 ? fbm(x * 9 + 31, y * 9 + 17, z * 9 + 3, 3) : 0.5;
+          col = mix([38, 76, 40], [86, 120, 62], smooth(0.35, 0.65, moist));
+          col = mix(col, [58, 92, 50], smooth(0.4, 0.7, tint) * 0.6);                 // forest and grassland patches
+          const band = smooth(0.1, 0.32, alat) * (1 - smooth(0.5, 0.75, alat));
+          col = mix(col, [196, 162, 112], band * smooth(0.58, 0.4, moist));            // desert belts
+          col = mix(col, [150, 126, 96], band * smooth(0.5, 0.35, moist) * smooth(0.3, 0.7, tint) * 0.6);
+          col = mix(col, [112, 100, 90], smooth(0.5, 0.8, e));                        // mountains
+          const snow = Math.max(smooth(1.05, 1.3, alat + 0.12 * (moist - 0.5)), smooth(0.8, 1.0, e));
+          col = mix(col, [238, 242, 247], snow);
+          const city = fbm(x * 16, y * 16, z * 16, 2);
+          if (alat < 1.15 && e < 0.45 && city > 0.58) lights = Math.round(255 * smooth(0.58, 0.72, city) * (1 - smooth(0.2, 0.45, e)));
+        } else {
+          const depth = clamp((THR - n) / 0.28);
+          col = mix([36, 118, 168], [6, 26, 72], Math.pow(depth, 0.6));
+          col = mix(col, [64, 160, 182], (1 - smooth(0, 0.08, depth)) * 0.55);          // turquoise shallows along coasts
+          ocean = 1;
+          const ice = smooth(1.2, 1.38, alat + 0.12 * (fbm(x * 4, y * 4, z * 4, 3) - 0.5));
+          if (ice > 0) { col = mix(col, [236, 242, 248], ice); ocean = ice > 0.5 ? 0 : 1; }
+        }
+        m.rgb[i * 3] = col[0]; m.rgb[i * 3 + 1] = col[1]; m.rgb[i * 3 + 2] = col[2];
+        m.ocean[i] = ocean; m.lights[i] = lights;
       }
-      texRGB[i * 3] = col[0]; texRGB[i * 3 + 1] = col[1]; texRGB[i * 3 + 2] = col[2];
-      texOcean[i] = ocean; texLights[i] = lights;
+      yield;
     }
+    for (let v = 0; v < CH; v++) {
+      const lat = (0.5 - (v + 0.5) / CH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+      for (let u = 0; u < CW; u++) {
+        const lon = ((u + 0.5) / CW) * Math.PI * 2 - Math.PI;
+        const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
+        const q = CW > 600 ? 0.5 * (fbm(x * 3.3 + 2, y * 3.3 + 9, z * 3.3 + 4, 3) - 0.5) : 0;
+        const c = fbm(x * 2.1 + 40 + q, y * 3.2 + 8 + q, z * 2.1 + 19 - q, CW > 600 ? 7 : 5);
+        m.cloud[v * CW + u] = Math.round(255 * 0.9 * smooth(0.5, 0.72, c));
+      }
+      yield;
+    }
+    return m;
   }
 
-  // --- cloud texture ---
-  texCloud = new Uint8Array(CW * CH);
-  for (let v = 0; v < CH; v++) {
-    const lat = (0.5 - (v + 0.5) / CH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
-    for (let u = 0; u < CW; u++) {
-      const lon = ((u + 0.5) / CW) * Math.PI * 2 - Math.PI;
-      const x = cl * Math.sin(lon), y = sl, z = cl * Math.cos(lon);
-      const c = fbm(x * 2.1 + 40, y * 3.2 + 8, z * 2.1 + 19, 5);
-      texCloud[v * CW + u] = Math.round(255 * 0.88 * smooth(0.5, 0.7, c));
-    }
+  return {
+    gen: makeMaps,
+    make(TW, TH, CW, CH) { const g = makeMaps(TW, TH, CW, CH); let r; do { r = g.next(); } while (!r.done); return r.value; }
+  };
+}
+
+function buildEarth() {
+  const kit = earthMapKit();
+  // quick low-detail maps now ...
+  tex = kit.make(384, 192, 256, 128);
+  // ... then a medium and a detailed map, built off the main thread when possible
+  const swap = m => { tex = m; lastEarthUpdate = -1; };
+  const jobs = [[1024, 512, 768, 384], [2048, 1024, 1536, 768]];
+  let worker = null;
+  try {
+    const src = 'const kit = (' + earthMapKit.toString() + ')();\n' +
+      'onmessage = e => { const m = kit.make.apply(null, e.data); postMessage(m, [m.rgb.buffer, m.ocean.buffer, m.lights.buffer, m.cloud.buffer]); };';
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    let n = 0;
+    worker.onmessage = e => { swap(e.data); n++; if (n < jobs.length) worker.postMessage(jobs[n]); else { worker.terminate(); window.MoonCareEarthSharp = true; } };
+    worker.onerror = () => { worker = null; inPage(); };
+    worker.postMessage(jobs[0]);
+  } catch (err) { worker = null; inPage(); }
+  // fallback without workers: build in small slices on the page
+  function inPage() {
+    let j = 0;
+    const next = () => {
+      if (j >= jobs.length) { window.MoonCareEarthSharp = true; return; }
+      const g = kit.gen.apply(null, jobs[j++]);
+      const slice = () => {
+        const end = performance.now() + 8; let st;
+        do { st = g.next(); } while (!st.done && performance.now() < end);
+        if (st.done) { swap(st.value); next(); } else setTimeout(slice, 16);
+      };
+      setTimeout(slice, 200);
+    };
+    next();
   }
 
   // --- per-pixel sphere tables (they only depend on the view, so they are computed once) ---
   const N = S * S;
   eDiff = new Float32Array(N); eSpec = new Float32Array(N); eRim = new Float32Array(N); eDay = new Float32Array(N);
-  eLon = new Float32Array(N); eLonC = new Float32Array(N); eRow = new Int32Array(N); eRowC = new Int32Array(N); eAlpha = new Uint8Array(N);
+  eFu = new Float32Array(N); eFv = new Float32Array(N); eAlpha = new Uint8Array(N);
   const roll = -0.38, pitch = 0.42, cr = Math.cos(roll), sr = Math.sin(roll), cp = Math.cos(pitch), sp = Math.sin(pitch);
   let L = [-0.72, 0.42, 0.55]; const ll = Math.hypot(...L); L = L.map(q => q / ll);
   const Hh = [L[0], L[1], L[2] + 1]; const hl = Math.hypot(...Hh); const Hv = Hh.map(q => q / hl);
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
     const i = y * S + x, nx = (x + 0.5 - S / 2) / (S / 2), ny = -(y + 0.5 - S / 2) / (S / 2), r2 = nx * nx + ny * ny;
     if (r2 >= 1) { eAlpha[i] = 0; continue; }
-    const r = Math.sqrt(r2), nz = Math.sqrt(1 - r2);
-    eAlpha[i] = Math.round(255 * clamp((1 - r) * S * 0.5));
+    const rr = Math.sqrt(r2), nz = Math.sqrt(1 - r2);
+    eAlpha[i] = Math.round(255 * clamp((1 - rr) * S * 0.5));
     const dp = nx * L[0] + ny * L[1] + nz * L[2];
     const dayS = smooth(-0.1, 0.6, dp);
     eDay[i] = smooth(-0.12, 0.3, dp);
     eDiff[i] = 0.07 + 0.93 * dayS;
     eSpec[i] = Math.pow(Math.max(0, nx * Hv[0] + ny * Hv[1] + nz * Hv[2]), 70) * 0.7 * eDay[i];
     eRim[i] = Math.pow(1 - nz, 2.6) * (0.25 + 0.75 * dayS);
-    const x2 = nx * cr - ny * sr, y2 = nx * sr + ny * cr;              // tilt of the Earth's axis
-    const y3 = y2 * cp - nz * sp, z3 = y2 * sp + nz * cp;              // we look from slightly above the equator
+    const x2 = nx * cr - ny * sr, y2 = nx * sr + ny * cr;
+    const y3 = y2 * cp - nz * sp, z3 = y2 * sp + nz * cp;
     const lat = Math.asin(clamp(y3, -1, 1)), lon = Math.atan2(x2, z3);
-    const fu = (lon + Math.PI) / (Math.PI * 2), fv = clamp((0.5 - lat / Math.PI), 0, 0.9999);
-    eLon[i] = fu * TW; eLonC[i] = fu * CW;
-    eRow[i] = Math.floor(fv * TH) * TW; eRowC[i] = Math.floor(fv * CH) * CW;
+    eFu[i] = (lon + Math.PI) / (Math.PI * 2); eFv[i] = clamp(0.5 - lat / Math.PI, 0, 0.9999);
   }
   earthReady = true;
 }
 
 function renderEarth(rot, cloudRot) {
   if (!earthReady) buildEarth();
-  const d = earthImg.data;
+  const d = earthImg.data, T = tex, TW = T.TW, TH = T.TH, CW = T.CW, CH = T.CH;
+  const rgb = T.rgb, oc = T.ocean, li = T.lights, cl = T.cloud;
   const wrap = (v, m) => ((v % m) + m) % m;
   const sh = wrap(-rot / (Math.PI * 2) * TW, TW), shc = wrap(-cloudRot / (Math.PI * 2) * CW, CW);
   for (let i = 0, N = S * S; i < N; i++) {
     const a = eAlpha[i], o = i * 4;
     if (a === 0) { d[o + 3] = 0; continue; }
-    let u = eLon[i] + sh; if (u >= TW) u -= TW; const ti = eRow[i] + (u | 0);
-    let uc = eLonC[i] + shc; if (uc >= CW) uc -= CW;
-    const ca = texCloud[eRowC[i] + (uc | 0)] / 255, k = ti * 3, lit = eDiff[i];
-    let r = texRGB[k], g = texRGB[k + 1], b = texRGB[k + 2];
+    // bilinear sampling of the surface map and the clouds (smooth coastlines, soft clouds)
+    let u = eFu[i] * TW - 0.5 + sh; if (u < 0) u += TW; if (u >= TW) u -= TW;
+    let tv = eFv[i] * TH - 0.5; if (tv < 0) tv = 0; if (tv > TH - 1.001) tv = TH - 1.001;
+    const u0 = u | 0, u1 = u0 + 1 === TW ? 0 : u0 + 1, fu = u - u0, v0 = tv | 0, fv = tv - v0;
+    const r0 = v0 * TW, r1 = r0 + TW;
+    const k00 = (r0 + u0) * 3, k10 = (r0 + u1) * 3, k01 = (r1 + u0) * 3, k11 = (r1 + u1) * 3;
+    const w00 = (1 - fu) * (1 - fv), w10 = fu * (1 - fv), w01 = (1 - fu) * fv, w11 = fu * fv;
+    let r = rgb[k00] * w00 + rgb[k10] * w10 + rgb[k01] * w01 + rgb[k11] * w11;
+    let g = rgb[k00 + 1] * w00 + rgb[k10 + 1] * w10 + rgb[k01 + 1] * w01 + rgb[k11 + 1] * w11;
+    let b = rgb[k00 + 2] * w00 + rgb[k10 + 2] * w10 + rgb[k01 + 2] * w01 + rgb[k11 + 2] * w11;
+    const ti = (fv < 0.5 ? r0 : r1) + (fu < 0.5 ? u0 : u1);
+    let uc = eFu[i] * CW - 0.5 + shc; if (uc < 0) uc += CW; if (uc >= CW) uc -= CW;
+    let tc = eFv[i] * CH - 0.5; if (tc < 0) tc = 0; if (tc > CH - 1.001) tc = CH - 1.001;
+    const c0 = uc | 0, c1 = c0 + 1 === CW ? 0 : c0 + 1, fc = uc - c0, cv0 = tc | 0, fvc = tc - cv0, rc0 = cv0 * CW, rc1 = rc0 + CW;
+    const ca = ((cl[rc0 + c0] * (1 - fc) + cl[rc0 + c1] * fc) * (1 - fvc) + (cl[rc1 + c0] * (1 - fc) + cl[rc1 + c1] * fc) * fvc) / 255;
+    const lit = eDiff[i];
     r = (r * (1 - ca) + 255 * ca) * lit; g = (g * (1 - ca) + 255 * ca) * lit; b = (b * (1 - ca) + 255 * ca) * lit;
-    const sp = texOcean[ti] * eSpec[i] * (1 - ca) * 255; r += sp; g += sp; b += sp * 0.95;
-    const city = texLights[ti] * (1 - eDay[i]) * (1 - ca * 0.9) / 255;
+    const sp = oc[ti] * eSpec[i] * (1 - ca) * 255; r += sp; g += sp; b += sp * 0.95;
+    const city = li[ti] * (1 - eDay[i]) * (1 - ca * 0.9) / 255;
     r += 255 * city; g += 170 * city; b += 70 * city;
     const rim = eRim[i] * 0.9; r += 70 * rim; g += 130 * rim; b += 255 * rim;
     d[o] = r > 255 ? 255 : r; d[o + 1] = g > 255 ? 255 : g; d[o + 2] = b > 255 ? 255 : b; d[o + 3] = a;
@@ -382,9 +454,11 @@ function renderEarth(rot, cloudRot) {
 let lastEarthUpdate = -1;
 function earthGeometry(e) {
   const Rf = EARTH_FINAL_D * W / 2;
-  const R0 = Math.max(H * 0.95, Rf * 4);
-  const cx0 = W * 0.30, cy0 = H + R0 * 0.38;                         // camera starts close, with the horizon low on the screen
-  const cx1 = W - Rf * 1.25, cy1 = H - Rf * 1.25;
+  const R0 = Math.max(Math.min(W, H) * 0.4, Rf * 3);                 // pitch page: start with the whole Earth in view
+  const cx0 = W * 0.5, cy0 = H * 0.5;
+  // pitch page: the Earth ends rising over the Moon's horizon (see drawLunarSurface)
+  const cx1 = W < 700 ? W - Rf * 1.6 : W * 0.8;
+  const cy1 = lunarHorizonY(cx1, 1) - Rf * 0.62;
   return { R: R0 * Math.pow(Rf / R0, e), cx: lerp(cx0, cx1, e), cy: lerp(cy0, cy1, e) };
 }
 
@@ -392,7 +466,8 @@ function drawEarth(t, e) {
   const { R, cx, cy } = earthGeometry(e);
   if (cy - R > H || cx + R < 0) return;
   const now = performance.now();
-  if (fixedAt !== null || now - lastEarthUpdate > 70 || lastEarthUpdate < 0) {
+  // redraw fast only while the Earth is big on screen; a small far-off Earth needs few updates
+  if (fixedAt !== null || now - lastEarthUpdate > (R > 260 ? 85 : 220) || lastEarthUpdate < 0) {
     renderEarth(t * 0.07, t * 0.085); lastEarthUpdate = now;
   }
   const appear = smooth(0, 1.2, t);
@@ -403,6 +478,136 @@ function drawEarth(t, e) {
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(earthCanvas, cx - R, cy - R, R * 2, R * 2);
   ctx.globalAlpha = 1;
+}
+
+// =====================================================================
+//  Pitch page: Earthrise. As the camera pulls away from the Earth, the Moon's surface rises
+//  from the bottom of the screen and the Earth ends up hanging just above the lunar horizon.
+// =====================================================================
+const lunarR = () => Math.max(W * 2.4, 2200);
+const lunarApex = rise => lerp(H + 40, H * (W < 700 ? 0.86 : 0.8), rise);
+function lunarHorizonY(x, rise) {
+  const Rm = lunarR(), dx = x - W / 2;
+  return lunarApex(rise) + (Rm - Math.sqrt(Math.max(0, Rm * Rm - dx * dx)));
+}
+// The surface is painted once (per screen size) into an offscreen canvas at its final position,
+// then simply moved up during the rise, so the detail costs nothing per frame.
+let lunarCache = null, lunarKey = '';
+function lunarHills(x) {
+  const k = W / 1440 + 0.4;
+  return (Math.sin(x * 0.011 + 1.3) * 2.2 + Math.sin(x * 0.027 + 4.1) * 1.4 + Math.sin(x * 0.0043 + 0.7) * 3.2) * k;
+}
+function buildLunar() {
+  const A = lunarApex(1), Rm = lunarR(), top = A - 14, Hs = Math.ceil(H - top + 2);
+  const cvs = document.createElement('canvas');
+  cvs.width = Math.max(1, Math.round(W * dpr)); cvs.height = Math.max(1, Math.round(Hs * dpr));
+  const c = cvs.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, -top * dpr);
+  const hy = x => A + (Rm - Math.sqrt(Math.max(0, Rm * Rm - (x - W / 2) ** 2))) - lunarHills(x);
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  // ground shape with low hills on the horizon
+  c.beginPath(); c.moveTo(0, H + 2);
+  for (let x = 0; x <= W; x += 6) c.lineTo(x, hy(x));
+  c.lineTo(W, hy(W)); c.lineTo(W, H + 2); c.closePath();
+  c.save(); c.clip();
+
+  // base light: bright, low sun near the horizon, darker towards the viewer
+  const depth = H - A;
+  let g = c.createLinearGradient(0, A - 6, 0, H);
+  g.addColorStop(0, '#aeaba5'); g.addColorStop(0.14, '#8b8882'); g.addColorStop(0.5, '#5d5b57'); g.addColorStop(1, '#302f2d');
+  c.fillStyle = g; c.fillRect(0, top, W, Hs);
+  // light from the left, falling off to the right
+  g = c.createLinearGradient(0, 0, W, 0);
+  g.addColorStop(0, 'rgba(255,248,235,0.10)'); g.addColorStop(0.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,0.28)');
+  c.fillStyle = g; c.fillRect(0, top, W, Hs);
+
+  // maria: broad darker basalt plains, squashed by perspective
+  for (let i = 0; i < 7; i++) {
+    const x = rnd() * W, near = 0.15 + rnd() * 0.8, y = A + near * near * depth;
+    const rx = (120 + rnd() * 260) * (W / 1440 + 0.3), ry = rx * (0.08 + 0.3 * near);
+    c.save(); c.translate(x, y); c.scale(1, ry / rx);
+    const mg = c.createRadialGradient(0, 0, 0, 0, 0, rx);
+    mg.addColorStop(0, 'rgba(36,34,32,0.16)'); mg.addColorStop(0.7, 'rgba(36,34,32,0.07)'); mg.addColorStop(1, 'rgba(36,34,32,0)');
+    c.fillStyle = mg; c.beginPath(); c.arc(0, 0, rx, 0, Math.PI * 2); c.fill(); c.restore();
+  }
+
+  // regolith grain: value noise sampled on the ground plane, so it stretches towards the horizon
+  const sc = 1, nw = Math.ceil(W * sc), nh = Math.ceil(depth * sc) + 4;
+  const nc = document.createElement('canvas'); nc.width = nw; nc.height = nh;
+  const nctx = nc.getContext('2d'), img = nctx.createImageData(nw, nh), d = img.data;
+  const P = new Uint8Array(512); for (let i = 0; i < 256; i++) P[i] = i;
+  for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const tmp = P[i]; P[i] = P[j]; P[j] = tmp; }
+  for (let i = 0; i < 256; i++) P[i + 256] = P[i];
+  const hsh = (x, y) => P[(P[x & 255] + y) & 511] / 255;
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return lerp(lerp(hsh(xi, yi), hsh(xi + 1, yi), u), lerp(hsh(xi, yi + 1), hsh(xi + 1, yi + 1), u), v); };
+  for (let py = 0; py < nh; py++) {
+    const near = Math.max(0.004, py / nh), dist = 1 / (near + 0.035);
+    for (let px = 0; px < nw; px++) {
+      const X = (px / nw - 0.5) * 9 * dist, Z = dist * 1.6;
+      const n = vn(X, Z) * 0.4 + vn(X * 2.1, Z * 2.1) * 0.25 + vn(X * 4.3, Z * 4.3) * 0.2 + vn(X * 9.1, Z * 9.1) * 0.15;
+      const o = (py * nw + px) * 4, v = (n - 0.5) * 2;
+      if (v > 0) { d[o] = 240; d[o + 1] = 236; d[o + 2] = 228; d[o + 3] = Math.min(255, v * 46); }
+      else { d[o] = 18; d[o + 1] = 16; d[o + 2] = 14; d[o + 3] = Math.min(255, -v * 60); }
+    }
+  }
+  nctx.putImageData(img, 0, 0);
+  c.imageSmoothingEnabled = true; c.drawImage(nc, 0, A - 4, W, nh / sc);
+
+  // craters: lit from the left, so the left inner wall is in shadow and the right wall catches the sun
+  const crater = (x, y, rx, squash, strength) => {
+    c.save(); c.translate(x, y); c.scale(1, squash);
+    if (rx > 22) {                                             // faint pale ejecta around bigger craters
+      const eg = c.createRadialGradient(0, 0, rx * 0.95, 0, 0, rx * 1.9);
+      eg.addColorStop(0, `rgba(220,224,230,${0.07 * strength})`); eg.addColorStop(1, 'rgba(220,224,230,0)');
+      c.fillStyle = eg; c.beginPath(); c.arc(0, 0, rx * 1.9, 0, Math.PI * 2); c.fill();
+    }
+    const bowl = c.createLinearGradient(-rx, 0, rx, 0);
+    bowl.addColorStop(0, `rgba(10,11,15,${0.5 * strength})`); bowl.addColorStop(0.4, `rgba(30,32,38,${0.26 * strength})`);
+    bowl.addColorStop(0.75, `rgba(140,144,152,${0.1 * strength})`); bowl.addColorStop(1, `rgba(200,204,212,${0.22 * strength})`);
+    c.fillStyle = bowl; c.beginPath(); c.arc(0, 0, rx, 0, Math.PI * 2); c.fill();
+    // soft rims: a faint sunlit lip on the far side, a faint shadow towards the sun
+    // a ring that is brighter on the far (right) side: the rim catching the low sun
+    c.save(); c.globalAlpha = 0.16 * strength;
+    c.beginPath(); c.arc(0, 0, rx * 1.14, 0, Math.PI * 2); c.arc(0, 0, rx * 0.86, 0, Math.PI * 2, true);
+    const farSide = c.createLinearGradient(-rx, 0, rx, 0);
+    farSide.addColorStop(0, 'rgba(225,228,234,0.15)'); farSide.addColorStop(1, 'rgba(235,238,244,1)');
+    c.fillStyle = farSide; c.fill(); c.restore();
+    c.restore();
+  };
+  const sizeK = W / 1440 + 0.35;
+  const list = [];
+  for (let i = 0; i < 70; i++) list.push({ n: Math.pow(rnd(), 1.3), x: rnd() * W, s: Math.pow(rnd(), 3) });
+  list.sort((p, q) => p.n - q.n);                                     // far craters first
+  for (const k of list) {
+    const near = 0.02 + k.n * 0.98, y = A + Math.pow(near, 1.7) * depth + 3;
+    if (y > H + 20) continue;
+    const rx = (2 + 30 * k.s) * (0.25 + 1.4 * near) * sizeK;
+    crater(k.x, Math.max(y, hy(k.x) + rx * 0.2 + 2), rx, 0.1 + 0.45 * near, 0.35 + 0.3 * Math.min(1, near * 1.6));
+  }
+
+  // dark shadow towards the viewer so the eye goes to the horizon
+  g = c.createLinearGradient(0, A, 0, H);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.55, 'rgba(2,4,10,0.12)'); g.addColorStop(1, 'rgba(2,4,10,0.45)');
+  c.fillStyle = g; c.fillRect(0, top, W, Hs);
+  c.restore();
+
+  // crisp, sunlit horizon line
+  c.beginPath(); for (let x = 0; x <= W; x += 6) (x ? c.lineTo(x, hy(x)) : c.moveTo(x, hy(x)));
+  const lg = c.createLinearGradient(0, 0, W, 0);
+  lg.addColorStop(0, 'rgba(240,244,250,0.75)'); lg.addColorStop(0.6, 'rgba(225,232,242,0.45)'); lg.addColorStop(1, 'rgba(200,210,225,0.2)');
+  c.strokeStyle = lg; c.lineWidth = 1.2; c.stroke();
+  return { cvs, top };
+}
+function drawLunarSurface(t, rise) {
+  if (rise <= 0.001) return;
+  const key = W + 'x' + H + '@' + dpr;
+  if (!lunarCache || lunarKey !== key) { lunarCache = buildLunar(); lunarKey = key; }
+  const shift = lunarApex(rise) - lunarApex(1);
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(lunarCache.cvs, 0, Math.round((lunarCache.top + shift) * dpr));
+  ctx.restore();
 }
 
 // =====================================================================
@@ -419,6 +624,7 @@ function drawDark(t) {
   drawStars(t, e);
   drawMeteors(t);
   drawEarth(t, e);
+  drawLunarSurface(t, smooth(0.25, 1, e));
   const [cx, cy] = logoCenter();
   drawLogo(ctx, cx, cy, logoScale(), dpr, moonProgress(t), '#f2f5fa', smooth(LOGO_FADE_IN_S[0], LOGO_FADE_IN_S[1], t));
 }
