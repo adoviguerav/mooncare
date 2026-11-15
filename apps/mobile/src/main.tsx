@@ -3,14 +3,18 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource/space-grotesk/400.css'
 import '@fontsource/space-grotesk/500.css'
 import '@fontsource/space-grotesk/700.css'
-import './styles/theme.css'
-import './styles/web-ui.css'
-import { App } from './App'
+import '@mooncare/web/styles/index.css'
+import './styles/phone.css'
+import WebApp from '@mooncare/web/App.tsx'
+import { SolarSky } from '@mooncare/web/components/SolarSky.tsx'
 
+// The crew app shows the dashboard's own screens (apps/web), so the two cannot drift apart: what this app adds
+// is being installable and opening with no network. Its earlier screens are kept in src/App.tsx and
+// src/screens, with their styles in src/styles/theme.css, and are not shown.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <div className="stars" aria-hidden="true" />
-    <App />
+    <SolarSky />
+    <WebApp />
   </StrictMode>,
 )
 
