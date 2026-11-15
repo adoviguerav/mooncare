@@ -17,6 +17,7 @@ eggs/
 lib/
 # Not a Python lib folder: the shared code of the frontend
 !apps/web/src/lib/
+!apps/mobile/src/lib/
 lib64/
 parts/
 sdist/
@@ -224,3 +225,4 @@ __marimo__/
 # Real Telemetry
 node_modules/
 *.db
+.playwright-mcp/
