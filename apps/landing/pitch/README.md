@@ -12,6 +12,7 @@ The landing page for the NASA Space Apps Challenge 2026 presentation. Open `inde
 - `js/main.js`: the team list (`TEAM`), the language switch, the countdown, the reveal on scroll, the Earth and the live demo.
 - `img/favicon.svg`: the tab icon.
 - `img/shots/`: screenshots of the app used in the feature sections.
+- `moon_care_demo.mp4` and `moon_care_demo.vtt`: the demo video and its English captions, shown in the "Watch the demo" section. Copies of `moon_care_demo.mp4` and `video/moon_care_demo.srt` at the repository root, which `video/build_video.py` writes: copy them again when the video is rebuilt. `img/video-poster.webp` is a frame of it (second 8.6), used as its cover.
 - `demo-app/`: the crew app mini demo, the phone in "Try it yourself". It is `apps/mobile` built as it is by `tools/build_app_demo.py`; its calls to `/api` are answered in the browser by `demo-app/demo-api.js` from the same snapshot. Any 6-digit PIN signs in, and what the visitor does lasts until the tab closes. Only `demo-api.js` is written by hand: rebuild the rest with `python tools/build_app_demo.py` when the crew app changes.
 - `demo/`: the dashboard mini demo, the tablet in "Try it yourself". The screens of the real app (`apps/web`) without sign-in and without a backend, so it keeps working if the live app goes down:
     - `demo/index.html`, `demo/js/app.js`: profile picker, panel (Today, Data, Alerts) and the screen of one indicator. A check-in is kept only until the page closes.

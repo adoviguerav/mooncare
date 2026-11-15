@@ -393,3 +393,10 @@ nav.top .btn.sm{white-space:nowrap}
 
 /* icons of the sprite */
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Demo video */
+.video-sec{text-align:center;padding-top:40px}
+.video-sec .lead{margin:20px auto 0}
+.video-box{margin:40px auto 0;max-width:980px;padding:10px;overflow:hidden}
+.video-box video{display:block;width:100%;height:auto;border-radius:16px;background:#000}
+@media (max-width:560px){.video-box{padding:6px;border-radius:18px}.video-box video{border-radius:12px}}
