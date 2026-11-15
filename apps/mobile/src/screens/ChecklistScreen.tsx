@@ -67,7 +67,7 @@ export function ChecklistScreen({ me, crewMemberId, today }: ScreenProps) {
               <input
                 type="checkbox"
                 checked={task.done}
-                disabled={automatic || busyTask === task.id}
+                disabled={automatic || !canTick || busyTask === task.id}
                 onChange={() => void toggle(task.id, !task.done)}
               />
               <span className="t">

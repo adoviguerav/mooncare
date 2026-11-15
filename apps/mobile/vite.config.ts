@@ -21,7 +21,10 @@ function splitTopLevelRules(css: string): string[] {
   let start = 0
   for (let index = 0; index < css.length; index++) {
     if (css.startsWith('/*', index)) {
-      index = css.indexOf('*/', index) + 1
+      const commentEnd = css.indexOf('*/', index)
+      // A comment left open while the file is being edited: stop, not start again from the top
+      if (commentEnd === -1) break
+      index = commentEnd + 1
       continue
     }
     if (css[index] === '{') depth++

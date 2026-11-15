@@ -2587,10 +2587,14 @@ body:has(.sheet[open]) {
     max-width: 280px;
   }
 
-  /* Room for a name of two lines in a label a third of the screen wide */
+  /* Room for a name of two lines in a label a third of the screen wide: the name alone, without its icon */
   .body-system {
-    gap: 5px;
     padding: 6px 10px 6px 8px;
+    overflow-wrap: anywhere;
+  }
+
+  .body-system .icon {
+    display: none;
   }
 }
 

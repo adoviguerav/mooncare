@@ -34,9 +34,10 @@ const STREAK_LOOKBACK_DAYS = 120
 // The tab survives opening an indicator and coming back, which remounts the panel
 const TAB_STORAGE_KEY = 'panel-tab'
 
-type Tab = 'today' | 'data' | 'alerts'
+type Tab = 'today' | 'body' | 'data' | 'alerts'
 const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'today', label: 'Today', icon: 'home' },
+  { id: 'body', label: 'Body', icon: 'body' },
   { id: 'data', label: 'Data', icon: 'database' },
   { id: 'alerts', label: 'Alerts', icon: 'alert' },
 ]
@@ -44,6 +45,7 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
 type Props = {
   crewMember: CrewMember
   canLog: boolean
+  canCheckIn: boolean
   emergencyRunning: boolean
   onOpenEmergency: () => void
   onOpenIndicator: (indicatorId: string) => void
@@ -59,6 +61,7 @@ export function PanelScreen(props: Props) {
       key={savedCheckins}
       crewMember={crewMember}
       canLog={props.canLog}
+      canCheckIn={props.canCheckIn}
       emergencyRunning={props.emergencyRunning}
       onOpenEmergency={props.onOpenEmergency}
       onOpenIndicator={onOpenIndicator}
@@ -74,6 +77,7 @@ type PanelContentProps = Props & { onCheckinSaved: () => void }
 function PanelContent({
   crewMember,
   canLog,
+  canCheckIn,
   emergencyRunning,
   onOpenEmergency,
   onOpenIndicator,
@@ -134,6 +138,7 @@ function PanelContent({
           <TodayTab
             crewMemberId={crewMember.id}
             canLog={canLog}
+            canCheckIn={canCheckIn}
             indicators={indicators}
             moods={moods}
             moodDayCounts={moodDayCounts}
@@ -144,6 +149,9 @@ function PanelContent({
             onOpenAlerts={() => openTab('alerts')}
             onCheckinSaved={onCheckinSaved}
           />
+        )}
+        {panel !== null && tab === 'body' && (
+          <BodyTab indicators={[...measurements, ...moodDayCounts]} onOpenIndicator={onOpenIndicator} />
         )}
         {panel !== null && tab === 'data' && <DataTab measurements={measurements} onOpenIndicator={onOpenIndicator} />}
         {panel !== null && tab === 'alerts' && <AlertsTab alerts={alerts} onOpenIndicator={onOpenIndicator} />}
@@ -186,6 +194,7 @@ function PanelSkeleton() {
 type TodayTabProps = {
   crewMemberId: number
   canLog: boolean
+  canCheckIn: boolean
   indicators: PanelIndicator[]
   moods: PanelIndicator[]
   moodDayCounts: PanelIndicator[]
@@ -199,6 +208,7 @@ type TodayTabProps = {
 function TodayTab({
   crewMemberId,
   canLog,
+  canCheckIn,
   indicators,
   moods,
   moodDayCounts,
@@ -226,7 +236,9 @@ function TodayTab({
           <h2>How are you today?</h2>
           <CheckinStreak crewMemberId={crewMemberId} checkedInToday={checkedInToday} />
         </div>
-        {!checkedInToday || editingCheckin ? (
+        {!canCheckIn && !checkedInToday ? (
+          <p className="muted">No check-in yet today.</p>
+        ) : !checkedInToday || editingCheckin ? (
           <CheckinForm
             crewMemberId={crewMemberId}
             date={TODAY}
@@ -245,9 +257,11 @@ function TodayTab({
                 </span>
               ))}
             </div>
-            <button className="ghost" onClick={() => setEditingCheckin(true)}>
-              Change
-            </button>
+            {canCheckIn && (
+              <button className="ghost" onClick={() => setEditingCheckin(true)}>
+                Change
+              </button>
+            )}
           </div>
         )}
         {moodAlerts.map((count) => (
@@ -299,16 +313,16 @@ function TodayTab({
           ))}
         </div>
       </section>
-
-      <BodySystems indicators={[...measurements, ...moodDayCounts]} onOpenIndicator={onOpenIndicator} />
     </>
   )
 }
 
-type BodySystemsProps = { indicators: PanelIndicator[]; onOpenIndicator: (indicatorId: string) => void }
+// --- Body ---
+
+type BodyTabProps = { indicators: PanelIndicator[]; onOpenIndicator: (indicatorId: string) => void }
 
 // Every parameter by body system: the map, and under it the parameters of the one system that is open
-function BodySystems({ indicators, onOpenIndicator }: BodySystemsProps) {
+function BodyTab({ indicators, onOpenIndicator }: BodyTabProps) {
   const [openId, setOpenId] = useState<BodySystemId | null>(null)
   const states = getBodySystemStates(indicators)
   const open = states.find((state) => state.system.id === openId)
