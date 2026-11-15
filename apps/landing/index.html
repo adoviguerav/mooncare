@@ -430,6 +430,15 @@ input:focus-visible+.ck{outline:2px solid #fff;outline-offset:3px}
 .qfin b{font-size:17px;display:block}.qfin .note{margin:2px 0 0}
 .qring{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ok);color:#03281b;box-shadow:0 0 22px rgba(59,224,160,.55)}
 @media(prefers-reduced-motion:reduce){.just,.just .ck,.just input:checked+.ck svg{animation:none}}
+/* exercise guide: one-screen layout */
+#exPage .h2i{margin-bottom:8px}.extabs{padding:2px 0 10px}
+.exsum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:12px 0 8px}.exsum b{font-size:15px}.exsum span{font-size:13px;color:var(--mute)}
+.exseg{display:flex;gap:6px;margin-bottom:8px}.exseg button{flex:1;min-height:36px;padding:0 6px;border-radius:12px;font:inherit;font-size:13px;color:var(--mute);border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer}
+.exseg button[aria-pressed=true]{color:#fff;border-color:rgba(47,216,255,.7);background:rgba(47,216,255,.18)}
+.expanel{min-height:104px;font-size:15px;line-height:1.45}.expanel[hidden]{display:none}
+.exstep{display:flex;gap:12px;align-items:flex-start;min-height:60px}.exstep p{margin:0}
+.exn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:rgba(47,216,255,.16);border:1px solid rgba(47,216,255,.5);color:var(--cy)}
+.exnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:6px;color:var(--mute);font-size:13px}.exnav button{width:44px;min-height:34px;border-radius:17px;font-size:20px;line-height:1;color:var(--cy);border:1px solid rgba(47,216,255,.5);background:rgba(5,14,30,.5);cursor:pointer}.exnav button:disabled{opacity:.35;cursor:default}
 /* hydration fountain */
 #hydPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#hydPage[hidden]{display:none}
 #hydPage .inc{width:100%;max-width:440px;margin:0 auto}
@@ -729,7 +738,6 @@ input:focus-visible+.ck{outline:2px solid #fff;outline-offset:3px}
   <div class="inc card">
     <button class="back x" id="exX" type="button" aria-label="Close exercise guide">×</button>
     <h2 class="h2i"><span class="pic" id="exPic"></span>Exercise guide</h2>
-    <p class="note" style="margin:0 0 8px">Pick a move and watch it. Same slow tempo for each: about 2 seconds down, 2 seconds up.</p>
     <div class="extabs" id="exTabs" role="group" aria-label="Choose an exercise"></div>
     <div class="exstage">
       <svg id="exSvg" viewBox="0 0 340 236" role="img" aria-label="Animated demonstration of the exercise"></svg>
@@ -737,13 +745,13 @@ input:focus-visible+.ck{outline:2px solid #fff;outline-offset:3px}
       <div class="excon"><button type="button" id="exPlay" aria-label="Pause">Pause</button><input type="range" id="exScr" min="0" max="1000" value="0" aria-label="Scrub through the movement"></div>
     </div>
     <div class="exef"><div class="exeft"><span>Muscles working (shown in red)</span><span id="exEfT">0%</span></div><div class="bar warn" aria-hidden="true"><i id="exEf" style="width:0"></i></div><div class="exchips" id="exMus"></div></div>
-    <h3 class="sec" id="exName" style="margin-top:16px"></h3>
-    <p class="note" id="exSets" style="margin:-4px 0 8px"></p>
-    <ol class="exsteps" id="exSteps"></ol>
-    <div class="callbox"><span class="pic" id="exWarnIc"></span><span><b>Common mistake</b><br><span id="exMis"></span></span></div>
-    <h3 class="sec">Why it matters on the Moon</h3><p id="exWhy" style="margin:0"></p>
-    <div class="acts" style="margin-top:14px"><button type="button" class="primary" id="exDone">Mark my resistance session as done</button><button type="button" id="exClose2">Close</button></div>
-    <p class="note" style="margin-top:10px">General technique guidance. Your programme sets the load, sets and reps. Confirm with the flight surgeon or trainer. Stop if you feel sharp pain or dizziness.</p>
+    <div class="exsum"><b id="exName"></b><span id="exSets"></span></div>
+    <div class="exseg" id="exSeg" role="group" aria-label="Exercise details"><button type="button" data-t="0" aria-pressed="true">How to</button><button type="button" data-t="1" aria-pressed="false">Mistake</button><button type="button" data-t="2" aria-pressed="false">Why it matters</button></div>
+    <div class="expanel" id="exP0"><div class="exstep"><span class="exn" id="exSn">1</span><p id="exStep"></p></div><div class="exnav"><button type="button" id="exPrev" aria-label="Previous step">‹</button><span id="exSc">1 of 4</span><button type="button" id="exNext" aria-label="Next step">›</button></div></div>
+    <div class="expanel" id="exP1" hidden><div class="callbox"><span class="pic" id="exWarnIc"></span><span id="exMis"></span></div></div>
+    <div class="expanel" id="exP2" hidden><p id="exWhy" style="margin:0"></p></div>
+    <div class="acts" style="margin-top:12px"><button type="button" class="primary" id="exDone">Mark my resistance session as done</button></div>
+    <p class="note" style="margin-top:8px;font-size:11px">Same slow tempo for each move: about 2 seconds down, 2 up. General technique guidance. Your programme sets the load, sets and reps. Confirm with the flight surgeon or trainer. Stop if you feel sharp pain or dizziness.</p>
   </div>
 </section>
 <section id="msPage" role="dialog" aria-modal="true" aria-label="Measure and act" hidden>
@@ -1555,14 +1563,19 @@ function exBuild(){if(exBuilt)return;exBuilt=true;
   $("exTabs").onclick=e=>{const b=e.target.closest("button");if(b)exSel(+b.dataset.i)};
   $("exPlay").onclick=()=>{exPlay=!exPlay;exPlayUI()};
   $("exScr").oninput=e=>{exPlay=false;exPlayUI();exT=Math.floor(exT/EXC)*EXC+(+e.target.value/1000)*EXC;exFrame()};
-  $("exX").onclick=closeEx;$("exClose2").onclick=closeEx;$("exPage").onclick=e=>{if(e.target.id==="exPage")closeEx()};
+  $("exX").onclick=closeEx;$("exPage").onclick=e=>{if(e.target.id==="exPage")closeEx()};
   $("exDone").onclick=()=>{if(!Q[4][3]){Q[4][3]=true;qKeep=4;drawQ();save();fx(4)}closeEx()};
   $("exPic").innerHTML=ico("bolt",22);$("exWarnIc").innerHTML=ico("alert",20)}
 function exPlayUI(){$("exPlay").textContent=exPlay?"Pause":"Play";$("exPlay").setAttribute("aria-label",exPlay?"Pause":"Play")}
+var exSi=0;
+function exStepDraw(){const st=EXP[exI].steps;exSi=Math.max(0,Math.min(st.length-1,exSi));$("exStep").textContent=st[exSi];$("exSn").textContent=exSi+1;$("exSc").textContent=(exSi+1)+" of "+st.length;$("exPrev").disabled=exSi===0;$("exNext").disabled=exSi===st.length-1}
+function exTab(t){document.querySelectorAll("#exSeg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.t===t)));[0,1,2].forEach(k=>$("exP"+k).hidden=k!==t)}
+document.getElementById("exSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(b)exTab(+b.dataset.t)});
+document.getElementById("exPrev").onclick=()=>{exSi--;exStepDraw()};document.getElementById("exNext").onclick=()=>{exSi++;exStepDraw()};
 function exSel(i){exI=i;const x=EXP[i];exT=RM?EXC*.47:0;
   document.querySelectorAll("#exTabs button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.i===i)));
-  $("exName").textContent=x.n;$("exSets").textContent=x.sets+" · your programme sets the load";
-  $("exSteps").innerHTML=x.steps.map(t=>`<li><span>${t}</span></li>`).join("");$("exMis").textContent=x.mis;$("exWhy").textContent=x.why;
+  $("exName").textContent=x.n;$("exSets").textContent=x.sets;exSi=0;exTab(0);
+  exStepDraw();$("exMis").textContent=x.mis;$("exWhy").textContent=x.why;
   $("exMus").innerHTML=x.mus.map(m=>`<span>${m}</span>`).join("");$("exSvg").setAttribute("aria-label","Animated demonstration of the "+x.n.toLowerCase());
   $("ex_pl").style.display=$("ex_pl2").style.display="";exFrame()}
 function exFrame(){const x=EXP[exI],u=(exT%EXC)/EXC,[d,sg]=exD(u),p=x.pose(d),set=(id,a,b)=>["a","b"].forEach(k=>{const e=$("ex_"+id+k);e.setAttribute("x1",a[0].toFixed(1));e.setAttribute("y1",a[1].toFixed(1));e.setAttribute("x2",b[0].toFixed(1));e.setAttribute("y2",b[1].toFixed(1))});
