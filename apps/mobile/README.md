@@ -2,6 +2,12 @@
 
 The app each astronaut uses on their phone, as an installable web app (PWA): React + Vite + TypeScript. It connects only to the **moon** server. Its look comes from the prototype in `apps/landing/index.html`.
 
+## What it shows now
+
+Since 15 Nov the app shows the dashboard's own screens (`apps/web`), imported through the `@mooncare/web` alias in `src/main.tsx`: sign-in, the crew list, Today, Body, Data, Alerts, the page of a parameter, and the possible infection. One copy of the code and of the look for both apps. What this app adds is being installable and its service worker.
+
+The earlier screens described below (Vitals, Sleep, Checklist, Dr. Nova, the shelter drill, the copy of the panel for when there is no network) are kept in `src/App.tsx`, `src/screens/` and `src/wellbeing/`, with their styles in `src/styles/theme.css`, and are not shown. To bring them back, render `App` from `src/main.tsx` again with `theme.css` and `web-ui.css`.
+
 ## Run
 
 The moon server must be running on port 8000 (see the main README).

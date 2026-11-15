@@ -1,0 +1,5 @@
+/* What an installed app needs over the dashboard's stylesheet: with viewport-fit=cover the page runs under
+   the notch, so the screens start below it. */
+#root {
+  padding-top: env(safe-area-inset-top, 0px);
+}
