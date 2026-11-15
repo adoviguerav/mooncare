@@ -420,9 +420,10 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .hwv{animation:hwave 4.5s linear infinite}@keyframes hwave{to{transform:translateX(-75px)}}
 .hrip{fill:none;stroke:#cffaff;stroke-width:1.4;transform-box:fill-box;transform-origin:center;animation:hrip .9s ease-out forwards}@keyframes hrip{from{transform:scale(.3);opacity:.9}to{transform:scale(3.4);opacity:0}}
 .hjet,.hcs{stroke-dasharray:3 7;animation:hflow .45s linear infinite}@keyframes hflow{to{stroke-dashoffset:-10}}
+.har{stroke-dasharray:4 26;animation:harf .9s linear infinite}@keyframes harf{to{stroke-dashoffset:-30}}
 .hsp{transform-box:fill-box;transform-origin:center;animation:hsp 1.8s ease-in-out infinite}@keyframes hsp{50%{opacity:.15;transform:scale(.55)}}
 #hydCard.full #hGl{animation:hpulse 2.4s ease-in-out infinite}@keyframes hpulse{50%{opacity:.5}}
-@media(prefers-reduced-motion:reduce){.hwv,.hjet,.hcs,.hsp,.hrip,#hydCard.full #hGl{animation:none}.hcs{stroke-dasharray:none}}
+@media(prefers-reduced-motion:reduce){.hwv,.hjet,.hcs,.hsp,.hrip,#hydCard.full #hGl{animation:none}.hcs{stroke-dasharray:none}.har{display:none}}
 </style>
 </head>
 <body>
@@ -1562,6 +1563,7 @@ function hydBuild(){const wv='<g class="hwv"><path d="M-150 0 q18.75 -4 37.5 0'+
   const star=[[30,10],[62,-22],[238,-26],[272,40],[22,70],[282,110],[104,-28],[196,-16]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.5}" fill="#dffbff" opacity="${.35+i%3*.2}"/>`).join("");
   const sp=[[56,34],[246,22],[270,92],[34,96],[214,-8],[92,-14]].map((x,i)=>`<path class="hsp" d="M${x[0]} ${x[1]-5} L${x[0]+1.4} ${x[1]-1.4} L${x[0]+5} ${x[1]} L${x[0]+1.4} ${x[1]+1.4} L${x[0]} ${x[1]+5} L${x[0]-1.4} ${x[1]+1.4} L${x[0]-5} ${x[1]} L${x[0]-1.4} ${x[1]-1.4}Z" fill="#dffbff" style="animation-delay:${i*.35}s;display:none"/>`).join("");
   const BOWL="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z",CUP="M104 62 C104 80 124 88 150 88 C176 88 196 80 196 62 Z";
+  const ARCS=[[16,-62],[34,-44],[54,-24],[76,-2],[100,22]].flatMap(a=>[-1,1].map(sg=>`M150 52 Q${150+sg*a[0]/2} ${2*(a[1]-40)} ${150+sg*a[0]} 106`));
   $("hydSvg").innerHTML=`<title id="hydT">Hydration fountain</title><defs>
   <linearGradient id="hWat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff3ff" stop-opacity=".9"/><stop offset=".3" stop-color="#27b9ee" stop-opacity=".88"/><stop offset="1" stop-color="#0a4c9c" stop-opacity=".92"/></linearGradient>
   <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient>
@@ -1579,8 +1581,8 @@ function hydBuild(){const wv='<g class="hwv"><path d="M-150 0 q18.75 -4 37.5 0'+
   <g id="hCasc" style="display:none" fill="none" stroke="#bff4ff" stroke-width="1.8" stroke-linecap="round" opacity=".8"><path id="hC1" class="hcs" d="M121 64 Q109 74 107 120"/><path id="hC2" class="hcs" d="M179 64 Q191 74 193 120"/></g>
   <path d="M120 62 Q150 82 180 62 Z" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.2"/><ellipse cx="150" cy="62" rx="30" ry="4" fill="none" stroke="#cfeeff" stroke-opacity=".6" stroke-width="1.2"/>
   <rect x="148" y="53" width="4" height="10" rx="1.500" fill="#cfeeff" opacity=".8"/>
-  <path id="hJet" class="hjet" d="M150 52 L150 -46" stroke="#cffaff" stroke-width="3.4" stroke-linecap="round" fill="none" opacity=".85" style="display:none"/>
-  <g id="hStat" fill="none" stroke="#bff4ff" stroke-width="2.2" stroke-linecap="round" opacity=".8" style="display:none"><path d="M150 52 Q76 -8 56 100"/><path d="M150 52 Q224 -8 244 100"/><path d="M150 52 Q112 4 96 100"/><path d="M150 52 Q188 4 204 100"/></g>
+  <path id="hJet" class="hjet" d="M150 52 L150 -58" stroke="#cffaff" stroke-width="3.4" stroke-linecap="round" fill="none" opacity=".85" style="display:none"/>
+  <g id="hStat" fill="none" stroke-linecap="round" style="display:none"><g stroke="#8ff3ff" stroke-width="5" opacity=".16">${ARCS.map(d=>`<path d="${d}"/>`).join("")}</g><g stroke="#dff8ff" stroke-width="1.5" opacity=".6">${ARCS.map(d=>`<path d="${d}"/>`).join("")}</g><g stroke="#ffffff" stroke-width="2.6" opacity=".95">${ARCS.map((d,k)=>`<path class="har" style="animation-delay:${k*-.17}s" d="${d}"/>`).join("")}</g></g>
   <path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".5" stroke-width="1.3"/>
   <path d="M56 114 C58 138 70 154 94 164" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>
   <ellipse cx="150" cy="102" rx="108" ry="10" fill="none" stroke="#cfeeff" stroke-opacity=".5" stroke-width="1.3"/>
@@ -1607,21 +1609,21 @@ function hydDraw(instant){const g=hydGoalFor(ME),lvT=Math.min(1,HYD.ml/g),full=H
   const py=hydY(Math.min(1,ex/g));$("hPace").setAttribute("y1",py);$("hPace").setAttribute("y2",py);$("hPace").style.display=full?"none":"";
   document.querySelectorAll(".hg").forEach(e=>{const on=lvT>=(+e.dataset.i+1)/4-.001;e.setAttribute("fill",on?"#2fd8ff":"#17314d");e.setAttribute("stroke",on?"#dffbff":"#6f8cab");e.style.filter=on?"drop-shadow(0 0 4px #2fd8ff)":""});
   $("hGl").setAttribute("opacity",(.18+lvT*.3).toFixed(2));
-  $("hJet").style.display=full&&!RM?"":"none";$("hStat").style.display=full&&RM?"":"none";document.querySelectorAll(".hsp").forEach(e=>e.style.display=full&&!RM?"":"none");
+  $("hJet").style.display=full&&!RM?"":"none";$("hStat").style.display=full?"":"none";document.querySelectorAll(".hsp").forEach(e=>e.style.display=full&&!RM?"":"none");
   hydWater();if(full&&!wasFull&&!instant&&!$("hydPage").hidden)hydBurst()}
 function hydWater(){const lv=HYD.lv,y=hydY(lv);$("hWt").setAttribute("transform","translate(0 "+y.toFixed(1)+")");$("hSurf").setAttribute("rx",hydHW(y).toFixed(1));
   $("hUp").setAttribute("opacity",lv>0?.85:0);const on=lv>=.5&&!HYD.full;$("hCasc").style.display=on?"":"none";
   if(on){const wy=(y+1).toFixed(1);$("hC1").setAttribute("d","M121 64 Q109 74 107 "+wy);$("hC2").setAttribute("d","M179 64 Q191 74 193 "+wy)}}
 function hydSpawn(x,y,vx,vy,r,fill){if(HYD.p.length>260)return;const c=document.createElementNS(NS,"circle");if(fill)c.setAttribute("fill",fill);c.setAttribute("r",r||2.2);c.setAttribute("cx",x);c.setAttribute("cy",y);$("hyP").appendChild(c);HYD.p.push({c,x,y,vx,vy})}
-function hydRipple(x,y){if(++HYD.rip%3)return;const e=document.createElementNS(NS,"ellipse");e.setAttribute("class","hrip");e.setAttribute("cx",x);e.setAttribute("cy",y);e.setAttribute("rx",6);e.setAttribute("ry",1.8);$("hyR").appendChild(e);setTimeout(()=>e.remove(),950)}
-function hydBurst(){if(RM)return;for(let i=0;i<110;i++){const a=(Math.random()-.5)*2;hydSpawn(150,52,Math.sin(a)*(40+Math.random()*130),-(170+Math.random()*170),2+Math.random()*1.4)}for(let i=0;i<18;i++){const a=(Math.random()-.5)*2.2;hydSpawn(150,52,Math.sin(a)*(60+Math.random()*130),-(200+Math.random()*150),2.6,i%2?"#ffb84a":"#fff6d8")}hydKick()}
+function hydRipple(x,y,f){if(!f&&++HYD.rip%3)return;const e=document.createElementNS(NS,"ellipse");e.setAttribute("class","hrip");e.setAttribute("cx",x);e.setAttribute("cy",y);e.setAttribute("rx",6);e.setAttribute("ry",1.8);$("hyR").appendChild(e);setTimeout(()=>e.remove(),950)}
+function hydBurst(){if(RM)return;for(let i=0;i<60;i++){const a=(Math.random()-.5)*1.6;hydSpawn(150,52,Math.sin(a)*(30+Math.random()*100),-(160+Math.random()*150),2+Math.random()*1.2)}for(let i=0;i<18;i++){const a=(Math.random()-.5)*2.2;hydSpawn(150,52,Math.sin(a)*(60+Math.random()*130),-(200+Math.random()*150),2.6,i%2?"#ffb84a":"#fff6d8")}hydKick()}
 function hydPour(ml){if(RM)return;const n=Math.min(26,Math.max(5,Math.round(ml/20)));for(let i=0;i<n;i++)hydSpawn(150+(Math.random()-.5)*56,-30-Math.random()*14,(Math.random()-.5)*14,40+Math.random()*50,2)}
 function hydAdd(ml){HYD.ml=Math.min(hydGoalFor(ME)*1.6,HYD.ml+ml);HYD.log.push(ml);hydSave();hydPour(ml);try{buzz([18])}catch(e){}hydDraw();hydKick()}
 function hydKick(){if(!HYD.raf){HYD.last=0;HYD.raf=requestAnimationFrame(hydTick)}}
 function hydTick(ts){HYD.raf=0;if($("hydPage").hidden)return;
   const dt=HYD.last?Math.min(.05,(ts-HYD.last)/1000):.016;HYD.last=ts;
   if(RM)HYD.lv=HYD.target;else HYD.lv+=(HYD.target-HYD.lv)*Math.min(1,dt*3.2);if(Math.abs(HYD.target-HYD.lv)<.002)HYD.lv=HYD.target;hydWater();
-  if(HYD.full&&!RM){HYD.acc+=dt*70;while(HYD.acc>=1){HYD.acc--;const a=(Math.random()-.5)*1.7;hydSpawn(150,52,Math.sin(a)*(30+Math.random()*95),-(150+Math.random()*130),2)}}
+  if(HYD.full&&!RM){HYD.acc+=dt*20;while(HYD.acc>=1){HYD.acc--;const a=(Math.random()-.5)*.5;hydSpawn(150,-52,Math.sin(a)*40,20+Math.random()*30,1.6)}HYD.rt=(HYD.rt||0)+dt;if(HYD.rt>.12){HYD.rt=0;const d=[18,36,56,78,100][Math.floor(Math.random()*5)]*(Math.random()<.5?-1:1);hydRipple(150+d,hydY(HYD.lv)+2,1)}}
   const wy=hydY(HYD.lv)+2;
   for(let i=HYD.p.length-1;i>=0;i--){const q=HYD.p[i];q.vy+=300*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.vy>0&&q.y>=wy&&q.x>46&&q.x<254){hydRipple(q.x,wy);q.c.remove();HYD.p.splice(i,1)}else if(q.y>240){q.c.remove();HYD.p.splice(i,1)}else{q.c.setAttribute("cx",q.x.toFixed(1));q.c.setAttribute("cy",q.y.toFixed(1))}}
   if(HYD.full||HYD.p.length||HYD.lv!==HYD.target)HYD.raf=requestAnimationFrame(hydTick)}
