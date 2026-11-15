@@ -5,7 +5,11 @@ import { Logo } from '../components/Logo'
 import { useLoad } from '../lib/useLoad'
 
 const PIN_LENGTH = 6
-const ROLE_LABEL: Record<string, string> = { commander: 'Commander', crew_member: 'Crew member' }
+const ROLE_LABEL: Record<string, string> = {
+  commander: 'Commander',
+  medical_officer: 'Medical officer',
+  crew_member: 'Crew member',
+}
 
 const initials = (name: string) =>
   name

@@ -13,6 +13,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 
 from app.config import (
     BLOOD_COUNT_CSV,
@@ -29,7 +30,7 @@ from app.config import (
 )
 from app.moods import MOOD_DAY_COUNT_IDS, MOOD_WINDOW_DAYS
 from app.schemas import CrewRole
-from seed_content import DAILY_TASKS, INDICATORS, RULES, SOURCES, get_routine
+from seed_content import DAILY_TASKS, HYDRATION_GOALS, HYDRATION_SOURCE, INDICATORS, RULES, SOURCES, get_routine
 
 # Inspiration4, UTC. Draw labels count days from these: L-92 is launch minus 92, R+45 is landing plus 45.
 LAUNCH_DATE = date(2021, 9, 16)
@@ -120,6 +121,8 @@ class CrewPairing:
     lifesnaps_id: str
     lifesnaps_offset_days: int = 0
     role: CrewRole = "crew_member"
+    # Of the fictional profile, only to pick the hydration goal. The four with a blood panel match their astronaut
+    sex: Literal["female", "male"] | None = None
 
 
 @dataclass(frozen=True)
@@ -167,6 +170,7 @@ CREW = [
     # -77 days puts the volunteer's last mood entry (2022-01-17) on 2021-11-01, the day before the demo date.
     CrewPairing(
         "Eva Lindqvist",
+        sex="female",
         inspiration4_code="C003",
         lifesnaps_id="621e2f9167b776a240011ccb",
         lifesnaps_offset_days=-77,
@@ -175,12 +179,14 @@ CREW = [
     # +132 days puts the last day of this volunteer's tense fortnight (2021-06-23) on the demo date.
     CrewPairing(
         "Mateo Vargas",
+        sex="male",
         inspiration4_code="C001",
         lifesnaps_id="621e2fce67b776a240279baa",
         lifesnaps_offset_days=132,
     ),
     CrewPairing(
         "Amara Okafor",
+        sex="female",
         inspiration4_code="C002",
         lifesnaps_id="621e366567b776a24076a727",
         lifesnaps_offset_days=-75,
@@ -189,6 +195,7 @@ CREW = [
     ),
     CrewPairing(
         "Liam Novak",
+        sex="male",
         inspiration4_code="C004",
         lifesnaps_id="621e337667b776a240ce78ab",
         lifesnaps_offset_days=98,
@@ -198,12 +205,14 @@ CREW = [
     # complete. Each offset puts the volunteer's best fortnight (14 complete days of 14) on the demo date.
     CrewPairing(
         "Sofia Marchetti",
+        sex="female",
         inspiration4_code=None,
         lifesnaps_id="621e33b067b776a240f39e56",
         lifesnaps_offset_days=100,
     ),
     CrewPairing(
         "Kenji Mori",
+        sex="male",
         inspiration4_code=None,
         lifesnaps_id="621e32af67b776a24045b4cf",
         lifesnaps_offset_days=99,
@@ -443,8 +452,9 @@ def build_rules_sql() -> str:
 
 
 def build_crew_sql(crew: list[CrewPairing]) -> str:
-    rows = [(position, pairing.name, pairing.role) for position, pairing in enumerate(crew, start=1)]
-    return with_header(build_inserts("dat.crew_member", ("id", "name", "role"), rows) + reset_identity("dat.crew_member"))
+    rows = [(position, pairing.name, pairing.role, pairing.sex) for position, pairing in enumerate(crew, start=1)]
+    columns = ("id", "name", "role", "sex")
+    return with_header(build_inserts("dat.crew_member", columns, rows) + reset_identity("dat.crew_member"))
 
 
 def build_readings_sql(crew: list[CrewPairing], dataset_files: DatasetFiles) -> str:
@@ -463,6 +473,12 @@ def build_daily_tasks_sql() -> str:
     return with_header(build_inserts("cfg.daily_task", columns, rows))
 
 
+def build_hydration_goals_sql() -> str:
+    columns = ("sex", "total_water_ml", "drinks_share", "source")
+    rows = [(goal.sex, goal.total_water_ml, goal.drinks_share, HYDRATION_SOURCE) for goal in HYDRATION_GOALS]
+    return with_header(build_inserts("cfg.hydration_goal", columns, rows))
+
+
 def build_seed_files(crew: list[CrewPairing], dataset_files: DatasetFiles) -> dict[str, str]:
     """File name to content, in the order they must be loaded."""
     builders: dict[str, Callable[[], str]] = {
@@ -470,6 +486,7 @@ def build_seed_files(crew: list[CrewPairing], dataset_files: DatasetFiles) -> di
         "11_cfg_indicators.sql": build_indicators_sql,
         "12_cfg_rules.sql": build_rules_sql,
         "13_cfg_daily_tasks.sql": build_daily_tasks_sql,
+        "14_cfg_hydration_goals.sql": build_hydration_goals_sql,
         "20_dat_crew.sql": lambda: build_crew_sql(crew),
         "21_dat_readings.sql": lambda: build_readings_sql(crew, dataset_files),
     }

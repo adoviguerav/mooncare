@@ -50,7 +50,8 @@ def test_rebuild_deletes_everything_and_loads_it_again(connection: psycopg.Conne
 def test_loads_the_data_when_the_tables_exist_but_are_empty(connection: psycopg.Connection) -> None:
     load_database(connection, rebuild=False)
     connection.execute(
-        "TRUNCATE his.auth_event, dat.session, dat.app_user, dat.task_completion, dat.reading, "
+        "TRUNCATE his.auth_event, dat.session, dat.app_user, dat.task_completion, dat.hydration_drink, "
+        "dat.breathing_session, cfg.hydration_goal, dat.reading, "
         "dat.crew_member, cfg.daily_task, cfg.rule, cfg.indicator, cfg.source"
     )
 

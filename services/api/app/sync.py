@@ -14,9 +14,10 @@ on both servers, whether it worked or not. Deleted rows are not synchronised: th
 
 from collections.abc import Sequence
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any, Literal, Protocol
 
-from sqlalchemy import Date, DateTime, Table, literal_column, select
+from sqlalchemy import Date, DateTime, Numeric, Table, literal_column, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -34,11 +35,14 @@ EARTH_TABLES: list[Table] = [
     models.CrewMember.__table__,  # type: ignore[list-item]
     models.AppUser.__table__,  # type: ignore[list-item]  # users and PIN hashes: the crew signs in with no link
     models.DailyTask.__table__,  # type: ignore[list-item]
+    models.HydrationGoal.__table__,  # type: ignore[list-item]
 ]
 # Written on the moon and sent to earth
 MOON_TABLES: list[Table] = [
     models.Reading.__table__,  # type: ignore[list-item]
     models.TaskCompletion.__table__,  # type: ignore[list-item]
+    models.HydrationDrink.__table__,  # type: ignore[list-item]
+    models.BreathingSession.__table__,  # type: ignore[list-item]
 ]
 
 ROWS_PER_PUSH = 5000  # one push request carries at most this many rows; the rest go in the next ones
@@ -62,7 +66,9 @@ def now() -> datetime:
 
 
 def to_json_value(value: Any) -> Any:
-    # date covers datetime too: both travel as ISO 8601 text
+    # date covers datetime too: both travel as ISO 8601 text. A NUMERIC travels as text, so no digit is lost
+    if isinstance(value, Decimal):
+        return str(value)
     return value.isoformat() if isinstance(value, date) else value
 
 
@@ -74,6 +80,8 @@ def from_json_value(table: Table, column: str, value: Any) -> Any:
         return datetime.fromisoformat(value)
     if isinstance(column_type, Date):
         return date.fromisoformat(value)
+    if isinstance(column_type, Numeric):
+        return Decimal(value)
     return value
 
 

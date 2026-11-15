@@ -335,7 +335,7 @@ def test_the_http_client_talks_to_the_earth_endpoints(earth: Node, serve: Callab
     changes, to_seq = earth_server.pull(0)
     received = earth_server.push({"dat.reading": []})
 
-    assert set(changes) == {"cfg.source", "cfg.indicator", "cfg.rule", "cfg.daily_task", "dat.crew_member"}
+    assert set(changes) == {"cfg.source", "cfg.indicator", "cfg.rule", "cfg.daily_task", "cfg.hydration_goal", "dat.crew_member"}
     assert to_seq > 0
     assert received == 0
 

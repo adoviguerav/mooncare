@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { NetworkError, api } from '@mooncare/api'
 import type { MoodId, PanelIndicator } from '@mooncare/api'
-import { HistoryChart, Ring } from '../components/Charts'
+import { HistoryChart } from '../components/Charts'
 import { MOODS, formatReading, isCheckinMood, vitalCards } from '../lib/indicators'
 import { queueCheckin, readPendingCheckins } from '../lib/offline'
 import { useLoad } from '../lib/useLoad'
 import type { Connection, ScreenProps } from './CrewApp'
 import { IndicatorCard } from './VitalsScreen'
+import { DailyCare } from '../wellbeing/DailyCare'
+import { FlameIcon, TaskIcon, VitalsRing, greeting, readinessLine, ringOf } from '../wellbeing/Readiness'
 
 export function TodayScreen({
   me,
@@ -15,6 +17,7 @@ export function TodayScreen({
   panel,
   onOpenIndicator,
   onCheckinSaved,
+  onOpenTab,
   pendingCheckins,
   connection,
 }: ScreenProps & { pendingCheckins: number; connection: Connection }) {
@@ -22,46 +25,48 @@ export function TodayScreen({
   const cards = vitalCards(panel.indicators)
   const withReading = cards.filter((indicator) => indicator.reading)
   // The ring counts the vital signs with a reading, plus the mood rules: the moods are private, their alerts are not
-  const moodAlerts = alerts.filter((indicator) => !vitalCards([indicator]).length).length
-  const checked = withReading.length + moodAlerts
-  const inRange = withReading.filter((indicator) => !indicator.broken_rule).length
-  const share = checked ? Math.round((inRange / checked) * 100) : 0
-  // Streak, XP and level come from the server: the checklist of the day and everything done up to it
+  const ringVitals = ringOf(withReading)
+  const readiness = readinessLine(ringVitals)
+  const heartRate = panel.indicators.find((indicator) => indicator.id === 'heart_rate')?.reading?.value ?? null
+  // The streak and the tasks come from the server: the checklist of the day
   const checklist = useLoad(() => api.checklist(crewMemberId, today), [crewMemberId, today, pendingCheckins, panel])
   const progress = checklist.data?.progress
+  const tasksTotal = checklist.data?.tasks.length ?? 0
+  const tasksDone = checklist.data?.tasks.filter((task) => task.done).length ?? 0
 
   return (
     <main>
       <section className="hero">
         <div className="card">
-          <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 190 }}>
-              <h2>Good morning, {me.role === 'commander' ? `Commander ${me.display_name}` : me.display_name}</h2>
-              <p className="note" style={{ marginTop: -6 }}>
-                {alerts.length === 0
-                  ? 'Every parameter with a rule is inside its limits today.'
-                  : `${alerts.length} parameter${alerts.length > 1 ? 's need' : ' needs'} your attention today.`}
+          <div className="hrow">
+            <div className="hl">
+              <h2>{greeting(me)}</h2>
+              <p className={`hstat ${readiness.tone}`}>
+                <b>{readiness.strong}</b>
+                {readiness.rest}
               </p>
-              <div className="row">
-                <span>{progress ? `${progress.streak}-day check-in streak` : '…'}</span>
-                <span>{progress ? `Level ${progress.level} astronaut` : ''}</span>
-              </div>
-              <div className="xp">
-                <i style={{ width: progress ? `${(progress.level_xp / progress.next_level_xp) * 100}%` : '0%' }} />
-              </div>
-              <div className="row">
-                <span>{progress ? `${progress.xp.toLocaleString('en')} XP` : ''}</span>
-                <span>
-                  {progress ? `${(progress.next_level_xp - progress.level_xp).toLocaleString('en')} XP to Level ${progress.level + 1}` : ''}
+              <div className="pills">
+                <span className="pill2 streak">
+                  <FlameIcon />
+                  <span>
+                    <b>{progress ? progress.streak : '…'}</b> {progress?.streak === 1 ? 'day' : 'days'} in a row
+                  </span>
                 </span>
+                <button type="button" className={`pill2${tasksDone === tasksTotal && tasksTotal ? ' done' : ''}`} onClick={() => onOpenTab('list')} aria-label="Go to today's tasks">
+                  <TaskIcon />
+                  <span>
+                    <b>
+                      {tasksDone} of {tasksTotal}
+                    </b>{' '}
+                    tasks
+                  </span>
+                  <i className="pf">
+                    <u style={{ width: `${tasksTotal ? (tasksDone / tasksTotal) * 100 : 0}%` }} />
+                  </i>
+                </button>
               </div>
             </div>
-            <div className="glance" role="group" aria-label="Today at a glance">
-              <Ring share={share} text={`${inRange}/${checked}`} color={alerts.length ? 'var(--warn)' : 'var(--cy)'} />
-              <div className="note" style={{ textAlign: 'center', margin: '2px 0 0', fontSize: 12 }}>
-                in range
-              </div>
-            </div>
+            <VitalsRing vitals={ringVitals} heartRate={heartRate} onOpen={onOpenIndicator} />
           </div>
         </div>
         {checkedInToday(panel.indicators, crewMemberId, today) ? (
@@ -70,6 +75,8 @@ export function TodayScreen({
           <MoodCheckin crewMemberId={crewMemberId} today={today} onSaved={onCheckinSaved} connection={connection} />
         )}
       </section>
+
+      <DailyCare crewMemberId={crewMemberId} today={today} canLog={me.crew_member_id === crewMemberId} />
 
       <section className="card nova">
         <div style={{ fontSize: 28 }} aria-hidden="true">

@@ -32,11 +32,12 @@ Each table is written on one server only. A row never changes on both sides, so 
 | Data | Tables | Written on | Synchronised |
 | :-- | :-- | :-- | :-- |
 | Readings and check-ins | `dat.reading` | Moon | Moon → earth (push) |
-| Configuration | `cfg.source`, `cfg.indicator`, `cfg.rule` | Earth | Earth → moon (pull) |
-| Crew | `dat.crew_member` | Earth | Earth → moon (pull) |
+| Ticked tasks, drinks and breathing sessions | `dat.task_completion`, `dat.hydration_drink`, `dat.breathing_session` | Moon | Moon → earth (push) |
+| Configuration | `cfg.source`, `cfg.indicator`, `cfg.rule`, `cfg.daily_task`, `cfg.hydration_goal` | Earth | Earth → moon (pull) |
+| Crew and users | `dat.crew_member`, `dat.app_user` | Earth | Earth → moon (pull) |
 | Sync history | `his.sync_operation` | Each server its own | Not synchronised |
 
-Earth refuses any table the moon is not allowed to send: the moon can never overwrite a rule or an indicator. When users and authentication arrive, the users will be one more table written on earth and pulled by the moon, so the moon can sign people in without a link.
+Earth refuses any table the moon is not allowed to send: the moon can never overwrite a rule or an indicator. The users are written on earth and pulled by the moon, so the moon can sign people in without a link. Unticking a task or undoing a drink changes a column instead of deleting the row, because deletions are not synchronised.
 
 ## 3. How a sync works
 

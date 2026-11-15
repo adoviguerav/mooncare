@@ -103,6 +103,27 @@ DAILY_TASKS = [
     DailyTask(id="read_alerts", title="Read today’s alerts and what to do", xp=30, completion="manual"),
 ]
 
+@dataclass(frozen=True)
+class HydrationGoal:
+    sex: str
+    total_water_ml: int  # adequate total water intake a day, from food and drinks
+    drinks_share: float  # the part of it that comes from drinks
+
+
+HYDRATION_SOURCE = (
+    "EFSA Panel on Dietetic Products, Nutrition and Allergies (2010). Scientific Opinion on Dietary Reference Values "
+    "for water. EFSA Journal 8(3):1459. Adequate total water intake for adults: 2.0 L a day for women and 2.5 L for "
+    "men, with 20 to 30% coming from food, so about 75% from drinks. An Earth reference: the flight surgeon sets "
+    "space and exercise targets."
+)
+
+# The goal of the hydration fountain of the crew app. A reference, not a threshold: it raises no alert.
+HYDRATION_GOALS = [
+    HydrationGoal(sex="female", total_water_ml=2000, drinks_share=0.75),
+    HydrationGoal(sex="male", total_water_ml=2500, drinks_share=0.75),
+]
+
+
 # REVIEW: the mood names are drafts built from the LifeSnaps column names.
 MOOD_NAMES = {
     "mood_happy": "Happy",

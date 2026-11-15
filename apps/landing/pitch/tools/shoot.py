@@ -3,14 +3,18 @@
 Usage (run from apps/landing/pitch):
     python tools/shoot.py [WEB_APP_URL]
 
-- The panel, the alerts, one value and the data come from the mini demo (demo/index.html), which needs no server.
+- The sign-in of the crew app comes from its mini demo (demo-app/), served on a local port while it runs.
+- The panel, the alerts, one value and the data come from the dashboard mini demo (demo/index.html).
 - The infection case is not in the mini demo: it comes from the real web app (apps/web), at WEB_APP_URL
   (default http://localhost:5173, with the moon server running). Pass "skip" to leave that screenshot as it is.
 
 Needs Playwright and Chrome: uv run --no-project --with playwright --with pillow python tools/shoot.py
 """
 import asyncio
+import functools
+import http.server
 import sys
+import threading
 from pathlib import Path
 
 from PIL import Image
@@ -18,6 +22,8 @@ from playwright.async_api import async_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = (ROOT / "demo" / "index.html").as_uri()
+PHONE = {"width": 390, "height": 844}
+LOCAL_PORT = 5181
 WEB_APP = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5173"
 OUT = ROOT / "img" / "shots"
 W, H = 820, 1180  # tablet portrait
@@ -60,10 +66,30 @@ async def infection_shot(page):
     await page.evaluate("localStorage.clear()")
 
 
+def serve_pitch():
+    """The crew app demo is a built module app: browsers run it only over http, not from a file."""
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT))
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", LOCAL_PORT), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server
+
+
+async def app_shot(browser):
+    """The sign-in screen of the crew app mini demo, on a phone."""
+    context = await browser.new_context(viewport=PHONE, device_scale_factor=2)
+    page = await context.new_page()
+    await page.goto(f"http://127.0.0.1:{LOCAL_PORT}/demo-app/index.html")
+    await page.wait_for_timeout(2000)
+    await save(page, "app")
+    await context.close()
+
+
 async def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    server = serve_pitch()
     async with async_playwright() as p:
         browser = await p.chromium.launch(channel="chrome")
+        await app_shot(browser)
         context = await browser.new_context(viewport={"width": W, "height": H}, device_scale_factor=2)
         page = await context.new_page()
 
@@ -75,6 +101,7 @@ async def main():
         if WEB_APP != "skip":
             await infection_shot(page)
         await browser.close()
+    server.shutdown()
 
 
 asyncio.run(main())

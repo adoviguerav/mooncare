@@ -2,9 +2,11 @@
 // request goes with credentials and no token is ever handled here.
 
 import type {
+  BreathingDay,
   Checkin,
   CrewResponse,
   DailyChecklist,
+  HydrationDay,
   IndicatorDetail,
   LoginResponse,
   Me,
@@ -80,6 +82,15 @@ export const api = {
     request<DailyChecklist>('PUT', `/crew/${crewMemberId}/tasks/${date}/${taskId}`, { done }),
 
   // Moon and earth servers
+  // Hydration and breathing: reading follows the panel's access, writing is only the crew member themselves
+  hydration: (crewMemberId: number, date: string) => request<HydrationDay>('GET', `/crew/${crewMemberId}/hydration/${date}`),
+  logDrink: (crewMemberId: number, date: string, ml: number) =>
+    request<HydrationDay>('POST', `/crew/${crewMemberId}/hydration/${date}`, { ml }),
+  undoDrink: (crewMemberId: number, date: string) => request<HydrationDay>('POST', `/crew/${crewMemberId}/hydration/${date}/undo`),
+  breathing: (crewMemberId: number, date: string) => request<BreathingDay>('GET', `/crew/${crewMemberId}/breathing/${date}`),
+  logBreathing: (crewMemberId: number, date: string, breaths: number) =>
+    request<BreathingDay>('POST', `/crew/${crewMemberId}/breathing/${date}`, { breaths }),
+
   node: () => request<NodeStatus>('GET', '/node'),
   syncHistory: (limit = 20) => request<SyncOperation[]>('GET', `/sync/history?${query({ limit: String(limit) })}`),
   sync: () => request<SyncResult>('POST', '/sync'),

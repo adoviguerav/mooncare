@@ -6,7 +6,9 @@ in the same commit. Nothing here creates or alters a table.
 
 from datetime import date, datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, func
+from decimal import Decimal
+
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -64,6 +66,7 @@ class CrewMember(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     role: Mapped[str]
+    sex: Mapped[str | None]  # female or male: only to pick the hydration goal
 
 
 class Reading(Base):
@@ -165,3 +168,37 @@ class TaskCompletion(Base):
     day: Mapped[date] = mapped_column(primary_key=True)
     done: Mapped[bool]
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+# --- Hydration and breathing (database/postgresql/schema/06_wellbeing.sql) ---
+
+
+class HydrationGoal(Base):
+    __tablename__ = "hydration_goal"
+    __table_args__ = {"schema": "cfg"}
+
+    sex: Mapped[str] = mapped_column(primary_key=True)
+    total_water_ml: Mapped[int]
+    drinks_share: Mapped[Decimal] = mapped_column(Numeric(3, 2))
+    source: Mapped[str]
+
+
+class HydrationDrink(Base):
+    __tablename__ = "hydration_drink"
+    __table_args__ = {"schema": "dat"}
+
+    crew_member_id: Mapped[int] = mapped_column(ForeignKey("dat.crew_member.id"), primary_key=True)
+    drunk_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    day: Mapped[date]
+    ml: Mapped[int]
+    undone: Mapped[bool] = mapped_column(default=False)
+
+
+class BreathingSession(Base):
+    __tablename__ = "breathing_session"
+    __table_args__ = {"schema": "dat"}
+
+    crew_member_id: Mapped[int] = mapped_column(ForeignKey("dat.crew_member.id"), primary_key=True)
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    day: Mapped[date]
+    breaths: Mapped[int]

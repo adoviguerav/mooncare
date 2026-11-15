@@ -7,11 +7,13 @@ The landing page for the NASA Space Apps Challenge 2026 presentation. Open `inde
 - `index.html`: the page layout. The icon sprite stays inline, so the icons also show when the page is opened as a file.
 - `css/styles.css`: all the styles.
 - `js/i18n.js`: all the page text, in English (`en`, the default), Spanish (`es`) and Catalan (`ca`).
+- `js/bg.js`: the moving background: a slowly turning star field at three depths, a sky tint that follows the story (Earth, Moon, Mars, the emergency) and shooting stars.
 - `js/intro.js`: Alex's intro animation (Earth, stars, meteors, moon-phase logo) from `../moon-care-landing.html`, adapted to fill the hero section.
 - `js/main.js`: the team list (`TEAM`), the language switch, the countdown, the reveal on scroll, the Earth and the live demo.
 - `img/favicon.svg`: the tab icon.
 - `img/shots/`: screenshots of the app used in the feature sections.
-- `demo/`: the mini demo shown in the "Try it yourself" frame. The screens of the real app (`apps/web`) without sign-in and without a backend, so it keeps working if the live app goes down:
+- `demo-app/`: the crew app mini demo, the phone in "Try it yourself". It is `apps/mobile` built as it is by `tools/build_app_demo.py`; its calls to `/api` are answered in the browser by `demo-app/demo-api.js` from the same snapshot. Any 6-digit PIN signs in, and what the visitor does lasts until the tab closes. Only `demo-api.js` is written by hand: rebuild the rest with `python tools/build_app_demo.py` when the crew app changes.
+- `demo/`: the dashboard mini demo, the tablet in "Try it yourself". The screens of the real app (`apps/web`) without sign-in and without a backend, so it keeps working if the live app goes down:
     - `demo/index.html`, `demo/js/app.js`: profile picker, panel (Today, Data, Alerts) and the screen of one indicator. A check-in is kept only until the page closes.
     - `demo/css/app.css`: a copy of `apps/web/src/styles/index.css`. `demo/css/demo.css`: the demo strip.
     - `demo/data/snapshot.js`: a snapshot of the moon API on the demo date, 2 Nov 2021. Real data, read only.
@@ -20,7 +22,7 @@ The landing page for the NASA Space Apps Challenge 2026 presentation. Open `inde
 
 ## Common changes
 
-- **Team names:** edit `TEAM` at the top of `js/main.js`. Roles are keys from `js/i18n.js` (`role_backend`, `role_frontend`, `role_medical`, `role_member`).
+- **Team names:** edit `TEAM` at the top of `js/main.js`. Roles are keys from `js/i18n.js` (`role_backend`, `role_frontend`, `role_research`, `role_medical`, `role_member`).
 - **Text:** edit `js/i18n.js`. A key missing in one language falls back to English.
 - **New language:** copy the `en` block in `js/i18n.js`, translate it, then add the code to `LANGS` and `HTML_LANG` in `js/main.js` and a button in the `#langs` switcher in `index.html`.
 - **App changed:** copy `apps/web/src/styles/index.css` to `demo/css/app.css` again, and port any change of the screens to `demo/js/app.js`.

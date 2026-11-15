@@ -116,3 +116,19 @@ export type DailyTaskStatus = {
 export type Progress = { xp: number; level: number; level_xp: number; next_level_xp: number; streak: number }
 
 export type DailyChecklist = { date: string; tasks: DailyTaskStatus[]; progress: Progress }
+
+// --- Hydration and breathing (services/api/app/wellbeing.py) ---
+
+export type HydrationGoal = { ml: number; total_water_ml: number; drinks_share: number; source: string }
+
+export type Drink = { drunk_at: string; ml: number }
+
+export type HydrationDay = {
+  date: string
+  goal: HydrationGoal | null // null: no sex recorded for the crew member, so no reference goal
+  total_ml: number
+  drinks: Drink[]
+  full_days_in_a_row: number
+}
+
+export type BreathingDay = { date: string; sessions: number }

@@ -23,16 +23,16 @@ The crew member picks their profile and types their 6-digit PIN. The moon server
 
 | Tab | Shows | Data |
 | :-- | :-- | :-- |
-| Today | Greeting, check-in streak, level and XP, parameters in range, the mood check-in (once a day: it gives way to "Check-in done" until the next morning), Dr. Nova, the main parameters, heart rate through the day | Real |
+| Today | Greeting, how many vitals are nominal and which to check, a ring of the key vitals with the heart rate in the middle, check-in streak and tasks done (no points or levels, as in Becky's prototype), the daily care tiles (hydration fountain and breathing balloon), the mood check-in (once a day: it gives way to "Check-in done" until the next morning), Dr. Nova, the main parameters, heart rate through the day | Real |
 | Vitals | Every parameter, filtered by body system, and life support: SpO2, breathing rate and the station's radiation | Real |
 | Sleep | Duration, efficiency, time awake, asleep vs awake in bed, the last 14 nights against the sleep rule | Real |
-| Checklist | Today's tasks: the check-in and the tracker worn overnight tick themselves from the data, the others you tick. Each earns XP; 1,000 XP make a level | Real, kept on the server |
+| Checklist | Today's tasks: the check-in and the tracker worn overnight tick themselves from the data, the others you tick. The exercise task opens Becky's animated exercise guide, which can tick it | Real, kept on the server |
 | Data | Every parameter with its latest reading, rule, proposed priority and source | Real |
 | Alerts | The rules the latest readings break, with what to do; a solar storm shelter drill that times the crew | Real; the drill is practice |
 
 Tapping a parameter opens its history (7, 30 or 90 days) with the rule's limits drawn, how it is measured, why it matters, the rule and where its limit comes from, and the source of the data.
 
-Everything comes from the API. Radiation is the station's dose rate from NASA RadLab (ISS): the same reading for every crew member, not a personal dose. XP rewards the routine, never a health value. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
+Everything comes from the API. Radiation is the station's dose rate from NASA RadLab (ISS): the same reading for every crew member, not a personal dose. The hydration goal is the EFSA reference for adults (an Earth reference, not a clinical threshold: it raises no alert); drinks and breathing sessions are kept on the server and synced to earth. The server still counts XP for the checklist, but the app no longer shows it. Dr. Nova is written from the alert rules; it is not an AI yet. Sleep stages are not shown because the dataset gives them only compared with each volunteer's average, not as the share of the night.
 
 ## Without a network
 

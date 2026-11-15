@@ -23,6 +23,7 @@ export type ScreenProps = {
   panel: Panel
   onOpenIndicator: (indicatorId: string) => void
   onCheckinSaved: () => void
+  onOpenTab: (tab: Tab) => void
 }
 
 export function CrewApp({
@@ -103,6 +104,10 @@ export function CrewApp({
     panel,
     onOpenIndicator: setOpenIndicator,
     onCheckinSaved: () => void refresh(),
+    onOpenTab: (next: Tab) => {
+      setTab(next)
+      window.scrollTo({ top: 0 })
+    },
   }
 
   return (
