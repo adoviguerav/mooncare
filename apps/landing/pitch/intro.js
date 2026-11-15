@@ -142,9 +142,14 @@ function drawLogo(c, cx, cy, k, pxRatio, progress, ink, alpha) {
   row2.forEach((ch, i) => c.fillText(ch, colX(i), base2));
   c.textAlign = 'left';
   const mx = colX(2), my = base1 - capH / 2;
-  const glow = c.createRadialGradient(mx, my, 0, mx, my, R * 2.6);
-  glow.addColorStop(0, 'rgba(47,216,255,0.45)'); glow.addColorStop(1, 'rgba(47,216,255,0)');
-  c.fillStyle = glow; c.beginPath(); c.arc(mx, my, R * 2.6, 0, Math.PI * 2); c.fill();
+  // the glow follows how much of the moon is lit: gone at new moon, brightest at full moon
+  const lit = (1 - Math.cos(progress * Math.PI * 2)) / 2;
+  if (lit > 0.01) {
+    const gr = R * (1.6 + 1.0 * lit);
+    const glow = c.createRadialGradient(mx, my, 0, mx, my, gr);
+    glow.addColorStop(0, `rgba(47,216,255,${(0.45 * Math.pow(lit, 0.8)).toFixed(3)})`); glow.addColorStop(1, 'rgba(47,216,255,0)');
+    c.fillStyle = glow; c.beginPath(); c.arc(mx, my, gr, 0, Math.PI * 2); c.fill();
+  }
   drawMoon(c, mx, my, R, progress, '#d8f6ff', k * pxRatio, '#2fd8ff');
   c.fillStyle = ink; c.strokeStyle = '#2fd8ff';
 
