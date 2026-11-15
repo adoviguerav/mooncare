@@ -396,7 +396,7 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 /* breathing balloon */
 #brPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#brPage[hidden]{display:none}
 #brPage .inc{width:100%;max-width:440px;margin:0 auto}
-#brSvg{width:100%;max-width:340px;margin:8px auto 0;display:block;border-radius:22px;overflow:hidden;border:1px solid var(--line)}
+#brSvg{width:100%;max-width:340px;margin:0 auto;display:block;overflow:visible;position:relative;z-index:3;pointer-events:none}
 .brinfo{display:flex;align-items:baseline;justify-content:center;gap:12px;margin-top:12px}.brph{font-size:24px;font-weight:700}.brcnt{font-size:24px;color:var(--cy);font-weight:700;min-width:1ch}
 .brmsg{margin:4px 0 10px;text-align:center;color:var(--mute);font-size:14px}
 .brbob{animation:none}@keyframes brbob{50%{transform:translateY(-5px)}}
@@ -671,7 +671,7 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
   <div class="inc card" id="brCard">
     <button class="back x" id="brX" type="button" aria-label="Close breathing exercise">×</button>
     <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-3.3 0-6 2.5-6 5.6 0 2.6 2 5 4.2 6.4h3.6c2.200-1.400 4.200-3.800 4.200-6.400C18 5.500 15.300 3 12 3Z"/><path d="M12 3c-1.600 2-1.600 8.500 0 12M12 3c1.600 2 1.600 8.500 0 12"/><rect x="10" y="18" width="4" height="3" rx=".7"/><path d="M10.800 15 10.300 18M13.200 15l.5 3"/></svg></span>Breathing exercise</h2>
-    <svg id="brSvg" viewBox="0 0 300 340" role="img" aria-label="A hot air balloon that grows as you breathe in and shrinks as you breathe out"></svg>
+    <svg id="brSvg" viewBox="0 0 300 312" role="img" aria-label="A hot air balloon that grows as you breathe in and shrinks as you breathe out"></svg>
     <div class="brinfo" aria-live="polite"><div class="brph" id="brPh">Ready when you are</div><div class="brcnt" id="brCnt"></div></div>
     <p class="brmsg" id="brMsg"></p>
     <div class="bar" aria-hidden="true"><i id="brBar" style="width:0"></i></div>
@@ -1667,9 +1667,8 @@ function brBuild(){const W=56,N=48,wf=t=>{return t<.45?9+(W-9)*Math.pow(Math.sin
   <filter id="bCB" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="4"/></filter>
   <clipPath id="bClip"><path d="${ENV_}"/></clipPath>
   <filter id="bBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
-  <rect width="300" height="340" fill="url(#bSky)"/>${stars}
-  <g id="brCl"><g class="brcl">${cl(60,150,1)}${cl(236,200,1.2)}${cl(150,262,1.4)}${cl(280,90,.8)}${cl(24,230,.9)}</g></g>
-  <path d="M0 312 Q70 292 150 300 Q230 292 300 310 V340 H0Z" fill="url(#bHill)"/><ellipse cx="150" cy="300" rx="52" ry="5" fill="#2fd8ff" opacity=".25"/>
+    <g id="brCl"></g>
+  <ellipse cx="150" cy="298" rx="62" ry="9" fill="#2fd8ff" opacity=".12"/><ellipse cx="150" cy="298" rx="62" ry="9" fill="none" stroke="#2fd8ff" stroke-opacity=".55" stroke-width="1.2"/><ellipse cx="150" cy="298" rx="38" ry="5" fill="none" stroke="#cfeeff" stroke-opacity=".35"/>
   <g id="brB"><g class="brbob">
     <ellipse id="brAura" cx="150" cy="170" rx="100" ry="110" fill="url(#bGlow)" opacity=".7"/>
     <g id="brEnv" transform="translate(150 238)">
@@ -1708,7 +1707,7 @@ function brTick(ts){BR.raf=0;if($("brPage").hidden||BR.mode==="idle"||BR.mode===
     BR.s=RM?(BR.ph==="in"?1.38:1):(BR.ph==="in"?1+.38*e:1.38-.38*e);$("brCnt").textContent=Math.max(1,Math.ceil(d-el));
     $("brBar").style.width=((BR.round+(BR.ph==="in"?.4*u:.4+.6*u))/BR.total*100).toFixed(1)+"%";
     if(u>=1){BR.t0=ts;if(BR.ph==="in")BR.ph="out";else{BR.round++;if(BR.round>=BR.total){BR.mode="lift";BR.s=1;$("brBar").style.width="100%"}else BR.ph="in"}brLabels()}}
-  else if(BR.mode==="lift"){const u=Math.min(1,el/(RM?1:BR.T));BR.lift=RM?0:400*u*u;$("brB").style.opacity=RM?1-u:1;
+  else if(BR.mode==="lift"){const u=Math.min(1,el/(RM?1:BR.T));BR.lift=RM?0:520*u*u;$("brB").style.opacity=RM?1-u:1;
     if(u>=1){BR.mode="done";BR.sess++;brSave();brTileDraw();$("brB").style.opacity=0;brLabels()}}
   brApply();if(BR.mode==="run"||BR.mode==="lift")BR.raf=requestAnimationFrame(brTick)}
 function openBr(){$("brPage").hidden=false;document.body.style.overflow="hidden";$("brPage").scrollTop=0;if(BR.mode==="done"||BR.mode==="lift")brReset();brLabels();brApply();$("brX").focus()}
