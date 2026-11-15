@@ -394,24 +394,25 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .exstars circle{animation:extw 3.2s ease-in-out infinite}@keyframes extw{50%{opacity:.2}}
 @media(prefers-reduced-motion:reduce){.exstars circle{animation:none}}
 /* hydration fountain */
-@media(max-width:719px){.hydside{display:contents}#hydSvg{grid-column:1;grid-row:1/3;align-self:center}.hydnum,.hydmsg{grid-column:2}.hydnum{align-self:end}.hydmsg{align-self:start}.hydbtns,.hydrow{grid-column:1/-1}.hydbody{grid-template-columns:140px minmax(0,1fr)}}
-#hydCard{margin-top:16px}.hydhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hydbody{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}@media(min-width:720px){.hydbody{grid-template-columns:170px 1fr;gap:18px}}
-#hydSvg{width:100%;max-width:200px;margin:0 auto;display:block;overflow:visible}
-.hydnum{font-size:15px;color:var(--mute)}.hydnum b:first-child{font-size:28px;color:var(--ink);line-height:1.1}.hydnum b{color:var(--ink)}
-.hydmsg{margin:2px 0 8px;font-size:14px;line-height:1.4}
-.hydbtns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.hydbtns button{min-height:44px;border-radius:12px;border:1px solid rgba(47,216,255,.4);background:linear-gradient(180deg,rgba(47,216,255,.22),rgba(47,216,255,.06));color:var(--ink);font:inherit;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 4px;transition:transform .12s}
-.hydbtns button:active{transform:scale(.95)}.hydbtns small{font-weight:400;color:var(--mute);font-size:10px;white-space:nowrap}.hydbtns button{font-size:13px}.hydrow .linkbtn{width:auto;min-height:0;padding:4px 0;border:0;background:none}.hydrow .pill2{font-size:12px;padding:5px 10px}
+#hydPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#hydPage[hidden]{display:none}
+#hydPage .inc{width:100%;max-width:440px;margin:0 auto}
+.hydbody{display:grid;gap:6px;margin-top:4px}
+#hydSvg{width:100%;max-width:330px;margin:0 auto;display:block;overflow:visible}
+.hydnum{font-size:15px;color:var(--mute);display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.hydnum b:first-child{font-size:34px;color:var(--ink);line-height:1.1}.hydnum b{color:var(--ink)}.hydnum .tag{margin-left:auto;align-self:center}
+.hydmsg{margin:4px 0 12px;font-size:15px;line-height:1.4}
+.hydbtns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hydbtns button{min-height:56px;border-radius:14px;border:1px solid rgba(47,216,255,.4);background:linear-gradient(180deg,rgba(47,216,255,.22),rgba(47,216,255,.06));color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 4px;transition:transform .12s}
+.hydbtns button:active{transform:scale(.95)}.hydbtns small{font-weight:400;color:var(--mute);font-size:11px;white-space:nowrap}
 .hydbtns button.u{border-color:var(--cy);box-shadow:0 0 16px rgba(47,216,255,.45)}.hydbtns button.u small{color:var(--cy)}
-.hydrow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:6px}.hydrow .linkbtn:disabled{opacity:.4;cursor:default}
-.hydsrc{font-size:11px;margin:8px 0 0}
+.hydrow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}.hydrow .pill2{font-size:12px;padding:5px 10px}.hydrow .linkbtn{width:auto;min-height:0;padding:4px 0;border:0;background:none}.hydrow .linkbtn:disabled{opacity:.4;cursor:default}
+.hydsrc{font-size:11px;margin:12px 0 0}
+.hydmini{height:6px;border-radius:6px;background:rgba(255,255,255,.12);margin-top:8px;overflow:hidden}.hydmini i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2fd8ff,#8ff3ff);box-shadow:0 0 10px rgba(47,216,255,.6);transition:width .5s}
 .hwv{animation:hwave 4.5s linear infinite}@keyframes hwave{to{transform:translateX(-75px)}}
 .hrip{fill:none;stroke:#cffaff;stroke-width:1.4;transform-box:fill-box;transform-origin:center;animation:hrip .9s ease-out forwards}@keyframes hrip{from{transform:scale(.3);opacity:.9}to{transform:scale(3.4);opacity:0}}
-.hjet{stroke-dasharray:3 7;animation:hflow .45s linear infinite}@keyframes hflow{to{stroke-dashoffset:-10}}
+.hjet,.hcs{stroke-dasharray:3 7;animation:hflow .45s linear infinite}@keyframes hflow{to{stroke-dashoffset:-10}}
 .hsp{transform-box:fill-box;transform-origin:center;animation:hsp 1.8s ease-in-out infinite}@keyframes hsp{50%{opacity:.15;transform:scale(.55)}}
 #hydCard.full #hGl{animation:hpulse 2.4s ease-in-out infinite}@keyframes hpulse{50%{opacity:.5}}
-@media(prefers-reduced-motion:reduce){.hwv,.hjet,.hsp,.hrip,#hydCard.full #hGl{animation:none}}
+@media(prefers-reduced-motion:reduce){.hwv,.hjet,.hcs,.hsp,.hrip,#hydCard.full #hGl{animation:none}.hcs{stroke-dasharray:none}}
 </style>
 </head>
 <body>
@@ -595,20 +596,6 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 <p class="note" id="sumline"></p>
 <div class="grid" id="grid"></div>
 
-<section class="card" id="hydCard">
-  <div class="hydhead"><h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2c3.4 4.1 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.1-5.9 5.5-10Z"/></svg></span>Hydration fountain</h2><span class="tag ok" id="hydTag">On pace</span></div>
-  <div class="hydbody">
-    <svg id="hydSvg" viewBox="0 -34 300 244" role="img" aria-label="Hydration fountain"></svg>
-    <div class="hydside">
-      <div class="hydnum"><b id="hydNow">0.0</b><span> of <b id="hydGoal">1.9</b> L today</span></div>
-      <p class="hydmsg" id="hydMsg"></p>
-      <div class="hydbtns" id="hydBtns" role="group" aria-label="Log a drink"></div>
-      <div class="hydrow"><span class="pill2" id="hydStk"><span><b id="hydStkN">3</b> days with a full fountain</span></span><button type="button" class="linkbtn" id="hydUndo">Undo last drink</button></div>
-    </div>
-  </div>
-  <p class="note hydsrc" id="hydSrc"></p>
-</section>
-
 <section class="card" id="qCard">
   <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg></span>Next up</h2>
   <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
@@ -669,6 +656,22 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 </section>
 <section id="bsPage" role="dialog" aria-modal="true" aria-label="Body system details" hidden>
   <div class="inc card glassx"><button class="back x" id="bsX" type="button" aria-label="Close"><span aria-hidden="true">×</span></button><div id="bsBody"></div></div>
+</section>
+<section id="hydPage" role="dialog" aria-modal="true" aria-label="Hydration fountain" hidden>
+  <div class="inc card" id="hydCard">
+    <button class="back x" id="hydX" type="button" aria-label="Close hydration fountain">×</button>
+    <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2c3.4 4.1 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.1-5.9 5.5-10Z"/></svg></span>Hydration fountain</h2>
+    <div class="hydbody">
+      <svg id="hydSvg" viewBox="0 -34 300 244" role="img" aria-label="Hydration fountain"></svg>
+      <div class="hydside">
+        <div class="hydnum"><b id="hydNow">0.0</b><span> of <b id="hydGoal">1.9</b> L today</span><span class="tag ok" id="hydTag">On pace</span></div>
+        <p class="hydmsg" id="hydMsg"></p>
+        <div class="hydbtns" id="hydBtns" role="group" aria-label="Log a drink"></div>
+        <div class="hydrow"><span class="pill2"><span><b id="hydStkN">3</b> days with a full fountain</span></span><button type="button" class="linkbtn" id="hydUndo">Undo last drink</button></div>
+      </div>
+    </div>
+    <p class="note hydsrc" id="hydSrc"></p>
+  </div>
 </section>
 <section id="exPage" role="dialog" aria-modal="true" aria-label="Exercise guide" hidden>
   <div class="inc card">
@@ -867,7 +870,7 @@ function render(){
     return `<article class="card m ptile cp${a?" w":""}" data-v="${M.indexOf(m)}" ${BS[m.name]?`tabindex="0" role="button" data-i="${M.indexOf(m)}" aria-label="Open ${m.name} history" style="cursor:pointer"`:""}><div class="top"><span class="pic">${ico(MI[m.name])}</span><span class="pn">${m.name}</span><span class="tag ${a?"warn":"ok"}">${a?"Alert":"Nominal"}</span></div>
     <div class="val">${m.val} <small>${m.unit}</small></div>
     ${m.name==="Heart rate"?LIVE:spark(m,true)}${a?`<p class="note">${m.msg}</p>`:""}
-    </article>`}).join("");
+    </article>`}).join("")+hydTile();
 }
 render();
 
@@ -1055,9 +1058,9 @@ setInterval(()=>{if($("paramPage").hidden||RM)return;const t=Date.now(),d=PD[ME]
 function view(){const h=location.hash;return h==="#admin"?"admin":(!h||h==="#landing")?"landing":"crew"}
 function route(){const v=view();$("tabs").hidden=v!=="crew";$("emFab").hidden=v!=="crew";if(v!=="crew"){closeEm();$("paramPage").hidden=true;$("bodyPage").hidden=true;$("msPage").hidden=true;$("bsPage").hidden=true}$("landing").hidden=v!=="landing";$("adminApp").hidden=v!=="admin";$("crewApp").hidden=v!=="crew";if(v!=="admin"){$("cdPage").hidden=true;$("gsPage").hidden=true}
   if(v==="admin")drawAdmin();
-  if(v!=="crew"){closeEx();window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
+  if(v!=="crew"){closeEx();closeHyd();window.inCrew=false;$("detPage").hidden=true;document.body.style.overflow=(v==="admin"&&!$("cdPage").hidden)?"hidden":"";window.scrollTo(0,0);return}
   if(!window.inCrew){window.inCrew=true;setTimeout(()=>{countAll();glanceIn()},80)}const a=location.hash==="#alerts",p=location.hash==="#parameters",bd=location.hash==="#body";$("home").hidden=p||bd;$("paramPage").hidden=!p;$("bodyPage").hidden=!bd;if(bd){drawBody();window.scrollTo(0,0)}$("alertsPage").hidden=!a;document.body.style.overflow=a?"hidden":"";if(p){drawParams();window.scrollTo(0,0)}if(a){drawAlerts();$("back").focus()}}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("exPage").hidden){closeEx();return}if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&view()==="crew"){if(!$("hydPage").hidden){closeHyd();return}if(!$("exPage").hidden){closeEx();return}if(!$("msPage").hidden){closeMS();return}if(!$("bsPage").hidden){closeBS();return}location.hash="dashboard"}});$("alertsPage").onclick=e=>{if(e.target.id==="alertsPage")location.hash="dashboard"};
 $("banner").onclick=()=>{location.hash="alerts"};
 $("back").onclick=()=>{location.hash="dashboard"};
 window.addEventListener("hashchange",route);
@@ -1519,48 +1522,68 @@ function openEx(i){exBuild();$("exPage").hidden=false;document.body.style.overfl
 function closeEx(){if(!exBuilt||$("exPage").hidden)return;$("exPage").hidden=true;exRaf=0;document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden&&$("bsPage").hidden)?"":"hidden"}
 
 // hydration fountain: the level is today's drinks against a goal from the EFSA adequate-intake figures (Earth reference)
-var HYD={on:false,ml:0,log:[],streak:0,usual:250,lv:0,raf:0,p:[],last:0,acc:0,full:false,rip:0};
+var HYD={on:false,ml:0,log:[],streak:0,usual:250,lv:0,target:0,raf:0,p:[],last:0,acc:0,full:false,rip:0};
 const HYS=[{ml:700,streak:3,usual:300},{ml:1100,streak:5,usual:200}],HYSZ=[[100,"Sip"],[200,"Cup"],[300,"Glass"],[500,"Bottle"]],NS="http://www.w3.org/2000/svg";
+const HDROP='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2c3.4 4.1 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.1-5.9 5.5-10Z"/></svg>';
 function hydGoalFor(i){return Math.round((PD[i].sex==="M"?2.5:2.0)*0.75*10)*100}
 function hydDay(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function hydStore(){try{return JSON.parse(localStorage.getItem("mooncare-hyd")||"{}")}catch(e){return{}}}
 function hydSave(){try{const o=hydStore();o[ME]={day:hydDay(),ml:HYD.ml,log:HYD.log,streak:HYD.streak};localStorage.setItem("mooncare-hyd",JSON.stringify(o))}catch(e){}}
 const hydY=lv=>172-lv*66,hydHW=y=>Math.max(66,Math.min(108,108-(y-102)*.58));
+function hydPace(goal){const n=new Date(),h=n.getHours()+n.getMinutes()/60,f=Math.max(0,Math.min(1,(h-7)/15));return goal*f}
+function hydTag(full,diff){return full?["ok","Goal reached"]:diff<-300?["warn","Behind pace"]:diff>500?["ok","Ahead of pace"]:["ok","On pace"]}
+function hydTile(){if(!window.HYD||!HYD.on)return"";const g=hydGoalFor(ME),t=hydTag(HYD.ml>=g,HYD.ml-hydPace(g));
+  return `<article class="card m ptile cp hydt" id="hydTile" data-hyd="1" tabindex="0" role="button" aria-label="Open hydration fountain" style="cursor:pointer"><div class="top"><span class="pic">${HDROP}</span><span class="pn">Hydration</span><span class="tag ${t[0]}" id="hydTT">${t[1]}</span></div><div class="val"><span id="hydTV">${(HYD.ml/1000).toFixed(1)}</span> <small>of ${(g/1000).toFixed(1)} L</small></div><div class="hydmini"><i id="hydTB" style="width:${Math.min(100,HYD.ml/g*100).toFixed(0)}%"></i></div></article>`}
 function hydBuild(){const wv='<g class="hwv"><path d="M-150 0 q18.75 -4 37.5 0'+' t37.5 0'.repeat(15)+' V230 H-150 Z" fill="url(#hWat)"/></g>';
   const gem=[76,112,188,224].map((x,i)=>`<polygon class="hg" data-i="${i}" points="${x},181 ${x+6},184 ${x+6},190 ${x},193 ${x-6},190 ${x-6},184" fill="#17314d" stroke="#6f8cab" stroke-width="1"/>`).join("");
-  const sp=[[48,40],[250,28],[272,92],[30,96],[214,-8],[92,-14]].map((x,i)=>`<path class="hsp" d="M${x[0]} ${x[1]-5} L${x[0]+1.4} ${x[1]-1.4} L${x[0]+5} ${x[1]} L${x[0]+1.4} ${x[1]+1.4} L${x[0]} ${x[1]+5} L${x[0]-1.4} ${x[1]+1.4} L${x[0]-5} ${x[1]} L${x[0]-1.4} ${x[1]-1.4}Z" fill="#dffbff" style="animation-delay:${i*.35}s;display:none"/>`).join("");
+  const star=[[30,10],[62,-22],[238,-26],[272,40],[22,70],[282,110],[104,-28],[196,-16]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.5}" fill="#dffbff" opacity="${.35+i%3*.2}"/>`).join("");
+  const sp=[[56,34],[246,22],[270,92],[34,96],[214,-8],[92,-14]].map((x,i)=>`<path class="hsp" d="M${x[0]} ${x[1]-5} L${x[0]+1.4} ${x[1]-1.4} L${x[0]+5} ${x[1]} L${x[0]+1.4} ${x[1]+1.4} L${x[0]} ${x[1]+5} L${x[0]-1.4} ${x[1]+1.4} L${x[0]-5} ${x[1]} L${x[0]-1.4} ${x[1]-1.4}Z" fill="#dffbff" style="animation-delay:${i*.35}s;display:none"/>`).join("");
+  const BOWL="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z",CUP="M104 62 C104 80 124 88 150 88 C176 88 196 80 196 62 Z";
   $("hydSvg").innerHTML=`<title id="hydT">Hydration fountain</title><defs>
   <linearGradient id="hWat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff3ff" stop-opacity=".92"/><stop offset=".25" stop-color="#27b9ee" stop-opacity=".9"/><stop offset="1" stop-color="#0a4c9c" stop-opacity=".95"/></linearGradient>
   <linearGradient id="hSt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7794b3"/><stop offset=".5" stop-color="#3b5776"/><stop offset="1" stop-color="#1e3350"/></linearGradient>
-  <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".5" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
+  <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
   <linearGradient id="hCry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1fdff"/><stop offset=".5" stop-color="#46dfff"/><stop offset="1" stop-color="#1578cc"/></linearGradient>
   <radialGradient id="hGG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".6"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
-  <clipPath id="hClip"><path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z"/></clipPath>
+  <radialGradient id="hMoon" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#dbe9f7" stop-opacity=".3"/><stop offset=".7" stop-color="#8fb0d0" stop-opacity=".12"/><stop offset="1" stop-color="#8fb0d0" stop-opacity=".04"/></radialGradient>
+  <radialGradient id="hEarth" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7fd6ff"/><stop offset="1" stop-color="#1457b8"/></radialGradient>
+  <clipPath id="hClip"><path d="${BOWL}"/></clipPath><clipPath id="hClip2"><path d="${CUP}"/></clipPath>
   <filter id="hGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  ${star}
+  <circle cx="150" cy="84" r="96" fill="url(#hMoon)"/><circle cx="150" cy="84" r="96" fill="none" stroke="#9ad8ff" stroke-opacity=".22" stroke-width="1.2"/>
+  <circle cx="98" cy="40" r="11" fill="#8fb0d0" opacity=".12"/><circle cx="212" cy="62" r="15" fill="#8fb0d0" opacity=".1"/><circle cx="222" cy="22" r="6" fill="#8fb0d0" opacity=".12"/><circle cx="84" cy="96" r="8" fill="#8fb0d0" opacity=".1"/>
+  <g transform="translate(262 -8)"><circle r="12" fill="url(#hEarth)"/><path d="M-6 -4 q4 -5 8 -2 q2 3 -2 5 q-3 1 -6 -3Z M2 4 q4 -1 5 2 q-2 3 -5 1Z" fill="#6fd08a" opacity=".85"/><circle r="12" fill="none" stroke="#bfeaff" stroke-opacity=".5"/></g>
   <ellipse id="hGl" cx="150" cy="96" rx="150" ry="100" fill="url(#hGG)" opacity=".2" style="transition:opacity .6s"/>
   <ellipse cx="150" cy="196" rx="124" ry="9" fill="#000" opacity=".4"/>
-  <path d="M40 184 Q40 195 150 197 Q260 195 260 184 Q260 178 150 178 Q40 178 40 184Z" fill="url(#hSt)"/><ellipse cx="150" cy="178" rx="108" ry="8" fill="#5a7898"/><ellipse cx="150" cy="177" rx="100" ry="6" fill="#33506f"/>${gem}
-  <path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z" fill="#06182f" opacity=".6"/>
+  <path d="M40 184 Q40 195 150 197 Q260 195 260 184 Q260 178 150 178 Q40 178 40 184Z" fill="url(#hSt)"/><ellipse cx="150" cy="178" rx="108" ry="8" fill="#5a7898"/><ellipse cx="150" cy="177" rx="100" ry="6" fill="#33506f"/><path d="M52 183 Q150 192 248 183" fill="none" stroke="#2fd8ff" stroke-opacity=".55" stroke-width="1.2"/>${gem}
+  <path d="${BOWL}" fill="#06182f" opacity=".6"/>
   <g clip-path="url(#hClip)"><g id="hWt">${wv}<ellipse id="hSurf" cx="150" cy="1" rx="100" ry="5" fill="#e4fcff" opacity=".3"/></g>
    <line id="hPace" x1="30" x2="270" y1="140" y2="140" stroke="#2fd8ff" stroke-width="1.2" stroke-dasharray="3 5" opacity=".55"/></g>
-  <rect x="141" y="64" width="18" height="112" rx="4" fill="url(#hSt)"/><rect x="136" y="150" width="28" height="26" rx="5" fill="url(#hSt)"/><rect x="141" y="64" width="5" height="112" rx="2" fill="#fff" opacity=".12"/>
+  <rect x="143" y="84" width="14" height="92" rx="4" fill="url(#hSt)"/><rect x="136" y="152" width="28" height="24" rx="5" fill="url(#hSt)"/><rect x="143" y="84" width="4" height="92" rx="2" fill="#fff" opacity=".12"/>
   <g clip-path="url(#hClip)" opacity=".42"><g id="hWt2">${wv}</g></g>
-  <path d="M116 64 Q150 90 184 64 L178 58 H122Z" fill="url(#hSt)"/><ellipse cx="150" cy="58" rx="28" ry="4" fill="#5a7898"/><ellipse cx="150" cy="58" rx="22" ry="2.6" fill="#9ef2ff" opacity=".7"/>
-  <g id="hCrys" filter="url(#hGlow)"><polygon points="150,8 161,34 150,58 139,34" fill="url(#hCry)"/><polygon points="150,8 150,58 139,34" fill="#fff" opacity=".25"/></g>
+  <path d="${CUP}" fill="#06182f" opacity=".65"/><g clip-path="url(#hClip2)"><rect id="hUp" x="80" y="88" width="140" height="40" fill="url(#hWat)"/></g>
+  <g id="hCasc" style="display:none" fill="none" stroke="#bff4ff" stroke-width="2.2" stroke-linecap="round" opacity=".85"><path id="hC1" class="hcs" d="M106 66 Q95 76 93 120"/><path id="hC2" class="hcs" d="M194 66 Q205 76 207 120"/></g>
+  <g id="hCrys" filter="url(#hGlow)"><polygon points="150,6 160,30 150,58 140,30" fill="url(#hCry)"/><polygon points="150,6 150,58 140,30" fill="#fff" opacity=".25"/></g>
   <path id="hJet" class="hjet" d="M150 6 L150 -22" stroke="#cffaff" stroke-width="3.4" stroke-linecap="round" fill="none" style="display:none"/>
   <g id="hStat" fill="none" stroke="#bff4ff" stroke-width="2.4" stroke-linecap="round" opacity=".8" style="display:none"><path d="M150 6 Q70 -30 56 100"/><path d="M150 6 Q230 -30 244 100"/><path d="M150 6 Q108 -24 96 100"/><path d="M150 6 Q192 -24 204 100"/></g>
-  <path d="M42 102 C42 152 82 174 150 174 C218 174 258 152 258 102 Z" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.6"/>
+  <path d="${CUP}" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.4"/><ellipse cx="150" cy="62" rx="46" ry="5" fill="none" stroke="url(#hSt)" stroke-width="4"/><ellipse cx="150" cy="61" rx="46" ry="4.4" fill="none" stroke="#2fd8ff" stroke-opacity=".6" stroke-width="1"/>
+  <path d="${BOWL}" fill="url(#hGlass)" stroke="#cfeeff" stroke-opacity=".55" stroke-width="1.6"/>
   <path d="M54 112 C56 140 70 156 96 166" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>
-  <ellipse cx="150" cy="102" rx="112" ry="11" fill="none" stroke="url(#hSt)" stroke-width="7"/><ellipse cx="150" cy="99.5" rx="112" ry="10" fill="none" stroke="#a9c3dc" stroke-opacity=".5" stroke-width="1.4"/>
+  <ellipse cx="150" cy="102" rx="112" ry="11" fill="none" stroke="url(#hSt)" stroke-width="7"/><ellipse cx="150" cy="99.5" rx="112" ry="10" fill="none" stroke="#2fd8ff" stroke-opacity=".5" stroke-width="1.2"/>
   <g id="hyR"></g><g id="hyP" fill="#cffaff"></g><g>${sp}</g>`;
   $("hydBtns").innerHTML=HYSZ.map(x=>`<button type="button" data-ml="${x[0]}">${x[1]}<small>${x[0]} ml</small></button>`).join("");
   $("hydBtns").onclick=e=>{const b=e.target.closest("button");if(b)hydAdd(+b.dataset.ml)};
-  $("hydUndo").onclick=()=>{if(!HYD.log.length)return;HYD.ml=Math.max(0,HYD.ml-HYD.log.pop());hydSave();hydDraw();hydKick()}}
-function hydPace(goal){const n=new Date(),h=n.getHours()+n.getMinutes()/60,f=Math.max(0,Math.min(1,(h-7)/15));return goal*f}
-function hydDraw(instant){const g=hydGoalFor(ME),lvT=Math.min(1,HYD.ml/g),full=HYD.ml>=g,ex=hydPace(g),diff=HYD.ml-ex;
+  $("hydUndo").onclick=()=>{if(!HYD.log.length)return;HYD.ml=Math.max(0,HYD.ml-HYD.log.pop());hydSave();hydDraw();hydKick()};
+  $("hydX").onclick=closeHyd;$("hydPage").onclick=e=>{if(e.target.id==="hydPage")closeHyd()};
+  $("grid").addEventListener("click",e=>{if(e.target.closest("[data-hyd]"))openHyd()});
+  $("grid").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.closest("[data-hyd]")){e.preventDefault();openHyd()}})}
+function openHyd(){$("hydPage").hidden=false;document.body.style.overflow="hidden";if(!RM)HYD.lv=0;$("hydPage").scrollTop=0;hydDraw();HYD.last=0;hydKick();$("hydX").focus()}
+function closeHyd(){const e=document.getElementById("hydPage");if(!e||e.hidden)return;e.hidden=true;document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden&&$("bsPage").hidden&&$("exPage").hidden)?"":"hidden"}
+function hydDraw(instant){const g=hydGoalFor(ME),lvT=Math.min(1,HYD.ml/g),full=HYD.ml>=g,ex=hydPace(g),diff=HYD.ml-ex,t=hydTag(full,diff);
   if(instant)HYD.lv=lvT;HYD.target=lvT;const wasFull=HYD.full;HYD.full=full;$("hydCard").classList.toggle("full",full);
   $("hydNow").textContent=(HYD.ml/1000).toFixed(1);$("hydGoal").textContent=(g/1000).toFixed(1);
-  const tg=$("hydTag");tg.className="tag "+(full?"ok":diff<-300?"warn":"ok");tg.textContent=full?"Goal reached":diff<-300?"Behind pace":diff>500?"Ahead of pace":"On pace";
+  const tg=$("hydTag");tg.className="tag "+t[0];tg.textContent=t[1];
+  const tt=$("hydTT");if(tt){tt.className="tag "+t[0];tt.textContent=t[1];$("hydTV").textContent=(HYD.ml/1000).toFixed(1);$("hydTB").style.width=Math.min(100,HYD.ml/g*100).toFixed(0)+"%";const sm=tt.closest(".ptile").querySelector(".val small");if(sm)sm.textContent="of "+(g/1000).toFixed(1)+" L"}
   let m;if(HYD.ml>g*1.3)m="You are well past today’s goal. More is not better. Ask the flight surgeon if you are still thirsty.";else if(full)m="Fountain full. You have reached today’s goal. Well done.";else if(HYD.ml===0)m="Fill the fountain with today’s water. Your goal is "+(g/1000).toFixed(1)+" L.";else m=Math.round(lvT*100)+"% full. "+(g-HYD.ml)+" ml to go."+(diff>500?" Spread your drinks through the day.":diff<-300?" A drink now will catch you up.":"");
   $("hydMsg").textContent=m;
   document.querySelectorAll("#hydBtns button").forEach(b=>b.classList.toggle("u",+b.dataset.ml===HYD.usual));
@@ -1571,15 +1594,17 @@ function hydDraw(instant){const g=hydGoalFor(ME),lvT=Math.min(1,HYD.ml/g),full=H
   document.querySelectorAll(".hg").forEach(e=>{const on=lvT>=(+e.dataset.i+1)/4-.001;e.setAttribute("fill",on?"#2fd8ff":"#17314d");e.setAttribute("stroke",on?"#dffbff":"#6f8cab");e.style.filter=on?"drop-shadow(0 0 4px #2fd8ff)":""});
   $("hGl").setAttribute("opacity",(.18+lvT*.3).toFixed(2));
   $("hJet").style.display=full&&!RM?"":"none";$("hStat").style.display=full&&RM?"":"none";document.querySelectorAll(".hsp").forEach(e=>e.style.display=full&&!RM?"":"none");
-  hydWater();if(full&&!wasFull&&!instant)hydBurst()}
-function hydWater(){const y=hydY(HYD.lv);$("hWt").setAttribute("transform","translate(0 "+y.toFixed(1)+")");$("hWt2").setAttribute("transform","translate(0 "+y.toFixed(1)+")");$("hSurf").setAttribute("rx",hydHW(y).toFixed(1));$("hCrys").style.opacity=(.55+HYD.lv*.45).toFixed(2)}
+  hydWater();if(full&&!wasFull&&!instant&&!$("hydPage").hidden)hydBurst()}
+function hydWater(){const lv=HYD.lv,y=hydY(lv),t="translate(0 "+y.toFixed(1)+")";$("hWt").setAttribute("transform",t);$("hWt2").setAttribute("transform",t);$("hSurf").setAttribute("rx",hydHW(y).toFixed(1));$("hCrys").style.opacity=(.55+lv*.45).toFixed(2);
+  $("hUp").setAttribute("y",(88-Math.min(1,lv*2)*24).toFixed(1));const on=lv>=.5;$("hCasc").style.display=on?"":"none";
+  if(on){const wy=(y+1).toFixed(1);$("hC1").setAttribute("d","M106 66 Q95 76 93 "+wy);$("hC2").setAttribute("d","M194 66 Q205 76 207 "+wy)}}
 function hydSpawn(x,y,vx,vy,r){if(HYD.p.length>90)return;const c=document.createElementNS(NS,"circle");c.setAttribute("r",r||2.2);c.setAttribute("cx",x);c.setAttribute("cy",y);$("hyP").appendChild(c);HYD.p.push({c,x,y,vx,vy})}
 function hydRipple(x,y){if(++HYD.rip%3)return;const e=document.createElementNS(NS,"ellipse");e.setAttribute("class","hrip");e.setAttribute("cx",x);e.setAttribute("cy",y);e.setAttribute("rx",6);e.setAttribute("ry",1.8);$("hyR").appendChild(e);setTimeout(()=>e.remove(),950)}
 function hydBurst(){if(RM)return;for(let i=0;i<34;i++){const a=(Math.random()-.5)*1.5;hydSpawn(150,10,Math.sin(a)*(60+Math.random()*80),-(110+Math.random()*90),2.4)}hydKick()}
 function hydPour(ml){if(RM)return;const n=Math.min(26,Math.max(5,Math.round(ml/20)));for(let i=0;i<n;i++)hydSpawn(150+(Math.random()-.5)*56,-30-Math.random()*14,(Math.random()-.5)*14,40+Math.random()*50,2)}
 function hydAdd(ml){HYD.ml=Math.min(hydGoalFor(ME)*1.6,HYD.ml+ml);HYD.log.push(ml);hydSave();hydPour(ml);try{buzz([18])}catch(e){}hydDraw();hydKick()}
 function hydKick(){if(!HYD.raf){HYD.last=0;HYD.raf=requestAnimationFrame(hydTick)}}
-function hydTick(ts){HYD.raf=0;if($("hydCard").offsetParent===null){if(HYD.full||HYD.p.length)HYD.raf=setTimeout(()=>{HYD.raf=0;hydKick()},500);return}
+function hydTick(ts){HYD.raf=0;if($("hydPage").hidden)return;
   const dt=HYD.last?Math.min(.05,(ts-HYD.last)/1000):.016;HYD.last=ts;
   if(RM)HYD.lv=HYD.target;else HYD.lv+=(HYD.target-HYD.lv)*Math.min(1,dt*3.2);if(Math.abs(HYD.target-HYD.lv)<.002)HYD.lv=HYD.target;hydWater();
   if(HYD.full&&!RM){HYD.acc+=dt*52;while(HYD.acc>=1){HYD.acc--;const a=(Math.random()-.5)*1.3;hydSpawn(150,8,Math.sin(a)*(40+Math.random()*60),-(105+Math.random()*55),2)}}
@@ -1588,9 +1613,9 @@ function hydTick(ts){HYD.raf=0;if($("hydCard").offsetParent===null){if(HYD.full|
   if(HYD.full||HYD.p.length||HYD.lv!==HYD.target)HYD.raf=requestAnimationFrame(hydTick)}
 function hydLoad(){const o=hydStore()[ME],d0=HYS[ME]||{ml:0,streak:0,usual:250};
   if(o&&o.day===hydDay()){HYD.ml=o.ml;HYD.log=o.log||[];HYD.streak=o.streak}else if(o){HYD.ml=0;HYD.log=[];HYD.streak=o.ml>=hydGoalFor(ME)?o.streak+1:0}else{HYD.ml=d0.ml;HYD.log=[];HYD.streak=d0.streak}
-  HYD.usual=d0.usual;HYD.p.forEach(q=>q.c.remove());HYD.p=[];hydDraw(true);hydKick()}
+  HYD.usual=d0.usual;HYD.p.forEach(q=>q.c.remove());HYD.p=[];hydDraw(true);if(!$("hydTile"))render()}
 hydBuild();HYD.on=true;hydLoad();
-setInterval(()=>{if(HYD.on&&$("hydCard").offsetParent!==null)hydDraw()},60000);
+setInterval(()=>{if(HYD.on&&!$("hydPage").hidden)hydDraw()},60000);
 </script>
 </body>
 </html>
