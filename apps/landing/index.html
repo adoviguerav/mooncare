@@ -403,6 +403,33 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 .brcl{animation:none}@keyframes brcl{to{transform:translateX(-40px)}}
 .brfl{transform-box:fill-box;transform-origin:50% 100%}@keyframes brfl{to{transform:scale(.88,1.12)}}
 @media(prefers-reduced-motion:reduce){.brbob,.brcl,.brfl{animation:none}}
+/* checklist redesign */
+#qCard .h2i{margin-bottom:2px}.qcount{font-size:13px;color:var(--mute)}.qcount b{color:var(--ink);font-size:15px}
+.qseg{display:flex;gap:5px;margin:8px 0 16px}.qseg i{flex:1;height:6px;border-radius:6px;background:rgba(255,255,255,.12);transition:background .4s,box-shadow .4s}
+.qseg i.on{background:linear-gradient(90deg,#2fd8ff,#8ff3ff);box-shadow:0 0 8px rgba(47,216,255,.55)}
+.qh,.qr{position:relative;cursor:pointer;display:flex;gap:14px;transition:opacity .35s,transform .35s}
+.qh input,.qr input{position:absolute;opacity:0;width:1px;height:1px}
+.ck{width:26px;height:26px;border-radius:50%;border:1.7px solid color-mix(in srgb,var(--cy) 65%,transparent);flex:none;display:grid;place-items:center;background:rgba(255,255,255,.04);transition:background .25s,box-shadow .25s,border-color .25s}
+.ck svg{width:15px;height:15px;stroke:#04202c;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22}
+input:checked+.ck{background:var(--cy);border-color:var(--cy);box-shadow:0 0 14px rgba(47,216,255,.6)}input:checked+.ck svg{stroke-dashoffset:0}
+input:focus-visible+.ck{outline:2px solid #fff;outline-offset:3px}
+.just .ck{animation:ckpop .45s ease-out}.just input:checked+.ck svg{animation:ckdraw .4s .08s ease-out backwards}.just{animation:qjust .9s ease-out forwards}
+@keyframes ckpop{40%{transform:scale(1.3)}}@keyframes ckdraw{from{stroke-dashoffset:22}}@keyframes qjust{70%{opacity:1}to{opacity:.55}}
+.qh{align-items:flex-start;padding:16px;margin-bottom:6px;border-radius:20px;border:1px solid color-mix(in srgb,var(--cy) 45%,transparent);background:linear-gradient(135deg,rgba(47,216,255,.17),rgba(47,216,255,.04));box-shadow:0 0 28px rgba(47,216,255,.14),inset 0 1px 0 rgba(255,255,255,.18)}
+.qh .t{flex:1;min-width:0}.qup{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--cy);font-weight:700}
+.qh b{display:block;font-size:17px;margin:3px 0 2px}.qh .note{margin:0}.qh .pic{flex:none}
+.qact{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.qh .mbtn{font:inherit;font-size:14px;font-weight:700;background:var(--cy);color:#04202c;border:0;border-radius:12px;padding:10px 18px;box-shadow:0 0 18px rgba(47,216,255,.4);cursor:pointer}
+.qr{align-items:center;padding:12px 6px;border-radius:14px}.qr+.qr{border-top:1px solid var(--line)}
+.qr .t{flex:1;min-width:0}.qr b{display:block;font-size:15px;font-weight:600}.qcat{font-size:11px;color:var(--mute);letter-spacing:.09em;text-transform:uppercase}
+.qr .mbtn{font:inherit;font-size:13px;color:var(--cy);background:transparent;border:1px solid color-mix(in srgb,var(--cy) 60%,transparent);border-radius:10px;padding:6px 12px;cursor:pointer;flex:none}
+.qr:hover{background:rgba(255,255,255,.04)}
+.qr.done{opacity:.55}.qr.done b{font-weight:500}
+.qsec{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:14px 6px 4px}
+.qfin{display:flex;align-items:center;gap:14px;padding:18px;border-radius:20px;border:1px solid color-mix(in srgb,var(--ok) 45%,transparent);background:linear-gradient(135deg,rgba(59,224,160,.16),rgba(59,224,160,.03));box-shadow:0 0 28px rgba(59,224,160,.14)}
+.qfin b{font-size:17px;display:block}.qfin .note{margin:2px 0 0}
+.qring{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ok);color:#03281b;box-shadow:0 0 22px rgba(59,224,160,.55)}
+@media(prefers-reduced-motion:reduce){.just,.just .ck,.just input:checked+.ck svg{animation:none}}
 /* hydration fountain */
 #hydPage{position:fixed;inset:0;z-index:55;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start;background:rgba(2,8,18,.55);-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}#hydPage[hidden]{display:none}
 #hydPage .inc{width:100%;max-width:440px;margin:0 auto}
@@ -609,7 +636,8 @@ button.pill2{cursor:pointer}.pill2.done{border-color:rgba(59,224,160,.55)}.pf{di
 
 <section class="card" id="qCard">
   <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.7 2.7L16 9.5"/></svg></span>Next up</h2>
-  <p class="note" id="qsum"></p><div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
+  <div class="qhead"><span class="qcount" id="qsum"></span></div>
+  <div class="qseg" id="qseg" aria-hidden="true"></div>
   <div id="quests"></div>
   <button type="button" class="linkbtn" id="qAll" style="margin-top:8px"></button>
 </section>
@@ -950,7 +978,7 @@ drawDonut(PD[0]);
 
 // quests
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
-const QM={2:"temp",3:"glu"},QX={4:0};
+const QM={2:"temp",3:"glu"},QX={4:0},QB={6:1};
 const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
 let qAll=false,qKeep=-1;PD[0].ex=EX;
 function drawGlance(){const V=M.map((m,i)=>[m,i]).filter(x=>x[0].name!=="Mood"),n=Q.filter(q=>q[3]).length,g=$("vArcs"),tot=V.length,bad=V.filter(x=>x[0].test(x[0]));
@@ -961,13 +989,22 @@ function drawGlance(){const V=M.map((m,i)=>[m,i]).filter(x=>x[0].name!=="Mood"),
   $("vring").setAttribute("aria-label","Vitals: "+(tot-bad.length)+" of "+tot+" nominal");
   $("taskTxt").textContent=n+" of "+Q.length;$("taskFill").style.width=(n/Q.length*100)+"%";$("taskPill").classList.toggle("done",n===Q.length);
   const hv=M[0].val;$("hrC").textContent=hv;$("vc").classList.toggle("beat",!RM);$("vc").style.setProperty("--bt",(60/hv)+"s");$("vc").firstChild.style.animationDuration=(60/hv)+"s"}
+function qMeta(){const n=Q.filter(q=>q[3]).length;$("qsum").innerHTML="<b>"+n+"</b> of "+Q.length+" done";$("qseg").innerHTML=Q.map((_,k)=>`<i class="${k<n?"on":""}"></i>`).join("")}
+var qT=0;
 function drawQ(){
-  const n=Q.filter(q=>q[3]).length;$("qbar").style.width=(n/Q.length*100)+"%";
-  $("qsum").textContent=n+" of "+Q.length+" done"+(n===Q.length?". All set for the sol.":"");
-  const vis=(()=>{const u=[];Q.forEach((q,i)=>{if(!q[3])u.push(i)});const v=qAll?Q.map((_,i)=>i):u.slice(0,3);if(!qAll&&qKeep>=0&&Q[qKeep][3]&&!v.includes(qKeep))v.push(qKeep);return v.sort((a,b)=>a-b)})();
-  $("qAll").textContent=qAll?"Show fewer":"Show all "+Q.length;
-  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> <div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}${QX[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-ex="${QX[i]}">How to</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
+  const n=Q.filter(q=>q[3]).length;qMeta();
+  const pend=[];Q.forEach((q,i)=>{if(!q[3]||i===qKeep)pend.push(i)});const dn=[];Q.forEach((q,i)=>{if(q[3]&&i!==qKeep)dn.push(i)});
+  const CK=`<span class="ck"><svg viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7"/></svg></span>`,act=(i,q)=>(QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:"")+(QX[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-ex="${QX[i]}">How to</button>`:"")+(QB[i]!==undefined&&!q[3]?`<button type="button" class="mbtn" data-br="1">Breathe</button>`:"");
+  const hero=i=>{const q=Q[i],a=act(i,q);return `<label class="qh${i===qKeep?" just":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}>${CK}<div class="t"><div class="qup">Up next · ${q[2]}</div><b>${q[0]}</b><div class="note">${q[1]}</div>${a?`<div class="qact">${a}</div>`:""}</div><span class="pic">${ico(QI[q[2]]||"ok",22)}</span></label>`};
+  const row=i=>{const q=Q[i];return `<label class="qr${q[3]?" done":""}${i===qKeep?" just":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}>${CK}<span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b><span class="qcat">${q[2]}</span></div>${act(i,q)}</label>`};
+  let h="";
+  if(pend.length){h+=hero(pend[0])+pend.slice(1).map(row).join("")}
+  else h+=`<div class="qfin"><span class="qring"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg></span><div><b>All done for today</b><div class="note">All set for the sol. Nice work.</div></div></div>`;
+  if(qAll&&dn.length)h+=`<div class="qsec">Completed</div>`+dn.map(row).join("");
+  $("quests").innerHTML=h;
+  const ql=$("qAll");ql.style.display=dn.length?"":"none";ql.textContent=qAll?"Hide completed":"Show "+dn.length+" completed";
   document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;qKeep=el.checked?i:-1;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
+  clearTimeout(qT);if(qKeep>=0&&Q[qKeep][3])qT=setTimeout(()=>{qKeep=-1;drawQ()},1000);
   drawGlance();
 }
 drawQ();
@@ -1114,7 +1151,7 @@ function glanceIn(){const g=$("vArcs");g.querySelectorAll(".va").forEach(c=>{c.s
 function goV(i){const t=document.querySelector('#grid [data-v="'+i+'"]');if(!t)return;t.scrollIntoView({behavior:RM?"auto":"smooth",block:"center"});t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash")}
 $("vArcs").onclick=e=>{const c=e.target.closest(".va");if(c)goV(+c.dataset.v)};$("vArcs").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){const c=e.target.closest(".va");if(c){e.preventDefault();goV(+c.dataset.v)}}};
 $("taskPill").onclick=()=>{const t=$("qCard");t.scrollIntoView({behavior:RM?"auto":"smooth",block:"center"});t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash")};
-function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".q");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="Done";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
+function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".qh,.qr");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="Done";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
 function party(){if(RM)return;const host=$("qCard");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
 setInterval(()=>{const e=document.getElementById("liveHR");if(!RM&&!$("crewApp").hidden){const v=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2);if(e)e.textContent=v;$("hrC").textContent=v;$("vc").firstChild.style.animationDuration=(60/v)+"s"}},3000);
 // landing and role switching
@@ -1424,7 +1461,7 @@ $("msSave").onclick=()=>{const g=GD[msId];
   $("msRes").innerHTML=`<div class="mres ${cls}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-size:18px">${msVal}</b>${tagS(j.st)}</div><p style="margin:6px 0">${j.msg}</p>${j.acts.length?`<h3 class="sec" style="margin:10px 0 4px">What to do</h3><ul class="alist">${j.acts.map(a=>`<li>${a}</li>`).join("")}</ul>`:""}${xp?`<p class="note" style="margin:8px 0 0">Checklist updated.${xp}</p>`:""}<div class="acts"><button type="button" id="msDone">Done</button>${j.call?'<button type="button" id="msNotify">Message the flight surgeon</button>':""}</div></div>`;
   $("msDone").onclick=closeMS;
   const nb=$("msNotify");if(nb)nb.onclick=()=>{LOG.unshift({t:nowT(),a:"Crew message from "+PD[ME].name+": "+g.n+" "+msVal,note:j.msg});nb.disabled=true;nb.textContent="Sent (demo)"}};
-$("quests").addEventListener("click",e=>{const b=e.target.closest(".mbtn");if(b){e.preventDefault();e.stopPropagation();if(b.dataset.ex!==undefined)openEx(+b.dataset.ex);else openMeasure(b.dataset.ms)}},true);
+$("quests").addEventListener("click",e=>{const b=e.target.closest(".mbtn");if(b){e.preventDefault();e.stopPropagation();if(b.dataset.br!==undefined)openBr();else if(b.dataset.ex!==undefined)openEx(+b.dataset.ex);else openMeasure(b.dataset.ms)}},true);
 function applyProfile(i,first){
   if(!first)stash();
   ME=i;const d=PD[i],s=P[i];
@@ -1701,7 +1738,7 @@ function brTick(ts){BR.raf=0;if($("brPage").hidden||BR.mode==="idle"||BR.mode===
     $("brBar").style.width=((BR.round+(BR.ph==="in"?.4*u:.4+.6*u))/BR.total*100).toFixed(1)+"%";
     if(u>=1){BR.t0=ts;if(BR.ph==="in")BR.ph="out";else{BR.round++;if(BR.round>=BR.total){BR.mode="lift";BR.s=1;$("brBar").style.width="100%"}else BR.ph="in"}brLabels()}}
   else if(BR.mode==="lift"){const u=Math.min(1,el/(RM?1:BR.T));BR.lift=RM?0:520*u*u;$("brB").style.opacity=RM?1-u:1;
-    if(u>=1){BR.mode="done";BR.sess++;brSave();brTileDraw();$("brB").style.opacity=0;brLabels()}}
+    if(u>=1){BR.mode="done";BR.sess++;brSave();brTileDraw();if(!Q[6][3]){Q[6][3]=true;qKeep=6;drawQ();save()}$("brB").style.opacity=0;brLabels()}}
   brApply();if(BR.mode==="run"||BR.mode==="lift")BR.raf=requestAnimationFrame(brTick)}
 function openBr(){$("brPage").hidden=false;document.body.style.overflow="hidden";$("brPage").scrollTop=0;if(BR.mode==="done"||BR.mode==="lift")brReset();brLabels();brApply();$("brX").focus()}
 function closeBr(){const e=document.getElementById("brPage");if(!e||e.hidden)return;e.hidden=true;if(BR.mode==="run"||BR.mode==="lift")brStop();document.body.style.overflow=($("alertsPage").hidden&&$("detPage").hidden&&$("msPage").hidden&&$("bsPage").hidden&&$("exPage").hidden&&$("hydPage").hidden)?"":"hidden"}
