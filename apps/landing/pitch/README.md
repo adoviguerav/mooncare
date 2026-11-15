@@ -26,6 +26,7 @@ The landing page for the NASA Space Apps Challenge 2026 presentation. Open `inde
 - **Text:** edit `js/i18n.js`. A key missing in one language falls back to English.
 - **New language:** copy the `en` block in `js/i18n.js`, translate it, then add the code to `LANGS` and `HTML_LANG` in `js/main.js` and a button in the `#langs` switcher in `index.html`.
 - **App changed:** copy `apps/web/src/styles/index.css` to `demo/css/app.css` again, and port any change of the screens to `demo/js/app.js`.
+- **Dashboard sky changed** (`apps/web/src/components/SolarSky.tsx` or `lib/sun.ts`): from `apps/web`, run `npx vite build --config ../landing/pitch/tools/sky/vite.config.mjs`. It writes `demo/js/sky.js`, with a ten-line stand-in for React (`tools/sky/`).
 - **Data changed:** start the moon server and run `python tools/snapshot.py http://localhost:8000 demo/data/snapshot.js` from this folder.
 - **Screenshots:** with the moon server and `apps/web` (`npm run dev`) running, run `uv run --no-project --with playwright --with pillow python tools/shoot.py` from this folder. It uses the Chrome installed on the machine. Pass `skip` to leave the infection screenshot as it is.
 
