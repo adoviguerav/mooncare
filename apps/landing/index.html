@@ -1647,17 +1647,23 @@ function brStore(){try{return JSON.parse(localStorage.getItem("mooncare-br")||"{
 function brSave(){try{const o=brStore();o[ME]={day:hydDay(),n:BR.sess};localStorage.setItem("mooncare-br",JSON.stringify(o))}catch(e){}}
 function brTile(){if(!window.BR||!BR.on)return"";return `<article class="card m ptile cp brt" id="brTile" data-br="1" tabindex="0" role="button" aria-label="Open breathing exercise" style="cursor:pointer"><div class="top"><span class="pic">${BRI}</span><span class="pn">Breathing</span><span class="tag ok" id="brTT">${BR.sess?"Done today":"Ready"}</span></div><div class="val"><span id="brTV">${BR.sess}</span> <small>sessions today</small></div><p class="note" style="margin:8px 0 0">Tap to start. About 1 minute.</p></article>`}
 function brTileDraw(){const t=$("brTT");if(!t)return;t.textContent=BR.sess?"Done today":"Ready";$("brTV").textContent=BR.sess}
-function brBuild(){const ENV_="M0 0 C-22 -4 -52 -38 -52 -72 C-52 -108 -26 -132 0 -132 C26 -132 52 -108 52 -72 C52 -38 22 -4 0 0Z";
+function brBuild(){const W=56,N=48,wf=t=>{return t<.45?9+(W-9)*Math.pow(Math.sin(t/.45*Math.PI/2),.9):W*Math.sqrt(Math.max(0,1-Math.pow((t-.45)/.55,2)))},pts=(k,n)=>Array.from({length:(n||N)+1},(_,i)=>{const t=i/N;return[k*wf(t),-132*t]}),line=a=>a.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join("");
+  const ENV_=line(pts(-1))+line(pts(1).reverse()).replace("M","L")+"Z",KS=[-1,-.72,-.4,.4,.72,1],BC=["#2bbcf0","#0f6fb4","#e8fbff","#0f6fb4","#2bbcf0"];
+  const bands=KS.slice(0,-1).map((k,i)=>`<path d="${line(pts(k))}${line(pts(KS[i+1]).reverse()).replace("M","L")}Z" fill="${BC[i]}"/>`).join("");
+  const seams=KS.slice(1,-1).map(k=>`<path d="${line(pts(k))}" fill="none" stroke="#06284f" stroke-opacity=".4" stroke-width="1.1"/><path d="${line(pts(k))}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".7" stroke-dasharray="2.5 3" transform="translate(1.6 0)"/>`).join("");
   const stars=[[24,20],[70,48],[120,16],[196,34],[252,24],[278,70],[40,96],[236,104],[160,60],[96,88]].map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="${i%3?1:1.6}" fill="#dffbff" opacity="${.35+i%3*.22}"/>`).join("");
-  const cl=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k})" fill="#9fc3e8" opacity=".16"><ellipse cx="0" cy="0" rx="34" ry="9"/><ellipse cx="-16" cy="-6" rx="18" ry="9"/><ellipse cx="12" cy="-8" rx="22" ry="11"/></g>`;
+  const cl=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k})" fill="url(#bCld)"><ellipse cx="0" cy="6" rx="38" ry="8"/><circle cx="-22" cy="0" r="10"/><circle cx="-6" cy="-6" r="15"/><circle cx="12" cy="-4" r="13"/><circle cx="26" cy="2" r="9"/></g>`;
   $("brSvg").innerHTML=`<defs>
   <linearGradient id="bSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050d1f"/><stop offset=".6" stop-color="#0e2a55"/><stop offset="1" stop-color="#1b4f86"/></linearGradient>
   <linearGradient id="bEnv" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f6fb4"/><stop offset=".45" stop-color="#46dfff"/><stop offset="1" stop-color="#1578cc"/></linearGradient>
   <linearGradient id="bBand" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8801f"/><stop offset=".5" stop-color="#ffd27a"/><stop offset="1" stop-color="#e8801f"/></linearGradient>
+  <linearGradient id="bBasN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d4068"/><stop offset="1" stop-color="#0a1c36"/></linearGradient>
   <linearGradient id="bBas" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a066"/><stop offset="1" stop-color="#8a5a2c"/></linearGradient>
   <radialGradient id="bFl" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#fff6c8"/><stop offset=".5" stop-color="#ffb84a"/><stop offset="1" stop-color="#ff7a30" stop-opacity="0"/></radialGradient>
   <radialGradient id="bGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fd8ff" stop-opacity=".35"/><stop offset="1" stop-color="#2fd8ff" stop-opacity="0"/></radialGradient>
   <radialGradient id="bHill" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#3a5878"/><stop offset="1" stop-color="#14263f"/></radialGradient>
+  <linearGradient id="bCld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2fcff" stop-opacity=".8"/><stop offset="1" stop-color="#8fd8ff" stop-opacity=".22"/></linearGradient>
+  <linearGradient id="bShade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#021a3a" stop-opacity=".3"/><stop offset=".32" stop-color="#021a3a" stop-opacity="0"/><stop offset=".62" stop-color="#021a3a" stop-opacity=".02"/><stop offset="1" stop-color="#021a3a" stop-opacity=".35"/></linearGradient>
   <clipPath id="bClip"><path d="${ENV_}"/></clipPath>
   <filter id="bBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
   <rect width="300" height="340" fill="url(#bSky)"/>${stars}
@@ -1666,14 +1672,14 @@ function brBuild(){const ENV_="M0 0 C-22 -4 -52 -38 -52 -72 C-52 -108 -26 -132 0
   <g id="brB"><g class="brbob">
     <ellipse id="brAura" cx="150" cy="170" rx="100" ry="110" fill="url(#bGlow)" opacity=".7"/>
     <g id="brEnv" transform="translate(150 238)">
-      <path d="${ENV_}" fill="url(#bEnv)"/>
-      <g clip-path="url(#bClip)"><path d="M0 0 C-16 -34 -20 -96 0 -132 C20 -96 16 -34 0 0Z" fill="url(#bBand)" opacity=".92"/><path d="M0 0 C-34 -24 -48 -76 -24 -128" fill="none" stroke="#dff7ff" stroke-opacity=".5" stroke-width="1.3"/><path d="M0 0 C34 -24 48 -76 24 -128" fill="none" stroke="#dff7ff" stroke-opacity=".5" stroke-width="1.3"/><ellipse cx="-24" cy="-84" rx="8" ry="34" fill="#fff" opacity=".22" transform="rotate(8 -24 -84)"/></g>
-      <path d="${ENV_}" fill="none" stroke="#cfeeff" stroke-opacity=".6" stroke-width="1.4"/>
+      <g clip-path="url(#bClip)">${bands}<rect x="-70" y="-13" width="140" height="13" fill="#0b2b52"/><rect x="-70" y="-14" width="140" height="1.6" fill="#2fd8ff"/>${seams}
+        <circle cx="0" cy="-74" r="13" fill="#ffb84a"/><circle cx="6" cy="-77" r="11" fill="#e8fbff"/><path d="${ENV_}" fill="url(#bShade)"/><ellipse cx="-26" cy="-84" rx="7" ry="32" fill="#fff" opacity=".28" transform="rotate(9 -26 -84)"/></g>
+      <path d="${ENV_}" fill="none" stroke="#cfeeff" stroke-opacity=".7" stroke-width="1.4"/>
       <path d="M-9 -1 Q0 5 9 -1 L7 6 H-7Z" fill="#7794b3"/>
     </g>
     <g id="brFl" class="brfl"><ellipse cx="150" cy="248" rx="9" ry="13" fill="url(#bFl)" filter="url(#bBlur)"/><ellipse cx="150" cy="249" rx="3.2" ry="6" fill="#fff3b8"/></g>
-    <path d="M143 243 L139 262M157 243 L161 262M150 244 L150 262" stroke="#b8d4ea" stroke-opacity=".8" stroke-width="1"/>
-    <rect x="137" y="262" width="26" height="19" rx="4" fill="url(#bBas)"/><path d="M137 268 H163M137 274 H163" stroke="#6b4421" stroke-opacity=".5"/><rect x="137" y="262" width="26" height="3" rx="1.5" fill="#f1c185"/>
+    <path d="M143 243 L137 262M157 243 L163 262M150 244 L150 262" stroke="#b8d4ea" stroke-opacity=".8" stroke-width="1"/>
+    <rect x="134" y="262" width="32" height="20" rx="5" fill="url(#bBasN)"/><rect x="134" y="262" width="32" height="3.200" rx="1.600" fill="#2fd8ff" opacity=".8"/><circle cx="142" cy="273" r="2.600" fill="#8ff3ff"/><circle cx="150" cy="273" r="2.600" fill="#8ff3ff"/><circle cx="158" cy="273" r="2.600" fill="#8ff3ff"/><rect x="134" y="262" width="32" height="20" rx="5" fill="none" stroke="#9fd8ff" stroke-opacity=".5"/>
   </g></g>`;
   $("brRounds").innerHTML=[3,5,8].map(n=>`<button type="button" data-n="${n}">${n} breaths<small>${n*10} s</small></button>`).join("");
   $("brRounds").onclick=e=>{const b=e.target.closest("button");if(b&&BR.mode==="idle"){BR.total=+b.dataset.n;brLabels()}};
