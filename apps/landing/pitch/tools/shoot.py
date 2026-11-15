@@ -1,7 +1,7 @@
 """Capture screenshots of the Mooncare app for the pitch landing page.
 
 Usage: python3 tools/shoot.py  (run from apps/landing/pitch)
-Writes WebP files to shots/.
+Writes WebP files to img/shots/.
 """
 import asyncio
 from pathlib import Path
@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 APP = (ROOT / "app.html").as_uri()
-OUT = ROOT / "shots"
+OUT = ROOT / "img" / "shots"
 
 # Space Grotesk is loaded from Google Fonts; fall back to Inter when offline.
 FONT_CSS = 'body,button,input,textarea{font-family:"Space Grotesk",Inter,system-ui,sans-serif!important}'
