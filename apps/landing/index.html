@@ -357,6 +357,10 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 .emst u{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;text-decoration:none;background:rgba(255,255,255,.12)}
 .emst.d u{background:#3be0a0;color:#05261a}.emst.d span{text-decoration:line-through;opacity:.6}.emst.c u{background:var(--warn);color:#2a1700}.emst.c{color:#fff}
 .emcard .acts{margin-top:14px}
+/* readiness card (no points or levels) */
+.hstat{margin:-2px 0 14px;font-size:17px;line-height:1.35;color:var(--ink)}.hstat.w b{color:var(--warn)}.hstat.k b{color:var(--ok)}
+.stkrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.stkrow .note{margin:0;font-size:13px}
+.dots{display:flex;gap:4px}.dots i{width:9px;height:9px;border-radius:50%;background:var(--cy)}.dots i.o{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
 </style>
 </head>
 <body>
@@ -519,11 +523,9 @@ textarea,input[type=text]{background:rgba(255,255,255,.06)!important;border-colo
 <section class="hero">
   <div class="card">
     <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:190px"><h2 id="greet">Good morning, Cmdr. Adolfo</h2>
-    <p class="note" style="margin-top:-6px">Lunar dawn cycle initialized. Sol 248 mission readiness starting.</p>
-    <div class="row"><span id="stk">14-sol streak</span><span id="lvl">Level 8 astronaut</span></div>
-    <div class="xp"><i id="xpBar"></i></div>
-    <div class="row"><span id="xpNow">2,450 XP</span><span id="xpLeft">350 XP to Level 9</span></div></div>
-    <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px"></div></div></div>
+    <p class="hstat" id="heroStatus"></p>
+    <div class="stkrow"><div class="dots" id="stkDots" aria-hidden="true"></div><span class="note" id="stk">14 sols in a row</span></div></div>
+    <div id="glance" role="group" aria-label="Today at a glance"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="gRing" cx="42" cy="42" r="36" fill="none" stroke="var(--cy)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/><text id="gNum" x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor"></text></svg><div id="gTxt" class="note" style="text-align:center;margin:2px 0 0;font-size:12px;max-width:90px"></div></div></div>
   </div>
   <div class="card">
     <h2 class="h2i"><span class="pic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></span>How are you feeling today?</h2>
@@ -767,7 +769,7 @@ const LIVE='<div class="live"><svg class="ecg" viewBox="0 0 120 28" width="120" 
 let filter="All";const MI={"Blood pressure":"bp","Heart rate":"heart","Sleep duration":"moon","Mood":"smile","Body temperature":"temp","Exercise":"bolt","Blood glucose":"drop"},FR={"Blood pressure":"Measured this morning","Sleep duration":"Last night","Mood":"Self-report today","Body temperature":"Overnight","Exercise":"Today","Blood glucose":"Last reading 06:40"};
 function render(){
   const alerts=M.filter(m=>m.test(m)&&!st[m.name]);
-  const MT=M.filter(m=>m.name!=="Mood"),bad=MT.filter(m=>m.test(m)).length;$("sumline").textContent=(MT.length-bad)+" of "+MT.length+" nominal. Tap a card for its history.";
+  const MT=M.filter(m=>m.name!=="Mood"),bad=MT.filter(m=>m.test(m)).length;$("sumline").textContent="Tap a card for its history.";
   const b=$("banner");
   b.className="banner"+(inc.ack?" ok":"");
   b.textContent=inc.ack?"Sealed":"Alert";const bl=inc.ack?"Incident acknowledged. Open details":"Caution: potential incident. Open details";b.setAttribute("aria-label",bl);b.title=bl;
@@ -801,7 +803,7 @@ function face(i){const f=moods[i];return `<svg viewBox="0 0 64 64" aria-hidden="
 let mood=0;
 function drawMoods(){
   $("moods").innerHTML=[0,2,3,6,5].map(i=>`<button aria-pressed="${i===mood}" data-i="${i}">${face(i)}${moods[i][0]}</button>`).join("");
-  $("moodMsg").textContent="Logged "+moods[mood][0]+" (+15 XP). Private to you.";
+  $("moodMsg").textContent="Logged "+moods[mood][0]+". Private to you.";
   document.querySelectorAll("#moods button").forEach(el=>el.onclick=()=>{
     mood=+el.dataset.i;drawMoods();
     M[2].val=moods[mood][0];Q[1][3]=true;drawQ();save();
@@ -837,15 +839,14 @@ drawDonut(PD[0]);
 const Q=[["Sync biometric beacon","Send wearable heart rate and sleep data to Alpha Station","CARDIO",true,25],["Log your mood","Daily self-report on the tablet","MIND",true,15],["Take skin temperature","Morning reading from the Bio-Monitor","IMMUNE",true,15],["Check blood glucose","Glucometer or continuous monitor reading","NUTRI",false,20],["Resistance exercise","Flywheel session from your prescribed programme","BONE",false,50],["Log exercise on the tablet","Record sets and reps after training","BONE",false,10],["Zero-G deep breaths","Three diaphragmatic breaths before the EVA","MIND",false,30]];
 const QM={2:"temp",3:"glu"};
 const QI={CARDIO:"heart",MIND:"smile",IMMUNE:"temp",NUTRI:"drop",BONE:"bolt",VITAL:"eye"};
-let qAll=false,qKeep=-1,xpLast=null;PD[0].ex=EX;
-function xpTo(cur){const el=$("xpNow");if(xpLast===null||RM||$("crewApp").hidden){xpLast=cur;el.textContent=cur.toLocaleString("en-US")+" XP";return}const from=xpLast;xpLast=cur;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/500);el.textContent=Math.round(from+(cur-from)*k).toLocaleString("en-US")+" XP";if(k<1)requestAnimationFrame(s)})(t0)}
-function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=al?"var(--warn)":(n===Q.length?"var(--ok)":"var(--cy)");$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent=al?al+" to review":"All clear";$("glance").setAttribute("aria-label","Today at a glance: "+n+" of "+Q.length+" tasks done, "+(al?al+" readings need attention":"nothing needs attention"))}
+let qAll=false,qKeep=-1;PD[0].ex=EX;
+function drawGlance(){const n=Q.filter(q=>q[3]).length,al=M.filter(m=>m.test(m)).length,r=$("gRing");r.style.strokeDashoffset=100-n/Q.length*100;r.style.stroke=n===Q.length?"var(--ok)":"var(--cy)";$("gNum").textContent=n+"/"+Q.length;$("gTxt").textContent="tasks done today";const tot=M.filter(m=>m.name!=="Mood").length,al2=M.filter(m=>m.name!=="Mood"&&m.test(m)).length,hs=$("heroStatus");hs.className="hstat "+(al2?"w":"k");hs.innerHTML=al2?`<b>${tot-al2} of ${tot} vitals nominal.</b> ${al2} to review.`:`<b>All ${tot} vitals nominal.</b>`;$("glance").setAttribute("aria-label","Today: "+n+" of "+Q.length+" tasks done. "+(al2?al2+" vitals need attention":"all vitals nominal"))}
 function drawQ(){
-  const n=Q.filter(q=>q[3]).length,xp=Q.filter(q=>q[3]).reduce((s,q)=>s+q[4],0),tot=Q.reduce((s,q)=>s+q[4],0),d0=PD[ME],cur=d0.xp0+xp-d0.q.reduce((s,v,i)=>s+(v?Q[i][4]:0),0);xpTo(cur);$("xpLeft").textContent=Math.max(0,d0.nxt-cur)+" XP to Level "+(d0.lvl+1);$("xpBar").style.width=Math.min(100,cur/d0.nxt*100)+"%";$("qbar").style.width=(n/Q.length*100)+"%";
-  $("qsum").textContent=n+" of "+Q.length+" done · "+xp+" / "+tot+" XP"+(n===Q.length?". All set for the sol.":"");
+  const n=Q.filter(q=>q[3]).length;$("qbar").style.width=(n/Q.length*100)+"%";
+  $("qsum").textContent=n+" of "+Q.length+" done"+(n===Q.length?". All set for the sol.":"");
   const vis=(()=>{const u=[];Q.forEach((q,i)=>{if(!q[3])u.push(i)});const v=qAll?Q.map((_,i)=>i):u.slice(0,3);if(!qAll&&qKeep>=0&&Q[qKeep][3]&&!v.includes(qKeep))v.push(qKeep);return v.sort((a,b)=>a-b)})();
   $("qAll").textContent=qAll?"Show fewer":"Show all "+Q.length;
-  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> · +${q[4]} XP<div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
+  $("quests").innerHTML=vis.map(i=>{const q=Q[i];return `<label class="q ${q[3]?"done":""}"><input type="checkbox" data-i="${i}" ${q[3]?"checked":""}><span class="pic sm">${ico(QI[q[2]]||"ok",18)}</span><div class="t"><b>${q[0]}</b> <div class="note">${q[1]}</div></div>${QM[i]&&!q[3]?`<button type="button" class="mbtn" data-ms="${QM[i]}">Measure</button>`:""}<span class="tag">${q[2]}</span></label>`}).join("");
   document.querySelectorAll("#quests input").forEach(el=>el.onchange=()=>{const was=Q.every(q=>q[3]),i=+el.dataset.i;Q[i][3]=el.checked;qKeep=el.checked?i:-1;drawQ();save();if(el.checked){fx(i);if(!was&&Q.every(q=>q[3]))party()}});
   drawGlance();
 }
@@ -988,9 +989,9 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{const k=b.da
 function countUp(el){const n=el.firstChild;if(!n||n.nodeType!==3)return;const m=n.nodeValue.match(/^([^\d]*)(\d[\d,]*\.?\d*)([\s\S]*)$/);if(!m)return;const raw=m[2],dec=(raw.split(".")[1]||"").length,comma=raw.includes(","),to=parseFloat(raw.replace(/,/g,"")),t0=performance.now();
   const f=v=>comma?v.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec}):v.toFixed(dec);
   (function s(t){if(!el.isConnected)return;const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);n.nodeValue=m[1]+f(to*e)+m[3];if(k<1)requestAnimationFrame(s)})(t0)}
-function countAll(){if(RM)return;document.querySelectorAll("#crewApp .val, #xpNow").forEach(countUp)}
+function countAll(){if(RM)return;document.querySelectorAll("#crewApp .val").forEach(countUp)}
 function glanceIn(){const r=$("gRing");r.style.transition="none";r.style.strokeDashoffset=100;void r.getBoundingClientRect();r.style.transition="";drawGlance()}
-function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".q");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="+"+Q[i][4]+" XP";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
+function fx(i){if(RM)return;let L=document.querySelector('#quests input[data-i="'+i+'"]');if(L)L=L.closest(".q");if(!L)return;const s=document.createElement("span");s.className="fx";s.textContent="Done";L.appendChild(s);setTimeout(()=>s.remove(),1300)}
 function party(){if(RM)return;const host=$("qCard");host.style.position="relative";const col=["#2fd8ff","#ffb84a","#3be0a0","#e6f1fb"];for(let k=0;k<18;k++){const c=document.createElement("i");c.className="cf";const a=k/18*Math.PI*2,d=70+Math.random()*60;c.style.setProperty("--dx",Math.cos(a)*d+"px");c.style.setProperty("--dy",Math.sin(a)*d-20+"px");c.style.background=col[k%4];host.appendChild(c);setTimeout(()=>c.remove(),1100)}}
 setInterval(()=>{const e=document.getElementById("liveHR");if(e&&!RM&&!$("crewApp").hidden)e.textContent=M[0].val+Math.round(Math.sin(Date.now()/4000)*2+(Math.random()-.5)*2)},3000);
 // landing and role switching
@@ -1293,7 +1294,7 @@ $("msSave").onclick=()=>{const g=GD[msId];
   const v={};let bad=null;g.f.forEach(f=>{const n=parseFloat($("mf_"+f.k).value);if(isNaN(n)||n<f.min||n>f.max)bad=f;v[f.k]=n});
   if(bad){$("msRes").innerHTML=`<div class="mres warn">Enter a value between ${bad.min} and ${bad.max} for “${bad.l}”.</div>`;return}
   const j=g.judge(v);g.apply(v);msVal=g.fmt(v);msJ=j;let xp="";
-  if(g.qi!==undefined&&!Q[g.qi][3]){Q[g.qi][3]=true;xp=" +"+Q[g.qi][4]+" XP";buzz(30)}
+  if(g.qi!==undefined&&!Q[g.qi][3]){Q[g.qi][3]=true;xp=" ";buzz(30)}
   refreshAll();
   const cls=j.st==="ok"||j.st==="watch"?(j.st==="ok"?"ok":"warn"):j.st==="urgent"?"bad":"warn";
   $("msSave").hidden=true;
@@ -1312,10 +1313,10 @@ function applyProfile(i,first){
   M[2].val=moods[mood][0];M[2].test=()=>false;
   Object.assign(BS,d.bs);EX=d.ex||EX;
   P2[0][3]=d.dose;P2[9][3]="RMSSD "+d.hrv+" ms";P2[12][3]="REM "+d.stages[0]+"%, deep "+d.stages[1]+"%, wake "+d.stages[3]+"%";P2[7][3]="99%";
-  $("greet").textContent=d.greet;$("stk").textContent=d.stk+"-sol streak";$("lvl").textContent="Level "+d.lvl+" astronaut";
+  $("greet").textContent=d.greet;$("stk").textContent=d.stk+" sols in a row";$("stkDots").innerHTML=Array.from({length:14},(_,i)=>`<i class="${i<14-Math.min(14,d.stk)?"o":""}"></i>`).join("");
   $("hrNote").textContent="Heart rate in bpm over the last 24 hours. The dashed line is your resting baseline ("+d.base+" bpm). The shaded band is the normal range, 60 to 80 bpm.";
   $("liveHR").textContent=M[0].val;
-  xpLast=null;drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];drawEnv();
+  drawMoods();drawQ();render();drawHR();drawDonut(d);drawGlance();hist=[];drawEnv();
 }
 applyProfile(0,true);
 route();tick();
