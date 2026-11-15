@@ -1,8 +1,8 @@
 #!/bin/sh
 # Builds an empty database: runs every schema file, then every seed file, in name order.
-# Stops at the first error. Works against the local Docker database and against Supabase.
+# Stops at the first error. Works against the local Docker database and against Render.
 #
-# Against Supabase, or any server (needs psql), from the repository root:
+# Against Render (its External Database URL), or any server (needs psql), from the repository root:
 #   DATABASE_URL="postgresql://user:password@host:5432/postgres" sh database/postgresql/scripts/apply.sh
 #
 # Without DATABASE_URL it uses the local socket. That is how the Docker container runs it on its

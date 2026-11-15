@@ -5,7 +5,7 @@
 
 The tables come from database/postgresql/schema and the data from database/postgresql/seeds (written by
 seed.py). Everything runs in one transaction: if any statement fails, the database is left as it was.
-Works the same against the local PostgreSQL and Supabase, without psql or Docker.
+Works the same against the local PostgreSQL and the PostgreSQL of Render, without psql or Docker.
 """
 
 import argparse

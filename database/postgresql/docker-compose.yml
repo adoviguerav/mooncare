@@ -1,4 +1,4 @@
-# Local PostgreSQL for development, with the same schema and seeds that go to Supabase.
+# Local PostgreSQL for development, with the same schema and seeds that go to Render.
 # On the first start it runs scripts/apply.sh. To rebuild it from the .sql files:
 #   docker compose down -v && docker compose up -d
 services:

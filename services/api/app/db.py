@@ -1,4 +1,4 @@
-"""The database connection. The one place where PostgreSQL and Supabase differ.
+"""The database connection. The one place where the local PostgreSQL and the PostgreSQL of Render differ.
 
 Both are PostgreSQL with the same structure, so the models and the queries are shared. Only the
 connection settings change with DATABASE_PROVIDER.
@@ -14,11 +14,13 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import DatabaseProvider, get_settings
 
-SUPABASE_TRANSACTION_POOLER_PORT = 6543
+# Render's external URL (from outside Render) ends in this host name and only takes encrypted connections. Its
+# internal URL (from a service in the same region) is a short host name and needs no encryption.
+RENDER_EXTERNAL_HOST = ".render.com"
 
 
 def to_psycopg_url(database_url: str) -> URL:
-    """Accepts a connection string as Supabase or psql give it (postgresql://...) and makes SQLAlchemy use psycopg 3."""
+    """Accepts a connection string as Render or psql give it (postgresql://...) and makes SQLAlchemy use psycopg 3."""
     url = make_url(database_url)
     if url.drivername in ("postgres", "postgresql"):
         url = url.set(drivername="postgresql+psycopg")
@@ -28,12 +30,9 @@ def to_psycopg_url(database_url: str) -> URL:
 def get_connect_args(provider: DatabaseProvider, url: URL) -> dict[str, Any]:
     if provider == "postgresql":
         return {}
-    connect_args: dict[str, Any] = {"sslmode": "require"}  # Supabase only accepts encrypted connections
-    if url.port == SUPABASE_TRANSACTION_POOLER_PORT:
-        # The transaction pooler can hand each transaction to a different server connection,
-        # so a statement prepared on one connection may not exist on the next.
-        connect_args["prepare_threshold"] = None
-    return connect_args
+    if (url.host or "").endswith(RENDER_EXTERNAL_HOST):
+        return {"sslmode": "require"}
+    return {}
 
 
 def build_engine(provider: DatabaseProvider, database_url: str) -> Engine:

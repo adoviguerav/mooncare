@@ -102,7 +102,7 @@ def new_database() -> Iterator[Callable[[], str]]:
 
 @pytest.fixture
 def empty_database_url() -> Iterator[str]:
-    """A database with no tables at all, like a new Supabase project or a new local database."""
+    """A database with no tables at all, like a new database on Render or a new local database."""
     with throwaway_database() as url:
         yield url
 

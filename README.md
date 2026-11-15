@@ -20,7 +20,7 @@ services/
                     sync.py, sync_client.py, sync_routes.py: moon-earth synchronisation
     seed.py           Crew and the code that turns the CSV files into the INSERT files
     seed_content.py   Sources, indicators and rules, with their text
-    load_database.py  Creates the tables and loads the INSERT files into PostgreSQL or Supabase
+    load_database.py  Creates the tables and loads the INSERT files into PostgreSQL, local or on Render
     download_data.py  tests/
 database/
   postgresql/ schema/ (CREATE), seeds/ (INSERT), docker-compose.yml. See its README
@@ -32,9 +32,9 @@ docs/         Design documents
 
 ## Setup (once)
 
-You need [uv](https://docs.astral.sh/uv/), PostgreSQL (local, or a Supabase project) and Node 22.
+You need [uv](https://docs.astral.sh/uv/), PostgreSQL (local, or on Render) and Node 22.
 
-The backend uses PostgreSQL: a local server or Supabase. Both are built from the same `.sql` files, and `DATABASE_PROVIDER` in `services/api/.env` picks one. Details in [database/postgresql](database/postgresql/README.md).
+The backend uses PostgreSQL: a local server or the PostgreSQL of Render. Both are built from the same `.sql` files, and `DATABASE_PROVIDER` in `services/api/.env` picks one. Details in [database/postgresql](database/postgresql/README.md).
 
 ```sh
 cd services/api
@@ -80,7 +80,7 @@ How the emergency guide works is in [docs/emergency_guide.md](docs/emergency_gui
 
 ## Tests
 
-The backend tests create throwaway databases on the server of `POSTGRESQL_URL` and drop them at the end, so that server must be running. They never touch Supabase.
+The backend tests create throwaway databases on the server of `POSTGRESQL_URL` and drop them at the end, so that server must be running. They never touch the database on Render.
 
 ```sh
 cd services/api && uv run pytest

@@ -1,4 +1,4 @@
-"""load_database.py against a database with no tables, like a new Supabase project. Uses the real seed files."""
+"""load_database.py against a database with no tables, like a new database on Render. Uses the real seed files."""
 
 from pathlib import Path
 

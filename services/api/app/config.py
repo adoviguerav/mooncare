@@ -26,7 +26,7 @@ LIFESNAPS_HOURLY_CSV = LIFESNAPS_DIR / "hourly_fitbit_sema_df_unprocessed.csv"
 LIFESNAPS_STAI_CSV = LIFESNAPS_DIR / "stai.csv"
 LIFESNAPS_PANAS_CSV = LIFESNAPS_DIR / "panas.csv"
 
-DatabaseProvider = Literal["postgresql", "supabase"]
+DatabaseProvider = Literal["postgresql", "render"]
 NodeRole = Literal["moon", "earth"]
 
 
@@ -35,10 +35,11 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="ignore")
 
-    # Which database the API uses. Both have the same structure, built from database/postgresql.
+    # Which database the API uses: a local PostgreSQL or the PostgreSQL of Render. Both have the same structure,
+    # built from database/postgresql.
     database_provider: DatabaseProvider = "postgresql"
     postgresql_url: str | None = None
-    supabase_database_url: str | None = None
+    render_database_url: str | None = None
 
     # Which server this is. The same code runs on both; the moon works on its own and syncs with earth
     # when asked to.
@@ -67,7 +68,7 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str | None:
-        return self.postgresql_url if self.database_provider == "postgresql" else self.supabase_database_url
+        return self.postgresql_url if self.database_provider == "postgresql" else self.render_database_url
 
 
 @lru_cache

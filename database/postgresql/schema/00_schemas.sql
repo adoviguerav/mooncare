@@ -3,8 +3,7 @@
 --   dat  Data: the crew and their readings. Changes every day.
 --   his  History: append-only records. For now, the moon-earth synchronisations (03_sync.sql).
 --
--- In Supabase these schemas are not exposed through the Data API (only `public` is, by default),
--- so the tables are reachable only through the FastAPI backend.
+-- Nothing but the FastAPI backend connects to the database: the tables are reachable only through the API.
 
 CREATE SCHEMA IF NOT EXISTS cfg;
 CREATE SCHEMA IF NOT EXISTS dat;

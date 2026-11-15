@@ -1,11 +1,11 @@
 -- Hydration and breathing for the crew app (15 Nov 2026).
 --
--- For a database that already has the tables of schema/00 to 05 and its data: Supabase, Render or a local one.
+-- For a database that already has the tables of schema/00 to 05 and its data: on Render or a local one.
 -- A database built from scratch does not need it: schema/06_wellbeing.sql and the seeds already include all this.
 --
 -- It can run more than once: every step checks first. Run it on each server (moon and earth):
 --   psql "$DATABASE_URL" --single-transaction -v ON_ERROR_STOP=1 -f database/postgresql/migrations/2026-11-15_wellbeing.sql
--- On Supabase it can also be pasted into the SQL editor.
+-- On Render, use the External Database URL of the database (its Connect menu) as DATABASE_URL.
 
 -- 1. The sex of each crew member, only to pick the hydration goal
 ALTER TABLE dat.crew_member ADD COLUMN IF NOT EXISTS sex TEXT;
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS dat.breathing_session (
 
 CREATE INDEX IF NOT EXISTS breathing_session_day_idx ON dat.breathing_session (crew_member_id, day);
 
--- CREATE OR REPLACE TRIGGER needs PostgreSQL 14 or later (Supabase and Render have it)
+-- CREATE OR REPLACE TRIGGER needs PostgreSQL 14 or later (Render has it)
 CREATE OR REPLACE TRIGGER bump_sync_seq BEFORE UPDATE ON cfg.hydration_goal    FOR EACH ROW EXECUTE FUNCTION his.bump_sync_seq();
 CREATE OR REPLACE TRIGGER bump_sync_seq BEFORE UPDATE ON dat.hydration_drink   FOR EACH ROW EXECUTE FUNCTION his.bump_sync_seq();
 CREATE OR REPLACE TRIGGER bump_sync_seq BEFORE UPDATE ON dat.breathing_session FOR EACH ROW EXECUTE FUNCTION his.bump_sync_seq();

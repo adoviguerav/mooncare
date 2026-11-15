@@ -238,7 +238,7 @@ flowchart TD
 | Onboard AI | Guides emergencies by voice and explains alerts. It only advises (E1 to E6) | Planned (stretch) |
 | Flight surgeon and mission control | See on the ground the full panel of each crew member, through the earth view (section 6) | Planned |
 
-Where it runs: for development, both servers and both databases on one laptop. After the hackathon, two services on Render and two Supabase projects, one of each for the moon and for earth.
+Where it runs: for development, both servers and both databases on one laptop. After the hackathon, two services and two databases on Render, one of each for the moon and for earth.
 
 How the panel, the history and the alerts work is in the [MVP architecture](mvp_architecture.md). How the two servers synchronise is in [moon_earth_sync.md](moon_earth_sync.md).
 

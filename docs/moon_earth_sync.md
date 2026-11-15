@@ -146,12 +146,12 @@ Both load the same seed files. After regenerating the seeds, rebuild both databa
 
 ### Deployed (proposal)
 
-Two services from this repository, each with its own environment variables and its own Supabase project:
+Two services from this repository, each with its own environment variables and its own PostgreSQL on Render:
 
-- **Moon:** `NODE_ROLE=moon`, its Supabase, `EARTH_URL` set to the earth service's URL.
-- **Earth:** `NODE_ROLE=earth`, its Supabase.
+- **Moon:** `NODE_ROLE=moon`, its database, `EARTH_URL` set to the earth service's URL.
+- **Earth:** `NODE_ROLE=earth`, its database.
 - One worker per service, so two syncs never run at once.
-- Supabase through the Session pooler, which works over IPv4.
+- Each backend reaches its database with the Internal Database URL (`DATABASE_PROVIDER=render`).
 - On free plans, a service that sleeps takes a while to wake, and the moon records the syncs in between as failed. Wake both before a demo.
 - The dashboard will be on another domain, so the API will need CORS for it. Not built yet.
 
@@ -173,5 +173,5 @@ Two services from this repository, each with its own environment variables and i
 | Direction | Ship to ground only. The ground does not answer | Readings go moon → earth. Configuration and crew go earth → moon |
 | Lost link | A switch, "Link with Earth: on or off" | The moon syncs when asked. A sync without a link fails and is recorded. A switch for the demo could be added on top |
 | Ground panel (G2) | Built from what has reached the ground | The earth server is that: its panel only has what the moon has sent |
-| Deployment | Railway (D3) | Proposed: two services and two Supabase projects |
+| Deployment | Railway (D3) | Proposed: two services and two databases, all on Render |
 | Sync history | In the `his` schema (G1) | Same: `his.sync_operation` |
