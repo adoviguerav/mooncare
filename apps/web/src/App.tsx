@@ -81,6 +81,8 @@ export default function App() {
     return (
       <PanelScreen
         crewMember={crewMember}
+        // Only the crew member themselves logs their drinks and sessions. With no sign-in, nobody is them.
+        canLog={me != null && me.crew_member_id === crewMember.id}
         emergencyRunning={emergency !== null}
         onOpenEmergency={() => setDismissedEmergency(null)}
         onOpenIndicator={setIndicatorId}

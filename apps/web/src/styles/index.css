@@ -2041,6 +2041,331 @@ button.card:active {
   color: var(--ok);
 }
 
+/* --- Daily care: hydration, breathing and the exercise guide --- */
+
+.tile > .chip {
+  margin-top: 6px;
+}
+
+/* How full something is. Its bar is scaled from 0 to 1 by an inline transform. */
+.care-meter {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--line-faint);
+  overflow: hidden;
+}
+
+.care-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+}
+
+.tile > .care-meter {
+  margin-top: 10px;
+}
+
+/* A dialog that covers the panel and scrolls, with its card in the centre */
+.sheet {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: rgb(2 10 24 / 0.72);
+  color: var(--ink);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Only while open: a display of its own would also show a closed dialog */
+.sheet[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+}
+
+.sheet::backdrop {
+  background: none;
+}
+
+body:has(.sheet[open]) {
+  overflow: hidden;
+}
+
+.sheet-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 560px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Title: large and bold. Subtitle of a block: in between. Body: regular, full ink. Secondary: small, in mute. */
+.sheet-header h2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.sheet-card h3 {
+  margin-bottom: 4px;
+  font-size: 1.0625rem;
+}
+
+.sheet-card strong {
+  color: var(--ink);
+}
+
+.sheet-small {
+  color: var(--mute);
+  font-size: 0.8125rem;
+}
+
+.sheet-error {
+  color: var(--alert-ink);
+}
+
+.sheet-card button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* A value on the left and what goes with it on the right */
+.sheet-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.sheet-number {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.choices-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* A ghost button with two lines: what it is and how much */
+.choice {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  padding: 6px 4px;
+  border-radius: var(--radius-tile);
+  line-height: 1.25;
+}
+
+.choice small {
+  color: var(--mute);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* The drawings of the crew app (apps/mobile/src/wellbeing/*Art.ts). They name these classes themselves. */
+.fountain,
+.balloon {
+  display: block;
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  /* The drops of the fountain and the balloon that floats away leave the drawing */
+  overflow: visible;
+  pointer-events: none;
+}
+
+.balloon {
+  max-width: 300px;
+}
+
+.hrip {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+
+.hrip,
+.hsp {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* The light that runs along the jets of a full fountain: without motion, the jets alone */
+.har {
+  display: none;
+}
+
+.breath {
+  text-align: center;
+}
+
+.breath-phase {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.breath-count,
+.exercise-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.breath-count {
+  color: var(--accent);
+}
+
+.exercise-moves,
+.exercise-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.exercise-stage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+}
+
+.exercise-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exercise-controls input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.exercise-effort {
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+.exercise-steps li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@keyframes fountain-wave {
+  to {
+    transform: translateX(-75px);
+  }
+}
+
+@keyframes fountain-ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+
+@keyframes fountain-sparkle {
+  50% {
+    opacity: 0.15;
+    transform: scale(0.55);
+  }
+}
+
+@keyframes fountain-glow {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* The one place that animates something other than transform and opacity: the drawing makes running water
+   out of dashed strokes, and a dash only moves by its offset */
+@keyframes fountain-flow {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes fountain-arc {
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-card {
+    animation: rise 0.4s var(--ease) backwards;
+  }
+
+  .tile > .care-meter > span {
+    transition: transform 0.5s var(--ease);
+  }
+
+  .hwv {
+    animation: fountain-wave 4.5s linear infinite;
+  }
+
+  .hrip {
+    animation: fountain-ripple 0.9s ease-out forwards;
+  }
+
+  .hsp {
+    animation: fountain-sparkle 1.8s ease-in-out infinite;
+  }
+
+  .fountain.full #hGl {
+    animation: fountain-glow 2.4s ease-in-out infinite;
+  }
+
+  .hjet,
+  .hcs {
+    stroke-dasharray: 3 7;
+    animation: fountain-flow 0.45s linear infinite;
+  }
+
+  .har {
+    display: inline;
+    stroke-dasharray: 4 26;
+    animation: fountain-arc 0.9s linear infinite;
+  }
+
+  .exstars circle {
+    animation: twinkle 1.6s ease-in-out infinite alternate;
+  }
+}
+
 /* --- Loading --- */
 
 .skeleton {

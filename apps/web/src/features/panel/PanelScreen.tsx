@@ -5,6 +5,7 @@ import type { IconName } from '../../components/Icon.tsx'
 import { MoodFace } from '../../components/MoodFace.tsx'
 import { Sparkline } from '../../components/Sparkline.tsx'
 import { CheckinForm } from '../checkin/CheckinForm.tsx'
+import { DailyCare } from '../wellbeing/DailyCare.tsx'
 import { fetchIndicatorDetail, fetchPanel } from '../../lib/api.ts'
 import type { CrewMember, PanelIndicator } from '../../lib/api.ts'
 import { TODAY } from '../../lib/config.ts'
@@ -39,6 +40,7 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
 
 type Props = {
   crewMember: CrewMember
+  canLog: boolean
   emergencyRunning: boolean
   onOpenEmergency: () => void
   onOpenIndicator: (indicatorId: string) => void
@@ -53,6 +55,7 @@ export function PanelScreen(props: Props) {
     <PanelContent
       key={savedCheckins}
       crewMember={crewMember}
+      canLog={props.canLog}
       emergencyRunning={props.emergencyRunning}
       onOpenEmergency={props.onOpenEmergency}
       onOpenIndicator={onOpenIndicator}
@@ -67,6 +70,7 @@ type PanelContentProps = Props & { onCheckinSaved: () => void }
 // Remounted with a new key after each saved check-in, so the panel is fetched again
 function PanelContent({
   crewMember,
+  canLog,
   emergencyRunning,
   onOpenEmergency,
   onOpenIndicator,
@@ -126,6 +130,7 @@ function PanelContent({
         {panel !== null && tab === 'today' && (
           <TodayTab
             crewMemberId={crewMember.id}
+            canLog={canLog}
             indicators={indicators}
             moods={moods}
             moodDayCounts={moodDayCounts}
@@ -177,6 +182,7 @@ function PanelSkeleton() {
 
 type TodayTabProps = {
   crewMemberId: number
+  canLog: boolean
   indicators: PanelIndicator[]
   moods: PanelIndicator[]
   moodDayCounts: PanelIndicator[]
@@ -189,6 +195,7 @@ type TodayTabProps = {
 
 function TodayTab({
   crewMemberId,
+  canLog,
   indicators,
   moods,
   moodDayCounts,
@@ -273,6 +280,8 @@ function TodayTab({
       )}
 
       <Routines indicators={indicators} />
+
+      <DailyCare crewMemberId={crewMemberId} canLog={canLog} />
 
       <section>
         <h2 className="section-title">Your vitals</h2>
