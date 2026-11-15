@@ -6,9 +6,15 @@ import { HISTORY_DAYS, TODAY } from '../../lib/config.ts'
 import { addDays, countDaysSince, formatAge, formatTakenAt, formatValue } from '../../lib/format.ts'
 import { getGroupOf } from '../../lib/groups.ts'
 import { HistoryChart } from './HistoryChart.tsx'
+import { LearnMore } from './LearnMore.tsx'
 import { useApi } from '../../hooks/useApi.ts'
 
-type Props = { crewMember: CrewMember; indicatorId: string; onBack: () => void }
+type Props = {
+  crewMember: CrewMember
+  indicatorId: string
+  onBack: () => void
+  onOpenIndicator: (indicatorId: string) => void
+}
 
 // How far back the history chart looks. The first one with enough readings is the one shown at the start.
 const RANGES = [
@@ -21,7 +27,7 @@ const RANGES = [
 const MIN_READINGS_TO_START = 5
 const MS_PER_DAY = 86_400_000
 
-export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
+export function IndicatorScreen({ crewMember, indicatorId, onBack, onOpenIndicator }: Props) {
   const { data: detail, error } = useApi(() =>
     fetchIndicatorDetail(crewMember.id, indicatorId, addDays(TODAY, -HISTORY_DAYS), TODAY),
   )
@@ -132,6 +138,8 @@ export function IndicatorScreen({ crewMember, indicatorId, onBack }: Props) {
               readings={readings.filter((reading) => reading.broken_rule_id !== null)}
             />
           </section>
+
+          <LearnMore indicatorId={indicatorId} name={detail.indicator.name} onOpenIndicator={onOpenIndicator} />
 
           <section className="card explain">
             <div>
